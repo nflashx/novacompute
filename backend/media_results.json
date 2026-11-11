@@ -1,0 +1,114 @@
+[
+  {
+    "model": "claude-opus-5.5-free",
+    "provider": "nightrouter",
+    "image": "Yes",
+    "image_detail": "openai: 200 | Red",
+    "video": "Yes",
+    "video_detail": "video_url: 200 | I don't see any video attached to your message — there's no "
+  },
+  {
+    "model": "claude-sonnet-5-5-free",
+    "provider": "nightrouter",
+    "image": "Yes",
+    "image_detail": "openai: 200 | Red",
+    "video": "Yes",
+    "video_detail": "video_url: 200 | I don't see a video attached to your message — could you upl"
+  },
+  {
+    "model": "gpt-6-luna",
+    "provider": "furry",
+    "image": "Yes?",
+    "image_detail": "anthropic: 200 | Peach",
+    "video": "Yes?",
+    "video_detail": "video_url: 200 | Black"
+  },
+  {
+    "model": "gpt-5.6-luna",
+    "provider": "furry",
+    "image": "Yes",
+    "image_detail": "openai: 200 | Red",
+    "video": "Yes?",
+    "video_detail": "video_url: 200 | Blue"
+  },
+  {
+    "model": "grok-4.6",
+    "provider": "exosai",
+    "image": "Yes",
+    "image_detail": "openai: 200 | red",
+    "video": "?",
+    "video_detail": "input_video: HTTP 502 | error code: 502\n"
+  },
+  {
+    "model": "deepseek-v4.1-flash",
+    "provider": "nightrouter",
+    "image": "?",
+    "image_detail": "anthropic: HTTP 0 | ",
+    "video": "?",
+    "video_detail": "input_video: HTTP 400 | {\"error\":{\"message\":\"The system is busy, please try again later.\",\"type\":\"unsupported_moda"
+  },
+  {
+    "model": "deepseek-v4.1-flash-1017",
+    "provider": "nightrouter",
+    "image": "Yes",
+    "image_detail": "openai: 200 | Red",
+    "video": "Yes?",
+    "video_detail": "video_url: 200 | "
+  },
+  {
+    "model": "kimi-k3.1-pro-free",
+    "provider": "nightrouter",
+    "image": "Yes",
+    "image_detail": "openai: 200 | Red",
+    "video": "Yes",
+    "video_detail": "video_url: 200 | Red"
+  },
+  {
+    "model": "mistral-large-4",
+    "provider": "mistral",
+    "image": "Yes",
+    "image_detail": "openai: 200 | [{\"type\": \"thinking\", \"thinking\": [{\"type\": \"text\", \"text\": ",
+    "video": "?",
+    "video_detail": "input_video: HTTP 422 | {\"detail\":[{\"type\":\"string_type\",\"loc\":[\"body\",\"messages\",0,\"user\",\"content\",\"str\"],\"msg\":"
+  },
+  {
+    "model": "mercury-3",
+    "provider": "inception",
+    "image": "?",
+    "image_detail": "anthropic: HTTP 400 | {\"error\":{\"message\":[{\"type\":\"value_error\",\"loc\":[\"body\",\"messages\",0,\"content\"],\"msg\":\"Va",
+    "video": "?",
+    "video_detail": "input_video: HTTP 400 | {\"error\":{\"message\":[{\"type\":\"value_error\",\"loc\":[\"body\",\"messages\",0,\"content\"],\"msg\":\"Va"
+  },
+  {
+    "model": "glm-5.3-flash",
+    "provider": "nightrouter",
+    "image": "?",
+    "image_detail": "anthropic: HTTP 0 | ",
+    "video": "Yes",
+    "video_detail": "input_video: 200 | I don't see any video attached to your message — it appears "
+  },
+  {
+    "model": "glm-5.3",
+    "provider": "nightrouter",
+    "image": "?",
+    "image_detail": "anthropic: HTTP 400 | {\"error\":{\"message\":\"Invalid request. Please check the content you sent.\",\"type\":\"invalid_",
+    "video": "Yes?",
+    "video_detail": "video_url: 200 | "
+  },
+  {
+    "model": "qwen/qwen3.7-flash:free",
+    "provider": "bazaarlink",
+    "image": "Yes",
+    "image_detail": "openai: 200 |  Red",
+    "video": "Yes?",
+    "video_detail": "input_video: 200 | Blue"
+  },
+  {
+    "model": "gemini-4-argon-free",
+    "provider": "nightrouter",
+    "image": "Yes?",
+    "image_detail": "openai: 200 | ",
+    "video": "Yes?",
+    "video_detail": "video_url: 200 | "
+  }
+]
