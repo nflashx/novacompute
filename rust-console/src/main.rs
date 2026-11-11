@@ -81,6 +81,7 @@ struct ModelForm {
     name: String,
     provider: String,
     context: String,
+    speed: f64,
     input: f64,
     output: f64,
     category: String,
@@ -319,6 +320,7 @@ impl App {
             "name": f.name.trim(),
             "provider": if f.provider.trim().is_empty() { "Custom" } else { f.provider.trim() },
             "context": if f.context.trim().is_empty() { "—" } else { f.context.trim() },
+            "speed": f.speed,
             "input": f.input,
             "output": f.output,
             "category": if f.category.trim().is_empty() { "chat" } else { f.category.trim() },
@@ -767,6 +769,7 @@ impl App {
                 name: m["name"].as_str().unwrap_or("").to_string(),
                 provider: m["owned_by"].as_str().unwrap_or("").to_string(),
                 context: m["context"].as_str().unwrap_or("").to_string(),
+                speed: m["speed_tps"].as_f64().unwrap_or(0.0),
                 input: m["pricing"]["input_per_1m"].as_f64().unwrap_or(0.0),
                 output: m["pricing"]["output_per_1m"].as_f64().unwrap_or(0.0),
                 category: m["category"].as_str().unwrap_or("chat").to_string(),
@@ -787,7 +790,8 @@ impl App {
                 ui.label("ID"); ui.add(egui::TextEdit::singleline(&mut self.model_form.id).desired_width(200.0));
                 ui.label("Name"); ui.add(egui::TextEdit::singleline(&mut self.model_form.name).desired_width(200.0)); ui.end_row();
                 ui.label("Provider"); ui.add(egui::TextEdit::singleline(&mut self.model_form.provider).desired_width(200.0));
-                ui.label("Context"); ui.add(egui::TextEdit::singleline(&mut self.model_form.context).desired_width(200.0)); ui.end_row();
+                ui.label("Context"); ui.add(egui::TextEdit::singleline(&mut self.model_form.context).desired_width(200.0));
+                ui.label("Speed tok/s"); ui.add(egui::DragValue::new(&mut self.model_form.speed).speed(1.0).range(0.0..=10000.0)); ui.end_row();
                 ui.label("Input / 1M"); ui.add(egui::DragValue::new(&mut self.model_form.input).speed(0.001).range(0.0..=1000.0));
                 ui.label("Output / 1M"); ui.add(egui::DragValue::new(&mut self.model_form.output).speed(0.001).range(0.0..=1000.0)); ui.end_row();
                 ui.label("Category"); ui.add(egui::TextEdit::singleline(&mut self.model_form.category).desired_width(200.0));
@@ -817,6 +821,7 @@ impl App {
                                 name: m["name"].as_str().unwrap_or("").to_string(),
                                 provider: m["provider"].as_str().unwrap_or("").to_string(),
                                 context: m["context"].as_str().unwrap_or("").to_string(),
+                                speed: m["speed"].as_f64().unwrap_or(0.0),
                                 input: m["input"].as_f64().unwrap_or(0.0),
                                 output: m["output"].as_f64().unwrap_or(0.0),
                                 category: m["category"].as_str().unwrap_or("chat").to_string(),

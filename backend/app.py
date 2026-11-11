@@ -975,7 +975,7 @@ class NovaHandler(BaseHTTPRequestHandler):
             self.send_json(200, {"status": "ok", "service": "nova-backend", "keys_loaded": total_keys, "models": len(MODELS), "time": iso(now_utc())})
             return
         if path == "/v1/models":
-            self.send_json(200, {"object": "list", "data": [{"id": m["id"], "object": "model", "owned_by": m["provider"], "name": m["name"], "context": m["context"], "speed_tps": m["speed"], "pricing": {"input_per_1m": m["input"], "output_per_1m": m["output"]}, "capabilities": {"image": bool(m.get("image")), "video": bool(m.get("video"))}, "category": m.get("category", "chat"), "tag": m.get("tag"), "note": m.get("note", ""), "price_unit": m.get("price_unit"), "quota_multiplier": QUOTA_MULTIPLIERS.get(m["id"], 1)} for m in MODELS]})
+            self.send_json(200, {"object": "list", "data": [{"id": m["id"], "object": "model", "owned_by": m.get("provider", "Custom"), "name": m.get("name", m["id"]), "context": m.get("context", "—"), "speed_tps": m.get("speed", 0), "pricing": {"input_per_1m": m.get("input", 0), "output_per_1m": m.get("output", 0)}, "capabilities": {"image": bool(m.get("image")), "video": bool(m.get("video"))}, "category": m.get("category", "chat"), "tag": m.get("tag"), "note": m.get("note", ""), "price_unit": m.get("price_unit"), "quota_multiplier": QUOTA_MULTIPLIERS.get(m["id"], 1)} for m in MODELS]})
             return
         if path == "/api/me": self.handle_me(); return
         if path == "/api/fx": self.handle_fx(); return
