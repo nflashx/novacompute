@@ -11,3 +11,6 @@ __pycache__/
 *.log
 .DS_Store
 Thumbs.db
+
+# Local backups
+backend/app.py.bak*

@@ -114,6 +114,25 @@ Postman: create a POST request to `http://127.0.0.1:8080/v1/chat/completions`, h
 
 Asset URLs carry a `?v=6` cache-buster — bump it when changing JS/CSS.
 
+## Admin Console (desktop app)
+
+```bat
+python admin_app.py
+```
+
+Three tabs:
+
+- **API Keys** — NightRouter / ExosAI pools: add, delete, mark Active/Dead.
+  Reads/writes `backend/nightrouter_keys.json` and `backend/exosai_keys.json`.
+- **Models** — built-in catalogue + custom models (ID, name, provider, input/output
+  price, context, speed, upstream). Custom rows are written to
+  `backend/custom_models.json`.
+- **Settings** — file paths, backend health check, hot-reload notes.
+
+**Hot reload:** the backend reads key files on every request, and its
+`refresh_models()` re-reads `custom_models.json` whenever the file's mtime
+changes — new keys and models apply without restarting `app.py`.
+
 ## Notes / limitations
 
 - HTTP only, no TLS; single-process JSON store — fine for demos, not for production.
