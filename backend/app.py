@@ -1373,7 +1373,8 @@ class NovaHandler(BaseHTTPRequestHandler):
         self.send_json(200, {"transactions": rows[:100]})
 
     def handle_admin_user_update(self):
-        if not self.require_admin(): return
+        admin = self.require_admin()
+        if not admin: return
         body = self.read_json_body() or {}
         email = str(body.get("email", "")).strip().lower()
         with DB_LOCK:
@@ -1403,6 +1404,8 @@ class NovaHandler(BaseHTTPRequestHandler):
             if "is_admin" in body:
                 target["is_admin"] = bool(body.get("is_admin"))
             if "banned" in body:
+                if bool(body.get("banned")) and str(target.get("email", "")).lower() == str(admin.get("email", "")).lower():
+                    return self.send_error_json(400, "invalid_request_error", "cannot_ban_self", "You cannot ban the admin account you are signed in with.")
                 target["banned"] = bool(body.get("banned"))
             save_users(db)
         self.send_json(200, {"ok": True, "email": email, "plan": target.get("plan", "free"), "balance": round(float(target.get("balance", 0)), 2), "is_admin": bool(target.get("is_admin"))})

@@ -730,7 +730,7 @@ impl App {
             }
         });
         ui.add_space(2.0);
-        ui.label(egui::RichText::new("Click Edit on a model to load it into the custom form below. Saving creates a hot-reload override, including new prices.").size(11.0).color(MUTED));
+        ui.label(egui::RichText::new("Click Edit price on a model to load it into the custom form below. Saving creates a hot-reload override, including new prices.").size(11.0).color(MUTED));
         ui.add_space(6.0);
         let mut edit_request: Option<Value> = None;
         card(ui, |ui| {
@@ -753,7 +753,7 @@ impl App {
                             ui.monospace(money(m["pricing"]["input_per_1m"].as_f64().unwrap_or(0.0)));
                             ui.monospace(money(m["pricing"]["output_per_1m"].as_f64().unwrap_or(0.0)));
                             ui.label(m["category"].as_str().unwrap_or("chat"));
-                            if ui.small_button("Edit").clicked() {
+                            if ui.small_button("Edit price").clicked() {
                                 edit_request = Some(m.clone());
                             }
                             ui.end_row();
