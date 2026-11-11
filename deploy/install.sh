@@ -30,6 +30,7 @@ install -d -m 755 "$WEB_DIR"
 echo "==> Copying backend code (secrets and DB are preserved)"
 install -m 644 "$ROOT/backend/app.py" "$APP_DIR/backend/app.py"
 install -m 644 "$ROOT/backend/AUTH.md" "$APP_DIR/backend/AUTH.md"
+install -m 644 "$ROOT/backend/create_admin.py" "$APP_DIR/backend/create_admin.py"
 install -m 644 "$ROOT/backend/PAYMENTS.md" "$APP_DIR/backend/PAYMENTS.md"
 install -m 644 "$ROOT/backend/mail_config.example.json" "$APP_DIR/backend/mail_config.example.json"
 for f in users_db.json oauth_config.json paypal_config.json payment_config.json; do

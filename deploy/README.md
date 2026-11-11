@@ -56,6 +56,15 @@ Copy once into `/opt/novacompute/backend/` (mode 600, owner `novacompute`):
 
 Re-running `install.sh` preserves these files and the live `users_db.json`.
 
+## Create an admin (VPS)
+
+```bash
+cd /opt/novacompute/backend
+sudo -u novacompute python3 create_admin.py admin@your-domain.com 'StrongPassword123!'
+```
+
+Then sign in at `https://your-domain/admin.html`.
+
 ## What runs automatically
 
 - API + OAuth callback: `novacompute.service`
