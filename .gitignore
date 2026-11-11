@@ -24,3 +24,6 @@ cloudflare-api/node_modules/
 cloudflare-api/.wrangler/
 cloudflare-api/.dev.vars
 cloudflare-api/worker-configuration.d.ts
+
+# Local payment details (bank/PayPal)
+novacompute/assets/js/payment-config.js

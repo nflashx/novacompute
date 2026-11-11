@@ -35,8 +35,8 @@
     { id: 'qwen/qwen3.7-flash:free', name: 'Qwen 3.7', provider: 'Alibaba', color: '#6366f1', context: '1M', speed: 130, input: 0.0, output: 0.0, tag: 'Free', category: 'chat', image: true, video: true, note: '' },
     { id: 'gemini-4-argon', name: 'Gemini 4 Argon', provider: 'Google', color: '#4285f4', context: '1M', speed: 110, input: 0.4, output: 1.2, tag: null, category: 'chat', image: true, video: true, note: '' },
     { id: 'ernie-5.5-flash', name: 'ERNIE-5.5-Flash', provider: 'Baidu', color: '#2932e1', context: '1M', speed: 0, input: 0.14, output: 0.565, tag: null, category: 'chat', image: false, video: false, note: '' },
-    { id: 'gemini-3.8-flash-lite-tts', name: 'Gemini 3.8 Flash-Lite TTS', provider: 'Google', color: '#4285f4', context: '—', speed: 0, input: 0.0, output: 0.006, price_unit: '1k_chars', tag: 'Sub', category: 'tts', image: false, video: false, note: 'Free with subscription · up to 100 req/day' },
-    { id: 'gemini-3.8-flash-tts', name: 'Gemini 3.8 Flash TTS', provider: 'Google', color: '#4285f4', context: '—', speed: 0, input: 0.0, output: 0.009, price_unit: '1k_chars', tag: 'Sub', category: 'tts', image: false, video: false, note: 'Free with subscription · up to 100 req/day' },
+    { id: 'gemini-3.8-flash-lite-tts', name: 'Gemini 3.8 Flash-Lite TTS', provider: 'Google', color: '#4285f4', context: '—', speed: 0, input: 0.0, output: 0.0055, price_unit: '1k_chars', tag: 'Sub', category: 'tts', image: false, video: false, note: 'Free with subscription · up to 100 req/day' },
+    { id: 'gemini-3.8-flash-tts', name: 'Gemini 3.8 Flash TTS', provider: 'Google', color: '#4285f4', context: '—', speed: 0, input: 0.0, output: 0.008, price_unit: '1k_chars', tag: 'Sub', category: 'tts', image: false, video: false, note: 'Free with subscription · up to 100 req/day' },
     { id: 'omni-moderation', name: 'Omni Moderation', provider: 'OpenAI', color: '#10a37f', context: '—', speed: 0, input: 0.0, output: 0.0, tag: 'Free', category: 'moderation', image: true, video: false, note: 'Moderation API · free' },
   ];
 
