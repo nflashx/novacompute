@@ -50,6 +50,21 @@
   };
   const COLOR_PALETTE = ['#8b5cf6', '#22d3ee', '#f472b6', '#f59e0b', '#34d399', '#60a5fa'];
 
+  /* NovaCompute display style: free models get ABBR-<id>-free, paid keep the plain id. */
+  const PROVIDER_ABBR = {
+    Anthropic: 'CL', OpenAI: 'GPT', DeepSeek: 'DS', 'Moonshot AI': 'KM',
+    'Mistral AI': 'MS', Inception: 'MC', 'Z.ai': 'GLM', Alibaba: 'QW',
+    xAI: 'GK', Google: 'GM', Baidu: 'ER', Custom: 'NV',
+  };
+
+  function displayCode(m) {
+    const isFree = m.input === 0 && m.output === 0;
+    if (!isFree) return m.id;
+    const abbr = m.category === 'moderation' ? 'OM' : (PROVIDER_ABBR[m.provider] || 'NV');
+    const base = m.id.replace(/^.*\//, '').replace(/:free$/, '');
+    return `${abbr}-${base}-free`;
+  }
+
   function colorFor(id, provider) {
     if (FALLBACK_BY_ID[id]) return FALLBACK_BY_ID[id].color;
     const key = String(provider || '').toLowerCase();
@@ -140,7 +155,7 @@
   function renderModelRow(m) {
     const MAX_SPEED = 1000;
     const bar = m.speed > 0 ? Math.max(8, Math.min(100, Math.round((m.speed / MAX_SPEED) * 100))) : 8;
-    const canTry = m.category === 'chat' || m.category === 'code';
+    const canTry = ['chat', 'code', 'tts'].includes(m.category);
     const speedText = m.speed > 0 ? `${m.speed >= 1000 ? '1000+' : m.speed} tok/s` : '— tok/s';
     return `
       <tr class="model-row group" style="--m:${m.color}">
@@ -150,7 +165,7 @@
                   style="background:${rgba(m.color, 0.14)};color:${m.color};border:1px solid ${rgba(m.color, 0.3)}">${m.name.charAt(0)}</span>
             <div>
               <p class="font-medium text-white">${m.name}${tagCell(m.tag)}</p>
-              <p class="mt-0.5 font-mono text-xs text-slate-500">${m.id}${m.note ? `<span class="text-slate-600"> · ${m.note}</span>` : ''}</p>
+              <p class="mt-0.5 font-mono text-xs text-slate-500">${displayCode(m)}</p>
             </div>
           </div>
         </td>

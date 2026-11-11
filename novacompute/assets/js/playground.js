@@ -45,7 +45,7 @@
 
   function populateModelOptions(preferredId) {
     MODEL_SELECT.innerHTML = '';
-    (window.NOVA_MODELS || []).filter((m) => m.category === 'chat' || m.category === 'code').forEach((m) => {
+    (window.NOVA_MODELS || []).filter((m) => ['chat', 'code', 'tts'].includes(m.category)).forEach((m) => {
       const opt = document.createElement('option');
       opt.value = m.id;
       const price = m.input === 0 ? 'Free' : `$${m.input.toFixed(2)}/$${m.output.toFixed(2)}`;
@@ -212,6 +212,7 @@
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${session.api_key}`,
+          'X-Nova-Client': 'playground',
         },
         body: JSON.stringify({
           model: m.id,
@@ -290,6 +291,55 @@
     meta.classList.remove('hidden');
     busy = false;
     scrollBottom();
+  }
+
+  /* ---------- TTS mode (NagaAI /v1/audio/speech) ---------- */
+  async function sendTTS(text) {
+    const m = currentModel();
+    const indicator = addTypingIndicator();
+    const started = performance.now();
+    try {
+      const res = await fetch(window.NOVA_API_BASE + '/v1/audio/speech', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.api_key}`,
+          'X-Nova-Client': 'playground',
+        },
+        body: JSON.stringify({ model: m.id, input: text, voice: 'alloy' }),
+      });
+      indicator.remove();
+      if (!res.ok) {
+        let message = `⚠ TTS request failed (HTTP ${res.status}).`;
+        try {
+          const err = await res.json();
+          message = `⚠ ${err.error?.message || message}`;
+        } catch (e) { /* ignore */ }
+        addMessage('bot', message, m);
+        busy = false;
+        return;
+      }
+      const blob = await res.blob();
+      const row = addMessage('bot', '', m);
+      const body = row.querySelector('.msg-body');
+      body.classList.add('p-3');
+      const audio = document.createElement('audio');
+      audio.controls = true;
+      audio.autoplay = true;
+      audio.className = 'w-full max-w-sm';
+      audio.src = URL.createObjectURL(blob);
+      body.appendChild(audio);
+      const meta = row.querySelector('.msg-meta');
+      const seconds = ((performance.now() - started) / 1000).toFixed(1);
+      meta.textContent = `${m.id} · ${(blob.size / 1024).toFixed(0)} KB audio · ${seconds}s · live`;
+      meta.classList.remove('hidden');
+      busy = false;
+      scrollBottom();
+    } catch (err) {
+      indicator.remove();
+      addMessage('bot', '⚠ Cannot reach the backend for TTS.', m);
+      busy = false;
+    }
   }
 
   SEND_BTN.addEventListener('click', send);
