@@ -34,9 +34,9 @@
     { id: 'glm-5.3', name: 'GLM 5.3', provider: 'Z.ai', color: '#0ea5e9', context: '1M', speed: 85, input: 0.0, output: 0.0, tag: 'Free', category: 'chat', image: false, video: false, note: '' },
     { id: 'qwen/qwen3.7-flash:free', name: 'Qwen 3.7', provider: 'Alibaba', color: '#6366f1', context: '1M', speed: 130, input: 0.0, output: 0.0, tag: 'Free', category: 'chat', image: true, video: true, note: '' },
     { id: 'gemini-4-argon', name: 'Gemini 4 Argon', provider: 'Google', color: '#4285f4', context: '1M', speed: 110, input: 0.4, output: 1.2, tag: null, category: 'chat', image: true, video: true, note: '' },
-    { id: 'ernie-5.5-flash', name: 'ERNIE-5.5-Flash', provider: 'Baidu', color: '#2932e1', context: '1M', speed: 0, input: 0.14, output: 0.565, tag: null, category: 'chat', image: false, video: false, note: 'Upstream: NagaAI (free tier id)' },
-    { id: 'gemini-3.8-flash-lite-tts', name: 'Gemini 3.8 Flash-Lite TTS', provider: 'Google', color: '#4285f4', context: '—', speed: 0, input: 0.0, output: 0.0046, price_unit: '1k_chars', tag: 'Sub', category: 'tts', image: false, video: false, note: 'per 1k characters · free with subscription (up to 100 req/day)' },
-    { id: 'omni-moderation', name: 'Omni Moderation', provider: 'OpenAI', color: '#10a37f', context: '—', speed: 0, input: 0.0, output: 0.0, tag: 'Free', category: 'moderation', image: true, video: false, note: 'Moderation API · chưa có trên pool NagaAI hiện tại' },
+    { id: 'ernie-5.5-flash', name: 'ERNIE-5.5-Flash', provider: 'Baidu', color: '#2932e1', context: '1M', speed: 0, input: 0.14, output: 0.565, tag: null, category: 'chat', image: false, video: false, note: '' },
+    { id: 'gemini-3.8-flash-lite-tts', name: 'Gemini 3.8 Flash-Lite TTS', provider: 'Google', color: '#4285f4', context: '—', speed: 0, input: 0.0, output: 0.0046, price_unit: '1k_chars', tag: 'Sub', category: 'tts', image: false, video: false, note: 'Free with subscription · up to 100 req/day' },
+    { id: 'omni-moderation', name: 'Omni Moderation', provider: 'OpenAI', color: '#10a37f', context: '—', speed: 0, input: 0.0, output: 0.0, tag: 'Free', category: 'moderation', image: true, video: false, note: 'Moderation API · free' },
   ];
 
   const FALLBACK_BY_ID = {};
@@ -133,8 +133,8 @@
   }
 
   const MEDIA_BADGES = {
-    image: '<span class="ml-2 hidden sm:inline-flex items-center gap-1 rounded-full border border-cyan-400/25 bg-cyan-500/10 px-2 py-0.5 align-middle text-[10px] font-semibold text-cyan-300" title="Accepts image input"><svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="9" cy="9" r="2"></circle><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"></path></svg>IMG</span>',
-    video: '<span class="ml-2 hidden sm:inline-flex items-center gap-1 rounded-full border border-fuchsia-400/25 bg-fuchsia-500/10 px-2 py-0.5 align-middle text-[10px] font-semibold text-fuchsia-300" title="Accepts video input"><svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="14" height="12" rx="2"></rect><path d="m16 10 6-3v10l-6-3z"></path></svg>VID</span>',
+    image: '<span class="inline-flex h-6 w-6 items-center justify-center rounded-md border border-cyan-400/25 bg-cyan-500/10 text-cyan-300" title="Accepts image input"><svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="9" cy="9" r="2"></circle><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"></path></svg></span>',
+    video: '<span class="inline-flex h-6 w-6 items-center justify-center rounded-md border border-fuchsia-400/25 bg-fuchsia-500/10 text-fuchsia-300" title="Accepts video input"><svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="14" height="12" rx="2"></rect><path d="m16 10 6-3v10l-6-3z"></path></svg></span>',
   };
 
   function renderModelRow(m) {
@@ -149,7 +149,7 @@
             <span class="model-avatar flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-sm font-bold"
                   style="background:${rgba(m.color, 0.14)};color:${m.color};border:1px solid ${rgba(m.color, 0.3)}">${m.name.charAt(0)}</span>
             <div>
-              <p class="font-medium text-white">${m.name}${tagCell(m.tag)}${m.image ? MEDIA_BADGES.image : ''}${m.video ? MEDIA_BADGES.video : ''}</p>
+              <p class="font-medium text-white">${m.name}${tagCell(m.tag)}</p>
               <p class="mt-0.5 font-mono text-xs text-slate-500">${m.id}${m.note ? `<span class="text-slate-600"> · ${m.note}</span>` : ''}</p>
             </div>
           </div>
@@ -161,6 +161,11 @@
               <div class="h-full rounded-full bg-gradient-to-r from-violet-500 to-cyan-400" style="width:${bar}%"></div>
             </div>
             <span class="whitespace-nowrap font-mono text-xs text-slate-400">${speedText}</span>
+          </div>
+        </td>
+        <td class="px-4 py-4">
+          <div class="flex items-center justify-center gap-1.5">
+            ${m.image ? MEDIA_BADGES.image : ''}${m.video ? MEDIA_BADGES.video : ''}${!m.image && !m.video ? '<span class="text-xs text-slate-600">—</span>' : ''}
           </div>
         </td>
         <td class="whitespace-nowrap px-4 py-4 text-right">${m.category === 'tts' ? '<span class="text-slate-500">—</span>' : priceCell(m.input)}</td>
@@ -183,7 +188,7 @@
     const cls = tone === 'free'
       ? 'bg-emerald-400/[0.04] text-emerald-300/80'
       : 'bg-violet-500/[0.05] text-violet-300/80';
-    return `<tr class="models-group"><td colspan="6" class="border-y border-white/[0.06] px-6 py-2.5 text-[11px] font-semibold uppercase tracking-widest ${cls}">${label}</td></tr>`;
+    return `<tr class="models-group"><td colspan="7" class="border-y border-white/[0.06] px-6 py-2.5 text-[11px] font-semibold uppercase tracking-widest ${cls}">${label}</td></tr>`;
   }
 
   /** Render rows split into a Free table section and a Paid section. */
