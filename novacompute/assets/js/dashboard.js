@@ -223,6 +223,7 @@
     const numEl = document.getElementById('quota-numbers');
     const barEl = document.getElementById('quota-bar');
     const noteEl = document.getElementById('quota-note');
+    const trackEl = document.getElementById('quota-track');
     if (!planEl || !numEl || !barEl || !noteEl) return;
 
     if (quota > 0) {
@@ -230,6 +231,7 @@
       planEl.textContent = `${me.plan_name || plan} · ${used >= quota ? 'quota reached' : 'active'}`;
       numEl.textContent = `${used.toLocaleString()} / ${quota.toLocaleString()} tokens today · ${pct.toFixed(3)}%`;
       barEl.style.width = `${pct}%`;
+      if (trackEl) trackEl.style.display = '';
       barEl.className = `h-full rounded-full transition-[width] duration-500 ${used >= quota ? 'bg-red-400' : 'bg-gradient-to-r from-violet-500 to-cyan-400'}`;
       noteEl.textContent = `Resets daily at 00:00 UTC${me.plan_expires ? ` · renews ${new Date(me.plan_expires).toLocaleDateString()}` : ''}. Free models do not consume this quota.`;
     } else {
@@ -237,6 +239,7 @@
       numEl.textContent = `${used.toLocaleString()} tokens today`;
       barEl.style.width = '0%';
       barEl.className = 'h-full rounded-full bg-gradient-to-r from-violet-500 to-cyan-400';
+      if (trackEl) trackEl.style.display = 'none';
       noteEl.textContent = 'Usage is billed from your balance at the model rates. Subscribe for a daily paid-token quota.';
     }
   }
