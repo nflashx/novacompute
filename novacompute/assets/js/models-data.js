@@ -26,18 +26,18 @@
   const FALLBACK_MODELS = [
     { id: 'claude-opus-5.5-free', name: 'Claude Opus 5.5', provider: 'Anthropic', color: '#d97757', context: '1M', speed: 85, input: 3.20, output: 16.00, tag: 'Popular', category: 'chat', image: true, video: false },
     { id: 'claude-sonnet-5-5-free', name: 'Claude Sonnet 5.5', provider: 'Anthropic', color: '#d97757', context: '1M', speed: 92, input: 1.80, output: 9.00, tag: null, category: 'chat', image: true, video: false },
-    { id: 'gpt-6-luna', name: 'GPT-6', provider: 'OpenAI', color: '#10a37f', context: '900K', speed: 118, input: 0.08, output: 0.40, tag: 'New', category: 'chat', image: false, video: false },
+    { id: 'gpt-6-luna', name: 'GPT-6', provider: 'OpenAI', color: '#10a37f', context: '900K', speed: 118, input: 0.08, output: 0.40, tag: 'New', category: 'chat', image: true, video: false },
     { id: 'gpt-5.6-luna', name: 'GPT-5.6', provider: 'OpenAI', color: '#10a37f', context: '900K', speed: 130, input: 0.16, output: 0.96, tag: null, category: 'chat', image: true, video: false },
     { id: 'grok-4.6', name: 'Grok 4.6', provider: 'xAI', color: '#f43f5e', context: '500K', speed: 150, input: 0.10, output: 0.30, tag: null, category: 'chat', image: true, video: false },
     { id: 'deepseek-v4.1-flash', name: 'DeepSeek V4.1', provider: 'DeepSeek', color: '#4d6bfe', context: '1M', speed: 145, input: 0.02, output: 0.24, tag: 'Best value', category: 'code', image: true, video: false },
-    { id: 'deepseek-v4.1-flash-1017', name: 'DeepSeek V4.1 1017', provider: 'DeepSeek', color: '#4d6bfe', context: '1M', speed: 145, input: 0.02, output: 0.24, tag: null, category: 'code', image: true, video: false },
+    { id: 'deepseek-v4.1-flash-1017', name: 'DeepSeek V4.1 1017', provider: 'DeepSeek', color: '#4d6bfe', context: '1M', speed: 145, input: 0.005, output: 0.24, tag: null, category: 'code', image: true, video: false },
     { id: 'kimi-k3.1-pro-free', name: 'Kimi k3.1 Pro', provider: 'Moonshot AI', color: '#8b5cf6', context: '1M', speed: 120, input: 1.00, output: 1.00, tag: null, category: 'chat', image: true, video: true },
     { id: 'mistral-large-4', name: 'Mistral Large 4', provider: 'Mistral AI', color: '#ff7000', context: '1M', speed: 98, input: 0.45, output: 1.35, tag: null, category: 'chat', image: true, video: false },
     { id: 'mercury-3', name: 'Mercury 3', provider: 'Inception', color: '#d946ef', context: '1M', speed: 1000, input: 0.10, output: 0.35, tag: 'Diffusion', category: 'code', image: false, video: false },
-    { id: 'glm-5.3-flash', name: 'GLM 5.3 Flash', provider: 'Z.ai', color: '#0ea5e9', context: '1M', speed: 240, input: 0.05, output: 0.20, tag: null, category: 'chat', image: false, video: false },
-    { id: 'glm-5.3', name: 'GLM 5.3', provider: 'Z.ai', color: '#0ea5e9', context: '1M', speed: 85, input: 0.30, output: 0.80, tag: null, category: 'chat', image: false, video: false },
-    { id: 'qwen/qwen3.7-flash:free', name: 'Qwen 3.7', provider: 'Alibaba', color: '#6366f1', context: '1M', speed: 130, input: 0.0, output: 0.0, tag: 'Free', category: 'chat', image: true, video: false },
-    { id: 'gemini-4-argon-free', name: 'Gemini 4 Argon', provider: 'Google', color: '#4285f4', context: '1M', speed: 110, input: 0.40, output: 1.20, tag: null, category: 'chat', image: false, video: false },
+    { id: 'glm-5.3-flash', name: 'GLM 5.3 Flash', provider: 'Z.ai', color: '#0ea5e9', context: '1M', speed: 240, input: 0.03, output: 0.07, tag: null, category: 'chat', image: true, video: true },
+    { id: 'glm-5.3', name: 'GLM 5.3', provider: 'Z.ai', color: '#0ea5e9', context: '1M', speed: 85, input: 0.08, output: 0.85, tag: null, category: 'chat', image: false, video: false },
+    { id: 'qwen/qwen3.7-flash:free', name: 'Qwen 3.7', provider: 'Alibaba', color: '#6366f1', context: '1M', speed: 130, input: 0.0, output: 0.0, tag: 'Free', category: 'chat', image: true, video: true },
+    { id: 'gemini-4-argon-free', name: 'Gemini 4 Argon', provider: 'Google', color: '#4285f4', context: '1M', speed: 110, input: 0.40, output: 1.20, tag: null, category: 'chat', image: true, video: true },
   ];
 
   const FALLBACK_BY_ID = {};
