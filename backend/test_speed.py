@@ -34,7 +34,10 @@ def pick_key(provider_name):
     return keys[0] if keys else None
 
 
-def call_model(model_id, timeout):
+TRANSIENT_STATUSES = (429, 500, 502, 503, 504)
+
+
+def call_model(model_id, timeout, retries=3, retry_delay=1.5):
     provider = app.MODEL_PROVIDER_MAP.get(model_id, app.DEFAULT_PROVIDER)
     info = app.PROVIDERS.get(provider)
     if not info:
@@ -49,45 +52,64 @@ def call_model(model_id, timeout):
         "messages": [{"role": "user", "content": "Hello"}],
         "max_tokens": 16,
     }
-    request = urllib.request.Request(
-        info["url"],
-        data=json.dumps(payload).encode("utf-8"),
-        headers={
-            "Authorization": f"Bearer {key}",
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-        },
-        method="POST",
-    )
 
-    started = time.time()
-    try:
-        with urllib.request.urlopen(request, timeout=timeout) as response:
-            raw = response.read()
-        ms = int((time.time() - started) * 1000)
-        data = json.loads(raw.decode("utf-8", "replace"))
-        usage = data.get("usage") or {}
-        tokens = (usage.get("prompt_tokens") or 0) + (usage.get("completion_tokens") or 0)
-        text = ((data.get("choices") or [{}])[0].get("message") or {}).get("content") or ""
-        if not isinstance(text, str):
-            text = json.dumps(text, ensure_ascii=False)
-        return {"status": "OK", "detail": text.replace("\n", " ")[:40], "ms": ms, "tokens": tokens}
-    except urllib.error.HTTPError as exc:
-        ms = int((time.time() - started) * 1000)
+    result = None
+    for attempt in range(1, retries + 1):
+        request = urllib.request.Request(
+            info["url"],
+            data=json.dumps(payload).encode("utf-8"),
+            headers={
+                "Authorization": f"Bearer {key}",
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+            },
+            method="POST",
+        )
+        started = time.time()
         try:
-            body = exc.read().decode("utf-8", "replace")[:120]
-        except Exception:
-            body = ""
-        return {"status": f"HTTP {exc.code}", "detail": body.replace("\n", " "), "ms": ms, "tokens": 0}
-    except Exception as exc:  # timeout, DNS, TLS...
-        ms = int((time.time() - started) * 1000)
-        return {"status": "ERROR", "detail": str(exc)[:90], "ms": ms, "tokens": 0}
+            with urllib.request.urlopen(request, timeout=timeout) as response:
+                raw = response.read()
+            ms = int((time.time() - started) * 1000)
+            data = json.loads(raw.decode("utf-8", "replace"))
+            usage = data.get("usage") or {}
+            tokens = (usage.get("prompt_tokens") or 0) + (usage.get("completion_tokens") or 0)
+            text = ((data.get("choices") or [{}])[0].get("message") or {}).get("content") or ""
+            if not isinstance(text, str):
+                text = json.dumps(text, ensure_ascii=False)
+            note = text.replace("\n", " ")[:40]
+            if attempt > 1:
+                note = f"(try {attempt}) " + note
+            return {"status": "OK", "detail": note, "ms": ms, "tokens": tokens}
+        except urllib.error.HTTPError as exc:
+            ms = int((time.time() - started) * 1000)
+            try:
+                body = exc.read().decode("utf-8", "replace")[:120]
+            except Exception:
+                body = ""
+            result = {"status": f"HTTP {exc.code}", "detail": body.replace("\n", " "), "ms": ms, "tokens": 0}
+            if exc.code in TRANSIENT_STATUSES and attempt < retries:
+                print(f"retry in {retry_delay}s... ", end="", flush=True)
+                time.sleep(retry_delay)
+                continue
+            return result
+        except Exception as exc:  # timeout, DNS, TLS...
+            ms = int((time.time() - started) * 1000)
+            result = {"status": "ERROR", "detail": str(exc)[:90], "ms": ms, "tokens": 0}
+            if attempt < retries:
+                print(f"retry in {retry_delay}s... ", end="", flush=True)
+                time.sleep(retry_delay)
+                continue
+            return result
+
+    return result or {"status": "FAIL", "detail": "no attempt", "ms": 0, "tokens": 0}
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--timeout", type=int, default=30, help="per-request timeout in seconds")
     parser.add_argument("--model", help="only test one model id")
+    parser.add_argument("--retries", type=int, default=3, help="attempts per model on transient errors")
+    parser.add_argument("--delay", type=float, default=1.5, help="seconds between retries")
     args = parser.parse_args()
 
     models = [m for m in app.MODELS if not args.model or m["id"] == args.model]
@@ -97,7 +119,8 @@ def main():
 
     lines = []
     lines.append("NovaCompute — model speed test")
-    lines.append("time: " + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + f"   timeout: {args.timeout}s")
+    lines.append("time: " + datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                 + f"   timeout: {args.timeout}s   retry: {args.retries}x{args.delay}s on 429/5xx/timeout")
     lines.append("")
     header = f"{'MODEL':32s} {'PROVIDER':12s} {'STATUS':10s} {'LATENCY':>9s} {'TOK':>5s}  NOTE"
     lines.append(header)
@@ -108,7 +131,7 @@ def main():
     for index, model in enumerate(models, 1):
         provider = app.MODEL_PROVIDER_MAP.get(model["id"], app.DEFAULT_PROVIDER)
         print(f"[{index}/{len(models)}] {model['id']} -> {provider} ...", end="", flush=True)
-        result = call_model(model["id"], args.timeout)
+        result = call_model(model["id"], args.timeout, args.retries, args.delay)
         if result["status"] == "OK":
             ok += 1
             latencies.append(result["ms"])
