@@ -48,6 +48,13 @@
   }
   rewriteApiOrigin();
 
+  function shortTokens(value) {
+    const v = Number(value || 0);
+    if (v >= 1000000) return (v / 1000000).toFixed(v >= 10000000 ? 0 : 1).replace(/\.0$/, '') + 'M';
+    if (v >= 1000) return (v / 1000).toFixed(v >= 100000 ? 0 : 1).replace(/\.0$/, '') + 'K';
+    return String(v);
+  }
+
   /* ---------- Model reference table ---------- */
   const modelRows = document.getElementById('docs-model-rows');
 
@@ -75,8 +82,8 @@
         : isFree
           ? '<span class="rounded bg-emerald-500/10 px-1.5 py-0.5 font-mono text-[10px] text-emerald-300">FREE</span>'
           : '';
-      const mult = (!isTts && m.quota_multiplier > 1)
-        ? `<span class="rounded bg-indigo-500/10 px-1.5 py-0.5 font-mono text-[10px] text-indigo-300" title="Sub quota multiplier">Sub ×${m.quota_multiplier}</span>`
+      const mult = (!isTts && m.sub_allowance_pro)
+        ? `<span class="rounded bg-indigo-500/10 px-1.5 py-0.5 font-mono text-[10px] text-indigo-300" title="Included daily on the Pro plan; scales with your plan.">Included ${shortTokens(m.sub_allowance_pro)}/day</span>`
         : '';
       return `<tr>
         <td class="px-4 py-3">

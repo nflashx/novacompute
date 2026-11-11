@@ -31,8 +31,8 @@
     const note = document.getElementById('pricing-note');
     if (!note) return;
     note.textContent = window.NOVA_MODELS_SOURCE === 'live'
-      ? 'Prices are per 1M tokens on the standard tier. Failed requests (5xx from our side) are never billed. · synced live from backend · Free tier + TTS subscription included'
-      : 'Prices are per 1M tokens on the standard tier. Failed requests (5xx from our side) are never billed. · backend offline — cached catalogue · Free tier + TTS subscription included';
+      ? 'Prices are per 1M tokens on the standard tier. Failed requests (5xx from our side) are never billed. Allowance badges show daily tokens included on Pro; Starter/Ultra scale. · synced live from backend'
+      : 'Prices are per 1M tokens on the standard tier. Failed requests (5xx from our side) are never billed. Allowance badges show daily tokens included on Pro; Starter/Ultra scale. · backend offline — cached catalogue';
   };
 
   filterWrap.querySelectorAll('.filter-tab').forEach((btn) => {
@@ -59,9 +59,9 @@
 
   /* ---------- Subscription plans + verified checkout ---------- */
   const PLANS = {
-    starter: { name: 'Starter', price: 4.99, quota: '1.5M paid tokens/day', tts: '20 TTS requests/day' },
-    pro: { name: 'Pro', price: 12.99, quota: '6M paid tokens/day', tts: '60 TTS requests/day' },
-    ultra: { name: 'Ultra', price: 29.99, quota: '20M paid tokens/day', tts: '150 TTS requests/day' },
+    starter: { name: 'Starter', price: 4.99, quota: '1.5M quota tokens/day', tts: '20 TTS requests/day' },
+    pro: { name: 'Pro', price: 12.99, quota: '6M quota tokens/day', tts: '60 TTS requests/day' },
+    ultra: { name: 'Ultra', price: 29.99, quota: '20M quota tokens/day', tts: '150 TTS requests/day' },
   };
 
   const subModal = document.getElementById('sub-modal');
@@ -228,7 +228,7 @@
     html += `<div id="paypal-wrap" class="hidden pt-1">
       <p class="pb-2 text-xs font-semibold uppercase tracking-wider text-slate-500">PayPal</p>
       <div id="paypal-button"></div>
-      <p class="mt-2 text-[11px] leading-relaxed text-slate-500">Payment is captured server-side; your plan activates automatically. If the PayPal window does not open, allow pop-ups for this site.</p>
+      <p class="mt-2 text-[11px] leading-relaxed text-slate-500">Verified PayPal account only (guest card checkout is disabled to block virtual cards). Payment is captured server-side and your plan activates automatically.</p>
     </div>`;
     subBody.innerHTML = html;
     subModal.classList.remove('hidden');

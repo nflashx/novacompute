@@ -56,7 +56,7 @@
     'claude-sonnet-5.5': 180,
     'claude-opus-5.5': 320,
   };
-  FALLBACK_MODELS.forEach((m) => { m.quota_multiplier = QUOTA_MULT[m.id] || 1; });
+  FALLBACK_MODELS.forEach((m) => { m.quota_multiplier = QUOTA_MULT[m.id] || 1; m.sub_allowance_pro = Math.round(6000000 / m.quota_multiplier); });
 
   const PROVIDER_COLORS = {
     anthropic: '#d97757', openai: '#10a37f', deepseek: '#4d6bfe',
@@ -116,6 +116,7 @@
       note: raw.note || snapshot.note || '',
       price_unit: raw.price_unit || snapshot.price_unit || null,
       quota_multiplier: Number(raw.quota_multiplier || QUOTA_MULT[raw.id] || 1),
+      sub_allowance_pro: Math.round(6000000 / Number(raw.quota_multiplier || QUOTA_MULT[raw.id] || 1)),
     };
   }
 
@@ -152,6 +153,13 @@
     return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${a})`;
   }
 
+  function tokensShort(value) {
+    const v = Number(value || 0);
+    if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(v >= 10_000_000 ? 0 : 1).replace(/\.0$/, '')}M`;
+    if (v >= 1_000) return `${(v / 1_000).toFixed(v >= 100_000 ? 0 : 1).replace(/\.0$/, '')}K`;
+    return String(v);
+  }
+
   function priceCell(value) {
     return value === 0
       ? '<span class="font-medium text-emerald-400">Free</span>'
@@ -174,8 +182,9 @@
     const bar = m.speed > 0 ? Math.max(8, Math.min(100, Math.round((m.speed / MAX_SPEED) * 100))) : 8;
     const canTry = ['chat', 'code', 'tts'].includes(m.category);
     const speedText = m.speed > 0 ? `${m.speed >= 1000 ? '1000+' : m.speed} tok/s` : '— tok/s';
-    const multBadge = m.quota_multiplier > 1 && m.category !== 'tts'
-      ? `<span class="ml-2 rounded-full border border-sky-400/25 bg-sky-500/10 px-1.5 py-0.5 align-middle text-[10px] font-semibold text-sky-300" title="Sub quota multiplier: each token burns this many quota tokens">Sub ×${m.quota_multiplier}</span>`
+    const subAllowance = m.quota_multiplier > 1 ? Math.round(6_000_000 / m.quota_multiplier) : 0;
+    const multBadge = subAllowance > 0 && m.category !== 'tts'
+      ? `<span class="ml-2 rounded-full border border-sky-400/20 bg-sky-500/[0.08] px-1.5 py-0.5 align-middle text-[10px] font-semibold text-sky-300" title="Included daily on the Pro plan; scales with your plan. Premium models use quota faster because they cost more.">Included ${tokensShort(subAllowance)}/day</span>`
       : '';
     return `
       <tr class="model-row group" style="--m:${m.color}">
