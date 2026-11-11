@@ -16,9 +16,9 @@ export const MODELS = [
   { id: "glm-5.3", name: "GLM 5.3", vendor: "Z.ai", context: "1M", speed: 85, input: 0.0, output: 0.0, image: false, video: false, category: "chat", tag: "Free", note: "", upstream: "nightrouter" },
   { id: "qwen/qwen3.7-flash:free", name: "Qwen 3.7", vendor: "Alibaba", context: "1M", speed: 130, input: 0.0, output: 0.0, image: true, video: true, category: "chat", tag: "Free", note: "", upstream: "bazaarlink" },
   { id: "gemini-4-argon", name: "Gemini 4 Argon", vendor: "Google", context: "1M", speed: 110, input: 0.4, output: 1.2, image: true, video: true, category: "chat", tag: null, note: "", upstream: "nightrouter", upstream_id: "gemini-4-argon-free" },
-  { id: "ernie-5.5-flash", name: "ERNIE-5.5-Flash", vendor: "Baidu", context: "1M", speed: 0, input: 0.14, output: 0.565, image: false, video: false, category: "chat", tag: null, note: "Upstream: NagaAI", upstream: "nagaai" },
-  { id: "gemini-3.8-flash-lite-tts", name: "Gemini 3.8 Flash-Lite TTS", vendor: "Google", context: "—", speed: 0, input: 0.0, output: 0.0, image: false, video: false, category: "tts", tag: "Sub", note: "Text-to-speech · free with subscription (up to 100 req/day)", upstream: "nagaai" },
-  { id: "omni-moderation", name: "Omni Moderation", vendor: "OpenAI", context: "—", speed: 0, input: 0.0, output: 0.0, image: true, video: false, category: "moderation", tag: "Free", note: "Moderation API · free tier", upstream: "nagaai" },
+  { id: "ernie-5.5-flash", name: "ERNIE-5.5-Flash", vendor: "Baidu", context: "1M", speed: 0, input: 0.14, output: 0.565, image: false, video: false, category: "chat", tag: null, note: "Upstream: NagaAI (free tier id)", upstream: "nagaai", upstream_id: "baidu/ernie-5.5-flash-preview:free" },
+  { id: "gemini-3.8-flash-lite-tts", name: "Gemini 3.8 Flash-Lite TTS", vendor: "Google", context: "—", speed: 0, input: 0.0, output: 0.0046, price_unit: "1k_chars", image: false, video: false, category: "tts", tag: "Sub", note: "per 1k characters · free with subscription (up to 100 req/day)", upstream: "nagaai", upstream_id: "google/gemini-3.8-flash-lite-tts:free" },
+  { id: "omni-moderation", name: "Omni Moderation", vendor: "OpenAI", context: "—", speed: 0, input: 0.0, output: 0.0, image: true, video: false, category: "moderation", tag: "Free", note: "Moderation API · chưa có trên pool NagaAI hiện tại", upstream: "nagaai", upstream_id: "openai/omni-moderation" },
 ];
 
 export const MODEL_BY_ID = new Map(MODELS.map((m) => [m.id, m]));

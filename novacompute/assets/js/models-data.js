@@ -34,9 +34,9 @@
     { id: 'glm-5.3', name: 'GLM 5.3', provider: 'Z.ai', color: '#0ea5e9', context: '1M', speed: 85, input: 0.0, output: 0.0, tag: 'Free', category: 'chat', image: false, video: false, note: '' },
     { id: 'qwen/qwen3.7-flash:free', name: 'Qwen 3.7', provider: 'Alibaba', color: '#6366f1', context: '1M', speed: 130, input: 0.0, output: 0.0, tag: 'Free', category: 'chat', image: true, video: true, note: '' },
     { id: 'gemini-4-argon', name: 'Gemini 4 Argon', provider: 'Google', color: '#4285f4', context: '1M', speed: 110, input: 0.4, output: 1.2, tag: null, category: 'chat', image: true, video: true, note: '' },
-    { id: 'ernie-5.5-flash', name: 'ERNIE-5.5-Flash', provider: 'Baidu', color: '#2932e1', context: '1M', speed: 0, input: 0.14, output: 0.565, tag: null, category: 'chat', image: false, video: false, note: 'Upstream: NagaAI' },
-    { id: 'gemini-3.8-flash-lite-tts', name: 'Gemini 3.8 Flash-Lite TTS', provider: 'Google', color: '#4285f4', context: '—', speed: 0, input: 0.0, output: 0.0, tag: 'Sub', category: 'tts', image: false, video: false, note: 'Text-to-speech · free with subscription (up to 100 req/day)' },
-    { id: 'omni-moderation', name: 'Omni Moderation', provider: 'OpenAI', color: '#10a37f', context: '—', speed: 0, input: 0.0, output: 0.0, tag: 'Free', category: 'moderation', image: true, video: false, note: 'Moderation API · free tier' },
+    { id: 'ernie-5.5-flash', name: 'ERNIE-5.5-Flash', provider: 'Baidu', color: '#2932e1', context: '1M', speed: 0, input: 0.14, output: 0.565, tag: null, category: 'chat', image: false, video: false, note: 'Upstream: NagaAI (free tier id)' },
+    { id: 'gemini-3.8-flash-lite-tts', name: 'Gemini 3.8 Flash-Lite TTS', provider: 'Google', color: '#4285f4', context: '—', speed: 0, input: 0.0, output: 0.0046, price_unit: '1k_chars', tag: 'Sub', category: 'tts', image: false, video: false, note: 'per 1k characters · free with subscription (up to 100 req/day)' },
+    { id: 'omni-moderation', name: 'Omni Moderation', provider: 'OpenAI', color: '#10a37f', context: '—', speed: 0, input: 0.0, output: 0.0, tag: 'Free', category: 'moderation', image: true, video: false, note: 'Moderation API · chưa có trên pool NagaAI hiện tại' },
   ];
 
   const FALLBACK_BY_ID = {};
@@ -83,6 +83,7 @@
       image: Boolean(raw.capabilities ? raw.capabilities.image : (raw.image !== undefined ? raw.image : snapshot.image)),
       video: Boolean(raw.capabilities ? raw.capabilities.video : (raw.video !== undefined ? raw.video : snapshot.video)),
       note: raw.note || snapshot.note || '',
+      price_unit: raw.price_unit || snapshot.price_unit || null,
     };
   }
 
@@ -162,8 +163,10 @@
             <span class="whitespace-nowrap font-mono text-xs text-slate-400">${speedText}</span>
           </div>
         </td>
-        <td class="px-4 py-4 text-right">${priceCell(m.input)}</td>
-        <td class="px-4 py-4 text-right">${priceCell(m.output)}</td>
+        <td class="whitespace-nowrap px-4 py-4 text-right">${m.category === 'tts' ? '<span class="text-slate-500">—</span>' : priceCell(m.input)}</td>
+        <td class="whitespace-nowrap px-4 py-4 text-right">${m.price_unit === '1k_chars'
+          ? `<span class="whitespace-nowrap font-mono text-slate-200">$${m.output.toFixed(4)}</span><span class="text-[10px] text-slate-500"> / 1k chars</span>`
+          : priceCell(m.output)}</td>
         <td class="px-6 py-4 text-right">
           ${canTry
             ? `<a href="playground.html?model=${encodeURIComponent(m.id)}"

@@ -521,6 +521,7 @@ export default {
             category: m.category || "chat",
             tag: m.tag ?? null,
             note: m.note || "",
+            price_unit: m.price_unit || null,
           })),
         });
       }
