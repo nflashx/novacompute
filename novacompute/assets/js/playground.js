@@ -1,7 +1,8 @@
 /* ============================================================
    NovaCompute — Playground.
-   Model picker / temperature / max tokens panel + a fully
-   mocked chat: canned replies streamed char-by-char.
+   Model picker / temperature / max tokens + live chat against
+   the Python backend: POST /v1/chat/completions (SSE stream).
+   Every message goes to the real API — no local mock.
    ============================================================ */
 
 (function () {
@@ -19,45 +20,25 @@
   const TEMP_VAL = document.getElementById('pg-temp-val');
   const MAXTOK = document.getElementById('pg-maxtok');
   const MAXTOK_VAL = document.getElementById('pg-maxtok-val');
+  const MODE_BADGE = document.getElementById('pg-mode-badge');
 
   if (!MODEL_SELECT) return;
 
   let busy = false;
-  let replyIndex = 0;
   let history = [];
-
-  /* Live mode: requires a signed-in session (api.js stored it at login).
-     The "Mock test mode" checkbox forces local canned replies so the UI can
-     be exercised without touching the API at all. */
   const session = window.novaSession ? window.novaSession.get() : null;
-  let mockOverride = localStorage.getItem('pg_mock') === '1';
+  const signedIn = !!(session && session.api_key);
 
-  const MODE_BADGE = document.getElementById('pg-mode-badge');
-  const MOCK_TOGGLE = document.getElementById('pg-mock-toggle');
-
-  function updateModeBadge() {
-    if (!MODE_BADGE) return;
-    if (!session || !session.api_key) {
-      MODE_BADGE.className = 'inline-flex w-fit items-center gap-2 rounded-full border border-amber-400/20 bg-amber-400/[0.07] px-3.5 py-1.5 text-xs font-medium text-amber-300';
-      MODE_BADGE.textContent = 'Demo mode — sign in for live API';
-    } else if (mockOverride) {
-      MODE_BADGE.className = 'inline-flex w-fit items-center gap-2 rounded-full border border-violet-400/25 bg-violet-500/10 px-3.5 py-1.5 text-xs font-medium text-violet-300';
-      MODE_BADGE.textContent = 'Mock test mode — no API calls';
-    } else {
+  /* ---------- Mode badge ---------- */
+  if (MODE_BADGE) {
+    if (signedIn) {
       MODE_BADGE.className = 'inline-flex w-fit items-center gap-2 rounded-full border border-emerald-400/25 bg-emerald-400/[0.07] px-3.5 py-1.5 text-xs font-medium text-emerald-300';
       MODE_BADGE.innerHTML = '<span class="relative flex h-2 w-2"><span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60"></span><span class="relative inline-flex h-2 w-2 rounded-full bg-emerald-400"></span></span>Live API — billed to your account';
+    } else {
+      MODE_BADGE.className = 'inline-flex w-fit items-center gap-2 rounded-full border border-amber-400/20 bg-amber-400/[0.07] px-3.5 py-1.5 text-xs font-medium text-amber-300';
+      MODE_BADGE.textContent = 'Sign in required — the playground calls the live API';
     }
   }
-
-  if (MOCK_TOGGLE) {
-    MOCK_TOGGLE.checked = mockOverride;
-    MOCK_TOGGLE.addEventListener('change', () => {
-      mockOverride = MOCK_TOGGLE.checked;
-      localStorage.setItem('pg_mock', mockOverride ? '1' : '0');
-      updateModeBadge();
-    });
-  }
-  updateModeBadge();
 
   /* ---------- Model select ---------- */
   window.NOVA_MODELS.forEach((m) => {
@@ -173,8 +154,7 @@
     return row;
   }
 
-  function addTypingIndicator(model) {
-    const m = model || currentModel();
+  function addTypingIndicator() {
     const row = document.createElement('div');
     row.className = 'msg-enter flex justify-start';
     row.innerHTML = `
@@ -186,88 +166,23 @@
     return row;
   }
 
-  /* ---------- Mock replies ---------- */
-  function pickReply(text) {
-    const m = currentModel();
-    const price = m.input === 0
-      ? 'it is completely free'
-      : `$${m.input.toFixed(2)} per 1M input tokens and $${m.output.toFixed(2)} per 1M output tokens`;
-    const q = text.toLowerCase();
-
-    if (/hello|hi\b|hey/.test(q)) {
-      return `Hello! You are talking to ${m.name} through the NovaCompute playground. This response is generated locally for the demo — in production the same request would hit POST /v1/chat/completions and stream back over SSE.`;
-    }
-    if (/curl|example|code|snippet/.test(q)) {
-      return `Here is a minimal request for ${m.name}:\n\ncurl https://api.novacompute.io/v1/chat/completions \\\n  -H "Authorization: Bearer $NOVA_API_KEY" \\\n  -d '{\n    "model": "${m.id}",\n    "messages": [{"role": "user", "content": "Hello!"}]\n  }'\n\nThe endpoint is OpenAI-compatible, so the official SDKs work unchanged.`;
-    }
-    if (/price|cost|pricing|cheap|expensive/.test(q)) {
-      return `${m.name} costs ${price} (per 1M tokens). NovaCompute is a reseller, so rates stay below the providers' official pricing — and billing is strictly per token, with no seats or minimums.`;
-    }
-    if (/route|routing|fallback|uptime|reliab/.test(q)) {
-      return `Auto-Routing monitors every provider in real time. If ${m.provider} degrades mid-request, traffic reroutes to the next-best healthy model with zero code changes — that is how the 99.9% uptime SLA holds up.`;
-    }
-    if (/free/.test(q)) {
-      return `Qwen 3.7 is currently free on NovaCompute — 1M context, 130 tok/s, $0.00 on both input and output. Perfect for testing before you scale up to a paid model.`;
-    }
-
-    const generic = [
-      `Good question. Through the API this would be answered by ${m.name} at temperature ${TEMP.value} — the demo just streams a canned response so you can feel the UX.\n\nTry asking about pricing, routing, or a cURL example.`,
-      `NovaCompute gives you one OpenAI-compatible endpoint for 12+ frontier models: Claude, GPT, DeepSeek, Kimi, Mistral, Mercury, GLM and Qwen. Switch models in the left panel and ask again.`,
-      `Your message would cost roughly ${Math.max(1, Math.round(text.length / 4))} input tokens on ${m.name} — billed at ${price === 'it is completely free' ? '$0 (free tier)' : price}.`,
-      `This playground mirrors the real API flow: build the messages array, pick parameters, stream the answer. Hook the same payload up to fetch() or the OpenAI SDK and you are live.`,
-    ];
-    return generic[replyIndex++ % generic.length];
-  }
-
-  /* ---------- Send flow ---------- */
+  /* ---------- Send flow (always the live API) ---------- */
   function send() {
     const text = INPUT.value.trim();
     if (!text || busy) return;
-    busy = true;
 
+    if (!signedIn) {
+      window.novaToast('Sign in to use the API — every message goes to the live backend.', false);
+      return;
+    }
+
+    busy = true;
     addMessage('user', text);
     INPUT.value = '';
     INPUT.style.height = 'auto';
-
-    const useLive = !!(session && session.api_key) && !mockOverride;
-    if (useLive) {
-      sendLive(text);
-      return;
-    }
-    sendMock(text);
+    sendLive(text);
   }
 
-  /* Local mock: canned replies streamed char-by-char (no backend needed). */
-  function sendMock(text) {
-    const indicator = addTypingIndicator();
-    const started = performance.now();
-
-    setTimeout(() => {
-      indicator.remove();
-      const reply = pickReply(text);
-      const m = currentModel();
-      const row = addMessage('bot', '', m);
-      const body = row.querySelector('.msg-body');
-      const meta = row.querySelector('.msg-meta');
-
-      let i = 0;
-      const timer = setInterval(() => {
-        body.textContent += reply[i] || '';
-        i += 1;
-        scrollBottom();
-        if (i >= reply.length) {
-          clearInterval(timer);
-          const seconds = ((performance.now() - started) / 1000).toFixed(1);
-          meta.textContent = `${m.id} · ~${Math.max(1, Math.round(reply.length / 4))} tokens · ${seconds}s · temp ${parseFloat(TEMP.value).toFixed(1)} · max ${MAXTOK.value} tok`;
-          meta.classList.remove('hidden');
-          busy = false;
-          scrollBottom();
-        }
-      }, 13);
-    }, 650 + Math.random() * 550);
-  }
-
-  /* Live mode: real POST /v1/chat/completions against the Python backend. */
   async function sendLive(text) {
     const m = currentModel();
     const systemPrompt = document.getElementById('pg-system').value.trim();
@@ -298,7 +213,7 @@
       });
     } catch (err) {
       indicator.remove();
-      addMessage('bot', '⚠ Cannot reach the backend. Start it with start.bat (python app.py on port 8080).', m);
+      addMessage('bot', '⚠ Cannot reach the backend. Start it with start.bat (python backend\\app.py on port 8080).', m);
       history.pop();
       busy = false;
       return;

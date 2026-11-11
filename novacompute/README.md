@@ -6,6 +6,7 @@ backend is pure Python standard library (`http.server` + `urllib`, no frameworks
 
 ```
 .
+├── start.bat                 # launches both servers (start /b)
 ├── backend/                  # API gateway (:8080)
 │   ├── app.py                # auth, billing, /v1/chat/completions proxy, /api/*
 │   ├── seed_demo.py          # demo account + 14 days of synthetic usage
@@ -15,14 +16,13 @@ backend is pure Python standard library (`http.server` + `urllib`, no frameworks
 └── novacompute/              # static frontend (:8123)
     ├── index.html / pricing.html / docs.html / playground.html
     ├── dashboard.html / login.html / register.html
-    ├── start.bat             # launches both servers
     └── assets/…
 ```
 
 ## Run
 
 ```bat
-novacompute\start.bat
+start.bat
 ```
 
 Or manually:
@@ -30,7 +30,7 @@ Or manually:
 ```bash
 python backend/seed_demo.py          # once — creates demo@novacompute.io / demo1234
 python backend/app.py                # backend  http://127.0.0.1:8080
-python -m http.server 8123 --bind 127.0.0.1   # frontend (inside novacompute/)
+python -m http.server 8123 --directory novacompute   # frontend
 ```
 
 Demo login: **demo@novacompute.io / demo1234**
@@ -101,10 +101,11 @@ Postman: create a POST request to `http://127.0.0.1:8080/v1/chat/completions`, h
 - `auth.js` — real register/login, stores the returned `nova-sk-…` key
 - `dashboard.js` — everything renders from `GET /api/me`; Create/Delete key and
   top-ups call the server
-- `playground.js` — signed-in users stream from `/v1/chat/completions`; signed-out
-  visitors keep the local mock
+- `playground.js` — every message streams from `/v1/chat/completions`; the page
+  requires a signed-in session (no local mock). Append `?api=http://host:port`
+  to point the page at another backend instance while testing.
 
-Asset URLs carry a `?v=4` cache-buster — bump it when changing JS/CSS.
+Asset URLs carry a `?v=6` cache-buster — bump it when changing JS/CSS.
 
 ## Notes / limitations
 

@@ -11,6 +11,10 @@
   const meta = document.querySelector('meta[name="nova-api"]');
   window.NOVA_API_BASE = (meta && meta.content ? meta.content : 'http://127.0.0.1:8080').replace(/\/+$/, '');
 
+  /* Optional override for local testing: ?api=http://127.0.0.1:PORT */
+  const apiOverride = new URLSearchParams(window.location.search).get('api');
+  if (apiOverride) window.NOVA_API_BASE = apiOverride.replace(/\/+$/, '');
+
   window.novaSession = {
     get() {
       try {

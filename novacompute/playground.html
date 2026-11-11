@@ -10,8 +10,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="assets/js/tailwind-config.js?v=5"></script>
-  <link rel="stylesheet" href="assets/css/main.css?v=5" />
+  <script src="assets/js/tailwind-config.js?v=6"></script>
+  <link rel="stylesheet" href="assets/css/main.css?v=6" />
 </head>
 
 <body class="bg-night font-sans text-slate-200 antialiased overflow-x-hidden">
@@ -25,7 +25,7 @@
     <div class="reveal relative flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
       <div>
         <h1 class="font-display text-3xl font-bold tracking-tight text-white">Playground</h1>
-        <p class="mt-2 text-sm text-slate-400">Test models with the exact same parameters the API accepts — sign in to hit the live API, otherwise responses are mocked.</p>
+        <p class="mt-2 text-sm text-slate-400">Test models with the exact same parameters the API accepts — every message is sent to the live backend.</p>
       </div>
       <span id="pg-mode-badge" class="inline-flex w-fit items-center gap-2 rounded-full border border-amber-400/20 bg-amber-400/[0.07] px-3.5 py-1.5 text-xs font-medium text-amber-300">
         <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 9v4m0 4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"></path></svg>
@@ -90,15 +90,6 @@
                     class="w-full resize-none rounded-lg border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white placeholder-slate-500 outline-none transition focus:border-violet-400/50 focus:ring-2 focus:ring-violet-500/20"></textarea>
         </div>
 
-        <!-- Temporary test switch -->
-        <label class="mt-6 flex cursor-pointer items-start gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
-          <input id="pg-mock-toggle" type="checkbox" class="mt-0.5 h-4 w-4 shrink-0 rounded border-white/20 bg-white/5 accent-violet-500" />
-          <span class="text-xs leading-relaxed text-slate-400">
-            <span class="font-medium text-slate-200">Mock test mode</span><br/>
-            Don't call the API — the bot uses canned replies. Useful for UI testing before an upstream key is configured. Untick to chat live.
-          </span>
-        </label>
-
         <button type="button" id="pg-clear" class="btn-ghost mt-6 w-full rounded-lg px-4 py-2.5 text-sm font-medium text-slate-200">
           Clear conversation
         </button>
@@ -123,7 +114,7 @@
             <svg viewBox="0 0 24 24" class="h-7 w-7" aria-hidden="true"><defs><linearGradient id="nova-g-pg" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse"><stop stop-color="#a78bfa"></stop><stop offset="1" stop-color="#22d3ee"></stop></linearGradient></defs><path d="M12 1.5l2.6 7.9 7.9 2.6-7.9 2.6L12 22.5l-2.6-7.9-7.9-2.6 7.9-2.6L12 1.5z" fill="url(#nova-g-pg)"></path></svg>
           </div>
           <p class="mt-4 text-sm font-medium text-slate-300">Send a message to test the model</p>
-          <p class="mt-1 text-xs text-slate-500">Responses are generated locally — nothing leaves your browser.</p>
+          <p class="mt-1 text-xs text-slate-500">Responses stream from the NovaCompute API.</p>
         </div>
 
         <!-- Composer -->
@@ -136,7 +127,7 @@
               <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4z"></path><path d="M22 2 11 13"></path></svg>
             </button>
           </div>
-          <p class="mt-2 text-right font-mono text-[10px] text-slate-600">POST /v1/chat/completions · mocked</p>
+          <p class="mt-2 text-right font-mono text-[10px] text-slate-600">POST /v1/chat/completions · live</p>
         </div>
       </section>
     </div>
@@ -144,10 +135,10 @@
 
   <div id="site-footer"></div>
 
-  <script src="assets/js/layout.js?v=5" defer></script>
-  <script src="assets/js/effects.js?v=5" defer></script>
-  <script src="assets/js/models-data.js?v=5" defer></script>
-  <script src="assets/js/api.js?v=5" defer></script>
-  <script src="assets/js/playground.js?v=5" defer></script>
+  <script src="assets/js/layout.js?v=6" defer></script>
+  <script src="assets/js/effects.js?v=6" defer></script>
+  <script src="assets/js/models-data.js?v=6" defer></script>
+  <script src="assets/js/api.js?v=6" defer></script>
+  <script src="assets/js/playground.js?v=6" defer></script>
 </body>
 </html>

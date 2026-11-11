@@ -9,6 +9,13 @@
   --c-bg: #05070e;
   --c-surface: rgba(13, 18, 32, 0.6);
   --c-line: rgba(255, 255, 255, 0.08);
+  /* Native controls (incl. <select> dropdown popups) render dark */
+  color-scheme: dark;
+}
+
+select option {
+  background-color: #0b1120;
+  color: #e2e8f0;
 }
 
 html { scroll-behavior: smooth; }
