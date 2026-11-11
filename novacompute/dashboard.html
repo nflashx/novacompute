@@ -205,11 +205,11 @@
           <div class="reveal glass rounded-2xl p-6">
             <div class="flex items-center justify-between">
               <div>
-                <h2 class="text-sm font-semibold text-white">Requests per day</h2>
-                <p class="mt-1 text-xs text-slate-500">Last 14 days · all models</p>
+                <h2 class="text-sm font-semibold text-white">Tokens per day</h2>
+                <p class="mt-1 text-xs text-slate-500">Last 14 days · total input + output tokens</p>
               </div>
             </div>
-            <div class="mt-5 h-[280px]"><canvas id="chart-requests"></canvas></div>
+            <div class="mt-5 h-[280px]"><canvas id="chart-tokens"></canvas></div>
           </div>
 
           <div class="reveal glass overflow-hidden rounded-2xl">
@@ -269,6 +269,17 @@
                 </div>
               </div>
               <p class="mt-4 text-[11px] text-slate-600">No card number is stored on NovaCompute.</p>
+            </div>
+          </div>
+
+          <div class="reveal glass rounded-2xl p-6">
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p class="text-xs uppercase tracking-wider text-slate-500">Subscription</p>
+                <p id="billing-plan" class="mt-2 font-display text-xl font-bold text-white">Pay-as-you-go</p>
+                <p id="billing-plan-note" class="mt-1 text-xs leading-relaxed text-slate-500">No monthly token quota — paid models are billed from your balance.</p>
+              </div>
+              <a href="pricing.html#subscriptions" class="btn-primary inline-flex shrink-0 items-center justify-center rounded-lg px-4 py-2.5 text-sm font-semibold text-white">View Sub plans</a>
             </div>
           </div>
 
@@ -409,6 +420,6 @@
   <script src="assets/js/config.js?v=1" defer></script>
   <script src="assets/js/api.js?v=27" defer></script>
   <script src="assets/js/payment-config.js?v=27" defer></script>
-  <script src="assets/js/dashboard.js?v=29" defer></script>
+  <script src="assets/js/dashboard.js?v=32" defer></script>
 </body>
 </html>

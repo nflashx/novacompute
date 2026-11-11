@@ -19,7 +19,7 @@
   if (!panels.length) return;
 
   let state = { me: null };
-  const charts = { usage: null, requests: null };
+  const charts = { usage: null, tokens: null };
 
   /* ================= helpers ================= */
   const money = (v) => `$${Number(v || 0).toFixed(2)}`;
@@ -62,7 +62,7 @@
       if (active) {
         p.querySelectorAll('.reveal').forEach((el) => el.classList.add('is-visible'));
         if (name === 'overview') ensureChart('usage');
-        if (name === 'usage') ensureChart('requests');
+        if (name === 'usage') ensureChart('tokens');
       }
     });
     navButtons.forEach((b) => b.classList.toggle('is-active', b.dataset.nav === name));
@@ -145,14 +145,14 @@
       });
     }
 
-    if (which === 'requests') {
-      const ctx = document.getElementById('chart-requests').getContext('2d');
-      charts.requests = new Chart(ctx, {
+    if (which === 'tokens') {
+      const ctx = document.getElementById('chart-tokens').getContext('2d');
+      charts.tokens = new Chart(ctx, {
         type: 'bar',
         data: {
           labels,
           datasets: [{
-            data: daily.map((d) => d.requests),
+            data: daily.map((d) => d.tokens),
             backgroundColor: '#22d3ee',
             hoverBackgroundColor: '#67e8f9',
             borderRadius: 4,
@@ -166,7 +166,7 @@
             legend: { display: false },
             tooltip: {
               ...DARK_TOOLTIP,
-              callbacks: { label: (item) => ` ${item.parsed.y} requests` },
+              callbacks: { label: (item) => ` ${Number(item.parsed.y).toLocaleString()} tokens` },
             },
           },
           scales: {
@@ -175,7 +175,7 @@
               beginAtZero: true,
               grid: { color: 'rgba(148,163,184,0.08)' },
               border: { display: false },
-              ticks: { maxTicksLimit: 6, precision: 0 },
+              ticks: { maxTicksLimit: 6, precision: 0, callback: (v) => tokensShort(v) },
             },
           },
         },
@@ -241,6 +241,21 @@
       barEl.className = 'h-full rounded-full bg-gradient-to-r from-violet-500 to-cyan-400';
       if (trackEl) trackEl.style.display = 'none';
       noteEl.textContent = 'Usage is billed from your balance at the model rates. Subscribe for a daily paid-token quota.';
+    }
+  }
+
+  function renderBillingPlan() {
+    const me = state.me;
+    const planEl = document.getElementById('billing-plan');
+    const noteEl = document.getElementById('billing-plan-note');
+    if (!planEl || !noteEl) return;
+    if (me.daily_quota > 0) {
+      planEl.textContent = `${me.plan_name} — ${tokensShort(me.daily_quota)} paid tokens/day`;
+      const until = me.plan_expires ? new Date(me.plan_expires).toLocaleDateString() : '—';
+      noteEl.textContent = `≈ ${tokensShort(me.daily_quota * 30)} tokens/month · active until ${until} · ${me.daily_tts || 0} TTS requests/day · activated automatically after payment.`;
+    } else {
+      planEl.textContent = 'Pay-as-you-go';
+      noteEl.textContent = 'No monthly token quota — paid models are billed from your balance. Subscribe for a daily quota.';
     }
   }
 
@@ -312,13 +327,15 @@
     }
     tbody.innerHTML = rows.map((t) => {
       const amount = Number(t.amount);
-      const positive = amount > 0;
+      const isTopup = t.type === 'topup';
+      const isSub = t.type === 'subscription';
+      const cls = isTopup ? 'text-emerald-400' : isSub ? 'text-violet-300' : amount === 0 ? 'text-slate-500' : 'text-slate-200';
       return `<tr>
         <td class="px-6 py-3.5 text-slate-400">${dateShort(t.ts)}</td>
         <td class="px-4 py-3.5">${t.description}</td>
         <td class="px-4 py-3.5 text-slate-400">${t.method}</td>
-        <td class="px-6 py-3.5 text-right font-mono ${positive ? 'text-emerald-400' : amount === 0 ? 'text-slate-500' : 'text-slate-200'}">
-          ${positive ? '+' : ''}${money(amount)}
+        <td class="px-6 py-3.5 text-right font-mono ${cls}">
+          ${isTopup ? '+' : ''}${money(amount)}
         </td>
       </tr>`;
     }).join('');
@@ -595,12 +612,13 @@
     renderHeader();
     renderStats();
     renderQuota();
+    renderBillingPlan();
     renderRecent();
     renderUsageByModel();
     renderTransactions();
     renderKeys();
     if (charts.usage) { charts.usage.data.labels = state.me.daily.map((d) => d.date); charts.usage.data.datasets[0].data = state.me.daily.map((d) => +(d.tokens / 1000).toFixed(2)); charts.usage.update(); }
-    if (charts.requests) { charts.requests.data.labels = state.me.daily.map((d) => d.date); charts.requests.data.datasets[0].data = state.me.daily.map((d) => d.requests); charts.requests.update(); }
+    if (charts.tokens) { charts.tokens.data.labels = state.me.daily.map((d) => d.date); charts.tokens.data.datasets[0].data = state.me.daily.map((d) => d.tokens); charts.tokens.update(); }
   }
 
   /* Initial state — after full load so Chart.js picks up the final layout */
