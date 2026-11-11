@@ -47,12 +47,14 @@
             <ul class="mt-3 space-y-1.5">
               <li><a href="#chat-completions" class="docs-link block rounded-md px-3 py-1.5 text-slate-400 transition-colors hover:text-white">Chat Completions</a></li>
               <li><a href="#streaming" class="docs-link block rounded-md px-3 py-1.5 text-slate-400 transition-colors hover:text-white">Streaming</a></li>
+              <li><a href="#text-to-speech" class="docs-link block rounded-md px-3 py-1.5 text-slate-400 transition-colors hover:text-white">Text-to-Speech</a></li>
               <li><a href="#models-list" class="docs-link block rounded-md px-3 py-1.5 text-slate-400 transition-colors hover:text-white">Models</a></li>
             </ul>
           </div>
           <div>
             <p class="text-[11px] font-semibold uppercase tracking-widest text-slate-500">Resources</p>
             <ul class="mt-3 space-y-1.5">
+              <li><a href="#billing" class="docs-link block rounded-md px-3 py-1.5 text-slate-400 transition-colors hover:text-white">Billing</a></li>
               <li><a href="#errors" class="docs-link block rounded-md px-3 py-1.5 text-slate-400 transition-colors hover:text-white">Errors</a></li>
               <li><a href="#rate-limits" class="docs-link block rounded-md px-3 py-1.5 text-slate-400 transition-colors hover:text-white">Rate Limits</a></li>
             </ul>
@@ -67,9 +69,10 @@
         <section id="introduction" data-docs-section class="scroll-mt-24">
           <h2 class="font-display text-2xl font-bold text-white">Introduction</h2>
           <p class="mt-3 leading-relaxed text-slate-400">
-            The NovaCompute API gives you a single endpoint for 12+ frontier models — Claude, GPT,
-            DeepSeek, Kimi, Mistral, Mercury, GLM and Qwen. Requests are auto-routed to the fastest
-            healthy provider, and billing is per token.
+            One OpenAI-compatible endpoint for 18 models — Claude, GPT, Grok, DeepSeek, Kimi,
+            Mistral, Mercury, GLM, Qwen, Gemini and ERNIE — plus two Gemini TTS voices. Chat
+            requests are auto-routed to a healthy provider; TTS returns audio bytes. Billing is
+            per token for chat and per 1,000 characters for speech.
           </p>
           <div class="mt-5 rounded-xl border border-violet-400/20 bg-violet-500/[0.08] p-4 text-sm leading-relaxed text-violet-200/90">
             <strong class="font-semibold">Base URL:</strong>
@@ -83,7 +86,7 @@
           <ol class="mt-4 list-decimal space-y-1.5 pl-5 text-slate-400">
             <li>Create an API key in the <a href="dashboard.html" class="text-violet-300 transition-colors hover:text-violet-200">Dashboard → API Keys</a>.</li>
             <li>Export it as an environment variable: <code class="rounded bg-white/[0.06] px-1.5 py-0.5 font-mono text-xs text-cyan-300">NOVA_API_KEY</code></li>
-            <li>Make your first request with cURL or Python below.</li>
+            <li>Make your first request with cURL, Python or Node below — any OpenAI SDK works.</li>
           </ol>
 
           <div class="relative mt-6">
@@ -113,6 +116,23 @@ response = client.chat.completions.<span class="tok-fn">create</span>(
 )
 
 <span class="tok-fn">print</span>(response.choices[<span class="tok-cmd">0</span>].message.content)</code></pre>
+          </div>
+
+          <div class="relative mt-5">
+            <button type="button" data-copy="docs-node" class="btn-ghost absolute right-3 top-3 z-10 rounded-md px-2.5 py-1 text-xs font-medium text-slate-300">Copy</button>
+            <pre class="scroll-thin overflow-x-auto rounded-xl border border-white/[0.06] bg-[#0b1120] p-5 font-mono text-[13px] leading-6 text-slate-300"><code id="docs-node"><span class="tok-kw">import</span> OpenAI <span class="tok-kw">from</span> <span class="tok-str">"openai"</span>;
+
+<span class="tok-kw">const</span> client = <span class="tok-kw">new</span> <span class="tok-fn">OpenAI</span>({
+  <span class="tok-key">baseURL</span>: <span class="tok-str">"https://api.novacompute.io/v1"</span>,
+  <span class="tok-key">apiKey</span>: process.env.<span class="tok-key">NOVA_API_KEY</span>,
+});
+
+<span class="tok-kw">const</span> response = <span class="tok-kw">await</span> client.chat.completions.<span class="tok-fn">create</span>({
+  <span class="tok-key">model</span>: <span class="tok-str">"gpt-6-luna"</span>,
+  <span class="tok-key">messages</span>: [{ <span class="tok-key">role</span>: <span class="tok-str">"user"</span>, <span class="tok-key">content</span>: <span class="tok-str">"Hello, Nova!"</span> }],
+});
+
+console.<span class="tok-fn">log</span>(response.choices[<span class="tok-cmd">0</span>].message.content);</code></pre>
           </div>
         </section>
 
@@ -158,12 +178,63 @@ response = client.chat.completions.<span class="tok-fn">create</span>(
               <tbody class="divide-y divide-white/[0.04]">
                 <tr><td class="px-5 py-3 font-mono text-xs text-violet-300">model</td><td class="px-4 py-3 text-slate-400">string</td><td class="px-4 py-3"><span class="text-emerald-400">Yes</span></td><td class="px-5 py-3 text-slate-400">Model ID, e.g. <code class="font-mono text-xs text-slate-300">glm-5.3-flash</code>. See the <a href="#models-list" class="text-violet-300 hover:text-violet-200">Models</a> list.</td></tr>
                 <tr><td class="px-5 py-3 font-mono text-xs text-violet-300">messages</td><td class="px-4 py-3 text-slate-400">array</td><td class="px-4 py-3"><span class="text-emerald-400">Yes</span></td><td class="px-5 py-3 text-slate-400">Conversation so far — objects with <code class="font-mono text-xs text-slate-300">role</code> (<span class="font-mono text-xs">system</span> / <span class="font-mono text-xs">user</span> / <span class="font-mono text-xs">assistant</span>) and <code class="font-mono text-xs text-slate-300">content</code>.</td></tr>
+                <tr><td class="px-5 py-3 font-mono text-xs text-violet-300">content parts</td><td class="px-4 py-3 text-slate-400">array</td><td class="px-4 py-3 text-slate-500">No</td><td class="px-5 py-3 text-slate-400">For images, set <code class="font-mono text-xs text-slate-300">content</code> to an array of <code class="font-mono text-xs text-slate-300">{"type":"text"}</code> and <code class="font-mono text-xs text-slate-300">{"type":"image_url"}</code> parts. Models with the <span class="rounded bg-cyan-500/10 px-1.5 py-0.5 font-mono text-[10px] text-cyan-300">IMG</span> badge accept images.</td></tr>
                 <tr><td class="px-5 py-3 font-mono text-xs text-violet-300">temperature</td><td class="px-4 py-3 text-slate-400">number</td><td class="px-4 py-3 text-slate-500">No</td><td class="px-5 py-3 text-slate-400">Sampling temperature 0–2. Higher is more creative. Default <span class="font-mono text-xs">1</span>.</td></tr>
                 <tr><td class="px-5 py-3 font-mono text-xs text-violet-300">max_tokens</td><td class="px-4 py-3 text-slate-400">integer</td><td class="px-4 py-3 text-slate-500">No</td><td class="px-5 py-3 text-slate-400">Upper bound on generated tokens for this completion.</td></tr>
                 <tr><td class="px-5 py-3 font-mono text-xs text-violet-300">stream</td><td class="px-4 py-3 text-slate-400">boolean</td><td class="px-4 py-3 text-slate-500">No</td><td class="px-5 py-3 text-slate-400">If <span class="font-mono text-xs">true</span>, tokens are sent as server-sent events. Default <span class="font-mono text-xs">false</span>. See <a href="#streaming" class="text-violet-300 hover:text-violet-200">Streaming</a>.</td></tr>
               </tbody>
             </table>
           </div>
+
+          <h3 class="mt-8 text-sm font-semibold uppercase tracking-wider text-slate-400">Pick a model</h3>
+          <p class="mt-2 text-sm text-slate-400">Every chat model uses the same endpoint — only the <code class="rounded bg-white/[0.06] px-1.5 py-0.5 font-mono text-xs text-violet-300">model</code> ID changes.</p>
+          <div class="mt-3 overflow-x-auto rounded-xl border border-white/[0.06]">
+            <table class="w-full min-w-[560px] text-left text-sm">
+              <thead>
+                <tr class="border-b border-white/[0.06] bg-white/[0.02] text-[11px] uppercase tracking-wider text-slate-500">
+                  <th class="px-5 py-3 font-medium">Use case</th>
+                  <th class="px-4 py-3 font-medium">Model ID</th>
+                  <th class="px-5 py-3 font-medium">Notes</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-white/[0.04] text-slate-400">
+                <tr><td class="px-5 py-3">Best coding / reasoning</td><td class="px-4 py-3 font-mono text-xs text-slate-200">claude-opus-5.5</td><td class="px-5 py-3">1M context · image input</td></tr>
+                <tr><td class="px-5 py-3">Fast general chat</td><td class="px-4 py-3 font-mono text-xs text-slate-200">gpt-6-luna</td><td class="px-5 py-3">900K context · image input</td></tr>
+                <tr><td class="px-5 py-3">Cheapest paid</td><td class="px-4 py-3 font-mono text-xs text-slate-200">deepseek-v4.1-flash-1017</td><td class="px-5 py-3">$0.005 in / $0.24 out per 1M</td></tr>
+                <tr><td class="px-5 py-3">Long multimodal</td><td class="px-4 py-3 font-mono text-xs text-slate-200">gemini-4-argon</td><td class="px-5 py-3">1M context · image + video</td></tr>
+                <tr><td class="px-5 py-3">Image + video in</td><td class="px-4 py-3 font-mono text-xs text-slate-200">kimi-k3.1-pro</td><td class="px-5 py-3">1M context · IMG + VID</td></tr>
+                <tr><td class="px-5 py-3">Free tier</td><td class="px-4 py-3 font-mono text-xs text-slate-200">qwen/qwen3.7-flash:free</td><td class="px-5 py-3">$0.00 · 1M context · IMG + VID</td></tr>
+                <tr><td class="px-5 py-3">Speech</td><td class="px-4 py-3 font-mono text-xs text-slate-200">gemini-3.8-flash-tts</td><td class="px-5 py-3">Use <a href="#text-to-speech" class="text-violet-300 hover:text-violet-200">/v1/audio/speech</a></td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3 class="mt-8 text-sm font-semibold uppercase tracking-wider text-slate-400">Image input</h3>
+          <p class="mt-2 text-sm text-slate-400">
+            Send an image URL (HTTPS or <code class="font-mono text-xs">data:</code>) as an <code class="font-mono text-xs">image_url</code> part.
+            The model must be marked <span class="rounded bg-cyan-500/10 px-1.5 py-0.5 font-mono text-[10px] text-cyan-300">IMG</span> in the
+            <a href="#models-list" class="text-violet-300 hover:text-violet-200">model table</a>.
+          </p>
+          <div class="relative mt-3">
+            <button type="button" data-copy="docs-image" class="btn-ghost absolute right-3 top-3 z-10 rounded-md px-2.5 py-1 text-xs font-medium text-slate-300">Copy</button>
+            <pre class="scroll-thin overflow-x-auto rounded-xl border border-white/[0.06] bg-[#0b1120] p-5 font-mono text-[13px] leading-6 text-slate-300"><code id="docs-image"><span class="tok-cmd">curl</span> <span class="tok-url">https://api.novacompute.io/v1/chat/completions</span> \
+  <span class="tok-flag">-H</span> <span class="tok-str">"Authorization: Bearer $NOVA_API_KEY"</span> \
+  <span class="tok-flag">-H</span> <span class="tok-str">"Content-Type: application/json"</span> \
+  <span class="tok-flag">-d</span> <span class="tok-str">'{
+  <span class="tok-key">"model"</span>: <span class="tok-str">"gemini-4-argon"</span>,
+  <span class="tok-key">"messages"</span>: [{
+    <span class="tok-key">"role"</span>: <span class="tok-str">"user"</span>,
+    <span class="tok-key">"content"</span>: [
+      { <span class="tok-key">"type"</span>: <span class="tok-str">"text"</span>, <span class="tok-key">"text"</span>: <span class="tok-str">"Describe this image in one sentence."</span> },
+      { <span class="tok-key">"type"</span>: <span class="tok-str">"image_url"</span>, <span class="tok-key">"image_url"</span>: { <span class="tok-key">"url"</span>: <span class="tok-str">"https://example.com/photo.jpg"</span> } }
+    ]
+  }]
+}'</span></code></pre>
+          </div>
+          <p class="mt-2 text-xs leading-relaxed text-slate-500">
+            Video input is only available on models marked <span class="rounded bg-fuchsia-500/10 px-1.5 py-0.5 font-mono text-[10px] text-fuchsia-300">VID</span>.
+            The accepted video part is provider-specific — contact support for the exact schema before sending video.
+          </p>
 
           <h3 class="mt-8 text-sm font-semibold uppercase tracking-wider text-slate-400">Response</h3>
           <div class="relative mt-3">
@@ -205,13 +276,224 @@ response = client.chat.completions.<span class="tok-fn">create</span>(
 
 <span class="tok-dim">data:</span> <span class="tok-cmd">[DONE]</span></code></pre>
           </div>
+
+          <div class="relative mt-5">
+            <button type="button" data-copy="docs-stream-python" class="btn-ghost absolute right-3 top-3 z-10 rounded-md px-2.5 py-1 text-xs font-medium text-slate-300">Copy Python</button>
+            <pre class="scroll-thin overflow-x-auto rounded-xl border border-white/[0.06] bg-[#0b1120] p-5 font-mono text-[13px] leading-6 text-slate-300"><code id="docs-stream-python">stream = client.chat.completions.<span class="tok-fn">create</span>(
+    <span class="tok-key">model</span>=<span class="tok-str">"gpt-6-luna"</span>,
+    <span class="tok-key">messages</span>=[{<span class="tok-str">"role"</span>: <span class="tok-str">"user"</span>, <span class="tok-str">"content"</span>: <span class="tok-str">"Write a haiku about GPUs."</span>}],
+    <span class="tok-key">stream</span>=<span class="tok-cmd">True</span>,
+)
+
+<span class="tok-kw">for</span> chunk <span class="tok-kw">in</span> stream:
+    <span class="tok-fn">print</span>(chunk.choices[<span class="tok-cmd">0</span>].delta.content <span class="tok-kw">or</span> <span class="tok-str">""</span>, end=<span class="tok-str">""</span>)</code></pre>
+          </div>
+
+          <div class="relative mt-5">
+            <button type="button" data-copy="docs-stream-node" class="btn-ghost absolute right-3 top-3 z-10 rounded-md px-2.5 py-1 text-xs font-medium text-slate-300">Copy Node</button>
+            <pre class="scroll-thin overflow-x-auto rounded-xl border border-white/[0.06] bg-[#0b1120] p-5 font-mono text-[13px] leading-6 text-slate-300"><code id="docs-stream-node"><span class="tok-kw">const</span> stream = <span class="tok-kw">await</span> client.chat.completions.<span class="tok-fn">create</span>({
+  <span class="tok-key">model</span>: <span class="tok-str">"gpt-6-luna"</span>,
+  <span class="tok-key">messages</span>: [{ <span class="tok-key">role</span>: <span class="tok-str">"user"</span>, <span class="tok-key">content</span>: <span class="tok-str">"Write a haiku about GPUs."</span> }],
+  <span class="tok-key">stream</span>: <span class="tok-cmd">true</span>,
+});
+
+<span class="tok-kw">for await</span> (<span class="tok-kw">const</span> chunk <span class="tok-kw">of</span> stream) {
+  process.stdout.<span class="tok-fn">write</span>(chunk.choices[<span class="tok-cmd">0</span>]?.delta?.content || <span class="tok-str">""</span>);
+}</code></pre>
+          </div>
+        </section>
+
+        <!-- Text to speech -->
+        <section id="text-to-speech" data-docs-section class="scroll-mt-24">
+          <h2 class="font-display text-2xl font-bold text-white">Text-to-Speech</h2>
+          <p class="mt-3 leading-relaxed text-slate-400">
+            Two Gemini TTS models turn text into audio. The endpoint follows the OpenAI
+            <code class="rounded bg-white/[0.06] px-1.5 py-0.5 font-mono text-xs text-violet-300">/audio/speech</code> shape and returns raw audio bytes.
+            Billing is per 1,000 input characters.
+          </p>
+
+          <div class="mt-4 flex items-center gap-3 rounded-xl border border-white/[0.08] bg-[#0b1120] px-5 py-4">
+            <span class="rounded-md bg-violet-500/20 px-2.5 py-1 font-mono text-xs font-semibold text-violet-300">POST</span>
+            <code class="min-w-0 flex-1 truncate font-mono text-sm text-slate-200">https://api.novacompute.io/v1/audio/speech</code>
+            <button type="button" data-copy-text="https://api.novacompute.io/v1/audio/speech" class="btn-ghost shrink-0 rounded-md px-2.5 py-1 text-xs font-medium text-slate-300">Copy</button>
+          </div>
+
+          <h3 class="mt-6 text-sm font-semibold uppercase tracking-wider text-slate-400">Request body</h3>
+          <div class="mt-3 overflow-x-auto rounded-xl border border-white/[0.06]">
+            <table class="w-full min-w-[560px] text-left text-sm">
+              <thead>
+                <tr class="border-b border-white/[0.06] bg-white/[0.02] text-[11px] uppercase tracking-wider text-slate-500">
+                  <th class="px-5 py-3 font-medium">Parameter</th>
+                  <th class="px-4 py-3 font-medium">Type</th>
+                  <th class="px-4 py-3 font-medium">Required</th>
+                  <th class="px-5 py-3 font-medium">Description</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-white/[0.04]">
+                <tr><td class="px-5 py-3 font-mono text-xs text-violet-300">model</td><td class="px-4 py-3 text-slate-400">string</td><td class="px-4 py-3"><span class="text-emerald-400">Yes</span></td><td class="px-5 py-3 text-slate-400"><code class="font-mono text-xs text-slate-300">gemini-3.8-flash-lite-tts</code> or <code class="font-mono text-xs text-slate-300">gemini-3.8-flash-tts</code>.</td></tr>
+                <tr><td class="px-5 py-3 font-mono text-xs text-violet-300">input</td><td class="px-4 py-3 text-slate-400">string</td><td class="px-4 py-3"><span class="text-emerald-400">Yes</span></td><td class="px-5 py-3 text-slate-400">The text to synthesize. Keep each request under a few thousand characters for best latency.</td></tr>
+                <tr><td class="px-5 py-3 font-mono text-xs text-violet-300">voice</td><td class="px-4 py-3 text-slate-400">string</td><td class="px-4 py-3 text-slate-500">No</td><td class="px-5 py-3 text-slate-400">Voice name. Defaults to <code class="font-mono text-xs text-slate-300">Kore</code>.</td></tr>
+                <tr><td class="px-5 py-3 font-mono text-xs text-violet-300">extra fields</td><td class="px-4 py-3 text-slate-400">any</td><td class="px-4 py-3 text-slate-500">No</td><td class="px-5 py-3 text-slate-400">Additional audio options are forwarded to the upstream provider; supported values depend on the model.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3 class="mt-8 text-sm font-semibold uppercase tracking-wider text-slate-400">Pricing</h3>
+          <div class="mt-3 overflow-x-auto rounded-xl border border-white/[0.06]">
+            <table class="w-full min-w-[480px] text-left text-sm">
+              <thead>
+                <tr class="border-b border-white/[0.06] bg-white/[0.02] text-[11px] uppercase tracking-wider text-slate-500">
+                  <th class="px-5 py-3 font-medium">Model</th>
+                  <th class="px-4 py-3 font-medium">Price</th>
+                  <th class="px-5 py-3 font-medium">Best for</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-white/[0.04] text-slate-400">
+                <tr><td class="px-5 py-3 font-mono text-xs text-slate-200">gemini-3.8-flash-lite-tts</td><td class="px-4 py-3 font-mono text-xs">$0.0055 / 1k chars</td><td class="px-5 py-3">High-volume narration, short prompts</td></tr>
+                <tr><td class="px-5 py-3 font-mono text-xs text-slate-200">gemini-3.8-flash-tts</td><td class="px-4 py-3 font-mono text-xs">$0.0080 / 1k chars</td><td class="px-5 py-3">More natural delivery, longer scripts</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="mt-2 text-xs text-slate-500">1,000 characters costs $0.0055 (Lite) or $0.0080 (Full). Failed requests are not billed.</p>
+
+          <h3 class="mt-8 text-sm font-semibold uppercase tracking-wider text-slate-400">cURL</h3>
+          <div class="relative mt-3">
+            <button type="button" data-copy="docs-tts-curl" class="btn-ghost absolute right-3 top-3 z-10 rounded-md px-2.5 py-1 text-xs font-medium text-slate-300">Copy</button>
+            <pre class="scroll-thin overflow-x-auto rounded-xl border border-white/[0.06] bg-[#0b1120] p-5 font-mono text-[13px] leading-6 text-slate-300"><code id="docs-tts-curl"><span class="tok-cmd">curl</span> <span class="tok-url">https://api.novacompute.io/v1/audio/speech</span> \
+  <span class="tok-flag">-H</span> <span class="tok-str">"Authorization: Bearer $NOVA_API_KEY"</span> \
+  <span class="tok-flag">-H</span> <span class="tok-str">"Content-Type: application/json"</span> \
+  <span class="tok-flag">-d</span> <span class="tok-str">'{
+  <span class="tok-key">"model"</span>: <span class="tok-str">"gemini-3.8-flash-tts"</span>,
+  <span class="tok-key">"input"</span>: <span class="tok-str">"Hello from NovaCompute. This is a speech test."</span>,
+  <span class="tok-key">"voice"</span>: <span class="tok-str">"Kore"</span>
+}'</span> \
+  <span class="tok-flag">--output</span> <span class="tok-str">speech.wav</span></code></pre>
+          </div>
+          <p class="mt-2 text-xs text-slate-500">Use <code class="font-mono text-xs">--output</code> — the response body is audio, not JSON.</p>
+
+          <h3 class="mt-8 text-sm font-semibold uppercase tracking-wider text-slate-400">Python</h3>
+          <div class="relative mt-3">
+            <button type="button" data-copy="docs-tts-python" class="btn-ghost absolute right-3 top-3 z-10 rounded-md px-2.5 py-1 text-xs font-medium text-slate-300">Copy</button>
+            <pre class="scroll-thin overflow-x-auto rounded-xl border border-white/[0.06] bg-[#0b1120] p-5 font-mono text-[13px] leading-6 text-slate-300"><code id="docs-tts-python"><span class="tok-kw">import</span> os, requests
+
+response = requests.<span class="tok-fn">post</span>(
+    <span class="tok-str">"https://api.novacompute.io/v1/audio/speech"</span>,
+    <span class="tok-key">headers</span>={<span class="tok-str">"Authorization"</span>: <span class="tok-str">f"Bearer {os.environ['NOVA_API_KEY']}"</span>},
+    <span class="tok-key">json</span>={
+        <span class="tok-str">"model"</span>: <span class="tok-str">"gemini-3.8-flash-tts"</span>,
+        <span class="tok-str">"input"</span>: <span class="tok-str">"Hello from NovaCompute."</span>,
+        <span class="tok-str">"voice"</span>: <span class="tok-str">"Kore"</span>,
+    },
+    <span class="tok-key">timeout</span>=<span class="tok-cmd">60</span>,
+)
+response.<span class="tok-fn">raise_for_status</span>()
+
+<span class="tok-kw">with</span> <span class="tok-fn">open</span>(<span class="tok-str">"speech.wav"</span>, <span class="tok-str">"wb"</span>) <span class="tok-kw">as</span> f:
+    f.<span class="tok-fn">write</span>(response.content)</code></pre>
+          </div>
+
+          <h3 class="mt-8 text-sm font-semibold uppercase tracking-wider text-slate-400">Browser (demo only)</h3>
+          <p class="mt-2 text-sm text-slate-400">
+            Never ship an API key in client-side code. For a quick local demo, proxy the request through your own server.
+            The <a href="playground.html" class="text-violet-300 hover:text-violet-200">Playground</a> already does this and plays the result.
+          </p>
+          <div class="relative mt-3">
+            <button type="button" data-copy="docs-tts-js" class="btn-ghost absolute right-3 top-3 z-10 rounded-md px-2.5 py-1 text-xs font-medium text-slate-300">Copy</button>
+            <pre class="scroll-thin overflow-x-auto rounded-xl border border-white/[0.06] bg-[#0b1120] p-5 font-mono text-[13px] leading-6 text-slate-300"><code id="docs-tts-js"><span class="tok-kw">const</span> response = <span class="tok-kw">await</span> <span class="tok-fn">fetch</span>(<span class="tok-str">"/v1/audio/speech"</span>, {
+  <span class="tok-key">method</span>: <span class="tok-str">"POST"</span>,
+  <span class="tok-key">headers</span>: {
+    <span class="tok-str">"Authorization"</span>: <span class="tok-str">`Bearer ${apiKey}`</span>,
+    <span class="tok-str">"Content-Type"</span>: <span class="tok-str">"application/json"</span>,
+  },
+  <span class="tok-key">body</span>: <span class="tok-fn">JSON.stringify</span>({
+    <span class="tok-key">model</span>: <span class="tok-str">"gemini-3.8-flash-tts"</span>,
+    <span class="tok-key">input</span>: <span class="tok-str">"Hello from NovaCompute."</span>,
+    <span class="tok-key">voice</span>: <span class="tok-str">"Kore"</span>,
+  }),
+});
+
+<span class="tok-kw">const</span> blob = <span class="tok-kw">await</span> response.<span class="tok-fn">blob</span>();
+<span class="tok-kw">const</span> audio = <span class="tok-kw">new</span> <span class="tok-fn">Audio</span>(URL.<span class="tok-fn">createObjectURL</span>(blob));
+audio.<span class="tok-fn">play</span>();</code></pre>
+          </div>
+
+          <div class="mt-4 rounded-xl border border-white/[0.08] bg-white/[0.02] p-4 text-xs leading-relaxed text-slate-400">
+            <p><strong class="text-slate-200">Response:</strong> binary audio (<code class="font-mono text-xs">audio/wav</code> or <code class="font-mono text-xs">audio/mpeg</code>, depending on the upstream). Save the bytes with the matching extension.</p>
+            <p class="mt-2"><strong class="text-slate-200">Try limit:</strong> the Playground allows 5 TTS requests per day per account. API keys are billed per 1,000 characters with no daily request cap.</p>
+            <p class="mt-2"><strong class="text-slate-200">Long text:</strong> split scripts into chunks (sentence boundaries work well) and concatenate the audio on your side.</p>
+          </div>
         </section>
 
         <!-- Models -->
         <section id="models-list" data-docs-section class="scroll-mt-24">
           <h2 class="font-display text-2xl font-bold text-white">Models</h2>
-          <p class="mt-3 leading-relaxed text-slate-400">Pass any of these IDs in the <code class="rounded bg-white/[0.06] px-1.5 py-0.5 font-mono text-xs text-violet-300">model</code> field.</p>
-          <div class="mt-5 grid gap-3 sm:grid-cols-2" id="docs-model-grid"></div>
+          <p class="mt-3 leading-relaxed text-slate-400">
+            Pass any of these IDs in the <code class="rounded bg-white/[0.06] px-1.5 py-0.5 font-mono text-xs text-violet-300">model</code> field.
+            <span class="rounded bg-cyan-500/10 px-1.5 py-0.5 font-mono text-[10px] text-cyan-300">IMG</span> and
+            <span class="rounded bg-fuchsia-500/10 px-1.5 py-0.5 font-mono text-[10px] text-fuchsia-300">VID</span>
+            show accepted media input.
+          </p>
+          <div class="mt-5 overflow-x-auto rounded-xl border border-white/[0.06]">
+            <table class="w-full min-w-[640px] text-left text-sm">
+              <thead>
+                <tr class="border-b border-white/[0.06] bg-white/[0.02] text-[11px] uppercase tracking-wider text-slate-500">
+                  <th class="px-4 py-3 font-medium">Model</th>
+                  <th class="px-3 py-3 font-medium">API ID · context</th>
+                  <th class="px-3 py-3 font-medium">Media</th>
+                  <th class="whitespace-nowrap px-3 py-3 font-medium text-right">Input / 1M</th>
+                  <th class="whitespace-nowrap px-4 py-3 font-medium text-right">Output / 1M</th>
+                </tr>
+              </thead>
+              <tbody id="docs-model-rows" class="divide-y divide-white/[0.04] text-slate-400"></tbody>
+            </table>
+          </div>
+          <p class="mt-3 text-xs text-slate-500">Prices are per 1M tokens unless marked per 1,000 characters. Free models cost $0.00.</p>
+        </section>
+
+        <!-- Billing -->
+        <section id="billing" data-docs-section class="scroll-mt-24">
+          <h2 class="font-display text-2xl font-bold text-white">Billing</h2>
+          <p class="mt-3 leading-relaxed text-slate-400">
+            Every account has a USD balance. Chat requests are charged per token at the model's
+            input/output rate; TTS is charged per 1,000 characters. Failed requests from our side
+            (5xx) are not billed. You can top up and see itemised usage in
+            <a href="dashboard.html" class="text-violet-300 transition-colors hover:text-violet-200">Dashboard → Billing</a>.
+          </p>
+
+          <h3 class="mt-6 text-sm font-semibold uppercase tracking-wider text-slate-400">Subscriptions</h3>
+          <p class="mt-2 text-sm leading-relaxed text-slate-400">
+            Sub plans replace per-token billing with a daily paid-token quota. Free models stay unlimited
+            (fair use), and premium models draw 5× quota. Plans are activated manually after payment —
+            bank transfer with VietQR, or PayPal — usually within a few minutes.
+          </p>
+          <div class="mt-3 overflow-x-auto rounded-xl border border-white/[0.06]">
+            <table class="w-full min-w-[520px] text-left text-sm">
+              <thead>
+                <tr class="border-b border-white/[0.06] bg-white/[0.02] text-[11px] uppercase tracking-wider text-slate-500">
+                  <th class="px-5 py-3 font-medium">Plan</th>
+                  <th class="px-4 py-3 font-medium">Price</th>
+                  <th class="px-4 py-3 font-medium">Paid tokens / day</th>
+                  <th class="px-5 py-3 font-medium">TTS / day</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-white/[0.04] text-slate-400">
+                <tr><td class="px-5 py-3 font-medium text-white">Starter</td><td class="px-4 py-3 font-mono text-xs">$4.99/mo</td><td class="px-4 py-3 font-mono text-xs">1.5M</td><td class="px-5 py-3 font-mono text-xs">20 requests</td></tr>
+                <tr><td class="px-5 py-3 font-medium text-white">Pro</td><td class="px-4 py-3 font-mono text-xs">$12.99/mo</td><td class="px-4 py-3 font-mono text-xs">6M</td><td class="px-5 py-3 font-mono text-xs">60 requests</td></tr>
+                <tr><td class="px-5 py-3 font-medium text-white">Ultra</td><td class="px-4 py-3 font-mono text-xs">$29.99/mo</td><td class="px-4 py-3 font-mono text-xs">20M</td><td class="px-5 py-3 font-mono text-xs">150 requests</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="mt-2 text-xs text-slate-500">
+            Quotas reset daily. See <a href="pricing.html#subscriptions" class="text-violet-300 hover:text-violet-200">Pricing</a> for the full comparison and checkout.
+          </p>
+
+          <h3 class="mt-6 text-sm font-semibold uppercase tracking-wider text-slate-400">What is billed</h3>
+          <ul class="mt-2 list-disc space-y-1.5 pl-5 text-sm text-slate-400">
+            <li>Chat: input tokens + output tokens, at the rates in the model table.</li>
+            <li>TTS: input characters only — $0.0055 or $0.0080 per 1,000 characters.</li>
+            <li>Free models: $0.00, no balance required.</li>
+            <li>Failed requests (5xx from NovaCompute): $0.00.</li>
+          </ul>
         </section>
 
         <!-- Errors -->
@@ -238,11 +520,12 @@ response = client.chat.completions.<span class="tok-fn">create</span>(
                 </tr>
               </thead>
               <tbody class="divide-y divide-white/[0.04] text-slate-400">
-                <tr><td class="px-5 py-3 font-mono text-xs text-red-300">400</td><td class="px-4 py-3 font-mono text-xs">invalid_request_error</td><td class="px-5 py-3">Malformed body or missing required parameter.</td></tr>
+                <tr><td class="px-5 py-3 font-mono text-xs text-red-300">400</td><td class="px-4 py-3 font-mono text-xs">invalid_request_error</td><td class="px-5 py-3">Malformed body, missing parameter, or a TTS model used on the chat endpoint.</td></tr>
                 <tr><td class="px-5 py-3 font-mono text-xs text-red-300">401</td><td class="px-4 py-3 font-mono text-xs">authentication_error</td><td class="px-5 py-3">Missing or invalid API key.</td></tr>
-                <tr><td class="px-5 py-3 font-mono text-xs text-red-300">402</td><td class="px-4 py-3 font-mono text-xs">insufficient_balance</td><td class="px-5 py-3">Balance exhausted — top up in the dashboard.</td></tr>
-                <tr><td class="px-5 py-3 font-mono text-xs text-red-300">429</td><td class="px-4 py-3 font-mono text-xs">rate_limit_error</td><td class="px-5 py-3">Requests-per-minute cap hit. Retry with backoff.</td></tr>
-                <tr><td class="px-5 py-3 font-mono text-xs text-red-300">500 / 503</td><td class="px-4 py-3 font-mono text-xs">server_error</td><td class="px-5 py-3">Upstream issue — not billed. Auto-Routing usually retries for you.</td></tr>
+                <tr><td class="px-5 py-3 font-mono text-xs text-red-300">402</td><td class="px-4 py-3 font-mono text-xs">insufficient_balance_error</td><td class="px-5 py-3">Balance exhausted — top up in the dashboard.</td></tr>
+                <tr><td class="px-5 py-3 font-mono text-xs text-red-300">429</td><td class="px-4 py-3 font-mono text-xs">rate_limit_error</td><td class="px-5 py-3">Rate cap hit, or the Playground <code class="font-mono text-xs">try_limit_reached</code> (5/day). Retry with backoff.</td></tr>
+                <tr><td class="px-5 py-3 font-mono text-xs text-red-300">502</td><td class="px-4 py-3 font-mono text-xs">upstream_error</td><td class="px-5 py-3">Every upstream attempt failed. The request is not billed — retry or switch model.</td></tr>
+                <tr><td class="px-5 py-3 font-mono text-xs text-red-300">500 / 503</td><td class="px-4 py-3 font-mono text-xs">server_error</td><td class="px-5 py-3">Temporary service issue — not billed. Auto-routing usually retries for you.</td></tr>
               </tbody>
             </table>
           </div>
@@ -251,23 +534,30 @@ response = client.chat.completions.<span class="tok-fn">create</span>(
         <!-- Rate limits -->
         <section id="rate-limits" data-docs-section class="scroll-mt-24">
           <h2 class="font-display text-2xl font-bold text-white">Rate limits</h2>
+          <p class="mt-3 leading-relaxed text-slate-400">
+            There is <strong class="text-slate-200">no fixed requests-per-minute cap</strong> on paid API keys today.
+            We ask you to stay under ~60 requests/minute per key; bursty traffic may be throttled upstream and
+            will return <code class="rounded bg-white/[0.06] px-1.5 py-0.5 font-mono text-xs text-violet-300">429</code> with a retry hint.
+          </p>
           <div class="mt-5 overflow-x-auto rounded-xl border border-white/[0.06]">
-            <table class="w-full min-w-[480px] text-left text-sm">
+            <table class="w-full min-w-[560px] text-left text-sm">
               <thead>
                 <tr class="border-b border-white/[0.06] bg-white/[0.02] text-[11px] uppercase tracking-wider text-slate-500">
-                  <th class="px-5 py-3 font-medium">Tier</th>
-                  <th class="px-4 py-3 font-medium">Requests / min</th>
-                  <th class="px-5 py-3 font-medium">Tokens / min</th>
+                  <th class="px-5 py-3 font-medium">Limit</th>
+                  <th class="px-4 py-3 font-medium">Value</th>
+                  <th class="px-5 py-3 font-medium">Applies to</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-white/[0.04] text-slate-400">
-                <tr><td class="px-5 py-3 font-medium text-white">Free</td><td class="px-4 py-3 font-mono text-xs">60</td><td class="px-5 py-3 font-mono text-xs">120K</td></tr>
-                <tr><td class="px-5 py-3 font-medium text-white">Standard</td><td class="px-4 py-3 font-mono text-xs">600</td><td class="px-5 py-3 font-mono text-xs">2M</td></tr>
-                <tr><td class="px-5 py-3 font-medium text-white">Enterprise</td><td class="px-4 py-3 font-mono text-xs">Custom</td><td class="px-5 py-3 font-mono text-xs">Custom</td></tr>
+                <tr><td class="px-5 py-3 font-medium text-white">Playground “Try”</td><td class="px-4 py-3 font-mono text-xs">5 requests / day</td><td class="px-5 py-3">Account (chat + TTS combined)</td></tr>
+                <tr><td class="px-5 py-3 font-medium text-white">Free models</td><td class="px-4 py-3 font-mono text-xs">Fair use</td><td class="px-5 py-3">Account — shared capacity, may be throttled under load</td></tr>
+                <tr><td class="px-5 py-3 font-medium text-white">Paid API keys</td><td class="px-4 py-3 font-mono text-xs">No fixed RPM</td><td class="px-5 py-3">Per key — retry on upstream 429</td></tr>
+                <tr><td class="px-5 py-3 font-medium text-white">Sub daily quota</td><td class="px-4 py-3 font-mono text-xs">Per plan</td><td class="px-5 py-3">Account — resets daily</td></tr>
+                <tr><td class="px-5 py-3 font-medium text-white">TTS</td><td class="px-4 py-3 font-mono text-xs">API keys billed per 1k chars</td><td class="px-5 py-3">Playground capped at 5/day; API keys have no daily request cap</td></tr>
               </tbody>
             </table>
           </div>
-          <p class="mt-4 text-xs text-slate-500">Limits are per API key. Need more? Contact sales for a committed-use tier.</p>
+          <p class="mt-4 text-xs text-slate-500">Need a guaranteed RPM or SLA? Contact sales for a committed-use tier.</p>
         </section>
 
       </article>
@@ -288,6 +578,6 @@ response = client.chat.completions.<span class="tok-fn">create</span>(
   <script src="assets/js/layout.js?v=25" defer></script>
   <script src="assets/js/effects.js?v=25" defer></script>
   <script src="assets/js/models-data.js?v=25" defer></script>
-  <script src="assets/js/docs.js?v=25" defer></script>
+  <script src="assets/js/docs.js?v=26" defer></script>
 </body>
 </html>

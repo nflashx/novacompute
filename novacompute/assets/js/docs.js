@@ -30,18 +30,56 @@
     });
   });
 
-  /* ---------- Model ID reference grid ---------- */
-  const grid = document.getElementById('docs-model-grid');
-  if (grid && window.NOVA_MODELS) {
-    grid.innerHTML = window.NOVA_MODELS.map((m) => `
-      <div class="glass flex items-center justify-between rounded-xl px-4 py-3">
-        <div class="flex min-w-0 items-center gap-3">
-          <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-[11px] font-bold"
-                style="background:${window.novaRgba(m.color, 0.15)};color:${m.color}">${m.name.charAt(0)}</span>
-          <code class="truncate font-mono text-xs text-slate-200">${m.id}</code>
-        </div>
-        <span class="ml-3 shrink-0 text-xs text-slate-500">${m.input === 0 ? 'Free' : `$${m.input.toFixed(2)} in`}</span>
-      </div>`).join('');
+  /* ---------- Model reference table ---------- */
+  const modelRows = document.getElementById('docs-model-rows');
+
+  function renderModelTable(models) {
+    if (!modelRows) return;
+    modelRows.innerHTML = models.map((m) => {
+      const isFree = m.input === 0 && m.output === 0;
+      const isTts = m.category === 'tts';
+      const input = isTts
+        ? '<span class="text-slate-600">—</span>'
+        : isFree
+          ? '<span class="font-medium text-emerald-400">Free</span>'
+          : `<span class="font-mono text-slate-200">$${m.input.toFixed(2)}</span>`;
+      const output = isTts
+        ? `<span class="whitespace-nowrap font-mono text-slate-200">$${m.output.toFixed(4)}</span><span class="text-[10px] text-slate-500"> / 1k chars</span>`
+        : isFree
+          ? '<span class="font-medium text-emerald-400">Free</span>'
+          : `<span class="font-mono text-slate-200">$${m.output.toFixed(2)}</span>`;
+      const media = [
+        m.image ? '<span class="rounded bg-cyan-500/10 px-1.5 py-0.5 font-mono text-[10px] text-cyan-300">IMG</span>' : '',
+        m.video ? '<span class="rounded bg-fuchsia-500/10 px-1.5 py-0.5 font-mono text-[10px] text-fuchsia-300">VID</span>' : '',
+      ].filter(Boolean).join(' ') || '<span class="text-slate-600">—</span>';
+      const category = isTts
+        ? '<span class="rounded bg-sky-500/10 px-1.5 py-0.5 font-mono text-[10px] text-sky-300">TTS</span>'
+        : isFree
+          ? '<span class="rounded bg-emerald-500/10 px-1.5 py-0.5 font-mono text-[10px] text-emerald-300">FREE</span>'
+          : '';
+      return `<tr>
+        <td class="px-4 py-3">
+          <div class="flex items-center gap-2">
+            <span class="font-medium text-white">${m.name}</span>${category}
+          </div>
+          <p class="mt-0.5 text-[11px] text-slate-500">${m.provider}</p>
+        </td>
+        <td class="px-3 py-3">
+          <p class="whitespace-nowrap font-mono text-xs text-slate-300">${m.id}</p>
+          <p class="mt-0.5 text-[10px] text-slate-500">${m.context || '—'} context</p>
+        </td>
+        <td class="px-3 py-3"><div class="flex items-center gap-1">${media}</div></td>
+        <td class="px-3 py-3 text-right">${input}</td>
+        <td class="px-4 py-3 text-right">${output}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  if (modelRows && window.NOVA_MODELS) {
+    renderModelTable(window.NOVA_MODELS);
+    if (window.fetchModels) {
+      window.fetchModels().then((models) => renderModelTable(models));
+    }
   }
 
   /* ---------- TOC build + scroll spy ---------- */

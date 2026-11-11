@@ -161,7 +161,7 @@
               <span class="font-display text-lg font-semibold tracking-tight text-white">Nova<span class="text-gradient">Compute</span></span>
             </a>
             <p class="mt-4 max-w-xs text-sm leading-relaxed text-slate-400">
-              One API key for 50+ frontier models — routed for speed and reliability, billed per token.
+              One API key for 18 frontier models — routed for speed and reliability, billed per token.
             </p>
             <div class="mt-6 flex gap-2.5">
               ${SOCIALS.map((s) => `
