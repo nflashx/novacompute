@@ -189,6 +189,7 @@ def plan_tokens_used_today(user):
         except (KeyError, ValueError, OSError):
             continue
         model = event.get("model")
+        if MODEL_LOOKUP.get(model, {}).get("category") == "tts": continue
         price_in, price_out = PRICING.get(model, (0, 0))
         if not price_in and not price_out: continue
         tokens = int(event.get("prompt_tokens", 0)) + int(event.get("completion_tokens", 0))
