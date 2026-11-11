@@ -24,20 +24,20 @@
   /* Snapshot used when the backend is unreachable — keep in sync with
      backend/app.py MODELS (plus custom_models.json if you rely on it offline). */
   const FALLBACK_MODELS = [
-    { id: 'claude-opus-5.5-free', name: 'Claude Opus 5.5', provider: 'Anthropic', color: '#d97757', context: '1M', speed: 85, input: 10.0, output: 50.0, tag: 'Popular', category: 'chat' },
-    { id: 'claude-sonnet-5-5-free', name: 'Claude Sonnet 5.5', provider: 'Anthropic', color: '#d97757', context: '1M', speed: 92, input: 2.0, output: 10.0, tag: null, category: 'chat' },
-    { id: 'gpt-6-luna', name: 'GPT-6', provider: 'OpenAI', color: '#10a37f', context: '900K', speed: 118, input: 6.0, output: 20.0, tag: 'New', category: 'chat' },
-    { id: 'gpt-5.6-luna', name: 'GPT-5.6', provider: 'OpenAI', color: '#10a37f', context: '900K', speed: 130, input: 3.0, output: 10.0, tag: null, category: 'chat' },
-    { id: 'grok-4.6', name: 'Grok 4.6', provider: 'xAI', color: '#f43f5e', context: '500K', speed: 150, input: 0.50, output: 1.50, tag: null, category: 'chat' },
-    { id: 'deepseek-v4.1-flash', name: 'DeepSeek V4.1', provider: 'DeepSeek', color: '#4d6bfe', context: '1M', speed: 145, input: 0.10, output: 0.20, tag: 'Best value', category: 'code' },
-    { id: 'deepseek-v4.1-flash-1017', name: 'DeepSeek V4.1 1017', provider: 'DeepSeek', color: '#4d6bfe', context: '1M', speed: 145, input: 0.10, output: 0.30, tag: null, category: 'code' },
-    { id: 'kimi-k3.1-pro-free', name: 'Kimi k3.1 Pro', provider: 'Moonshot AI', color: '#8b5cf6', context: '1M', speed: 120, input: 0.15, output: 1.50, tag: null, category: 'chat' },
-    { id: 'mistral-large-4', name: 'Mistral Large 4', provider: 'Mistral AI', color: '#ff7000', context: '1M', speed: 98, input: 1.50, output: 4.50, tag: null, category: 'chat' },
-    { id: 'mercury-3', name: 'Mercury 3', provider: 'Inception', color: '#d946ef', context: '1M', speed: 1000, input: 0.05, output: 0.20, tag: 'Diffusion', category: 'code' },
-    { id: 'glm-5.3-flash', name: 'GLM 5.3 Flash', provider: 'Z.ai', color: '#0ea5e9', context: '1M', speed: 240, input: 0.08, output: 0.30, tag: null, category: 'chat' },
-    { id: 'glm-5.3', name: 'GLM 5.3', provider: 'Z.ai', color: '#0ea5e9', context: '1M', speed: 85, input: 0.50, output: 1.20, tag: null, category: 'chat' },
-    { id: 'qwen/qwen3.7-flash:free', name: 'Qwen 3.7', provider: 'Alibaba', color: '#6366f1', context: '1M', speed: 130, input: 0.0, output: 0.0, tag: 'Free', category: 'chat' },
-    { id: 'gemini-4-argon-free', name: 'Gemini 4 Argon', provider: 'Google', color: '#4285f4', context: '1M', speed: 110, input: 0.50, output: 1.50, tag: null, category: 'chat' },
+    { id: 'claude-opus-5.5-free', name: 'Claude Opus 5.5', provider: 'Anthropic', color: '#d97757', context: '1M', speed: 85, input: 3.20, output: 16.00, tag: 'Popular', category: 'chat', image: true, video: true },
+    { id: 'claude-sonnet-5-5-free', name: 'Claude Sonnet 5.5', provider: 'Anthropic', color: '#d97757', context: '1M', speed: 92, input: 1.80, output: 9.00, tag: null, category: 'chat', image: true, video: true },
+    { id: 'gpt-6-luna', name: 'GPT-6', provider: 'OpenAI', color: '#10a37f', context: '900K', speed: 118, input: 0.08, output: 0.40, tag: 'New', category: 'chat', image: true, video: true },
+    { id: 'gpt-5.6-luna', name: 'GPT-5.6', provider: 'OpenAI', color: '#10a37f', context: '900K', speed: 130, input: 0.16, output: 0.96, tag: null, category: 'chat', image: true, video: true },
+    { id: 'grok-4.6', name: 'Grok 4.6', provider: 'xAI', color: '#f43f5e', context: '500K', speed: 150, input: 0.30, output: 0.90, tag: null, category: 'chat', image: true, video: false },
+    { id: 'deepseek-v4.1-flash', name: 'DeepSeek V4.1', provider: 'DeepSeek', color: '#4d6bfe', context: '1M', speed: 145, input: 0.09, output: 0.18, tag: 'Best value', category: 'code', image: false, video: false },
+    { id: 'deepseek-v4.1-flash-1017', name: 'DeepSeek V4.1 1017', provider: 'DeepSeek', color: '#4d6bfe', context: '1M', speed: 145, input: 0.08, output: 0.24, tag: null, category: 'code', image: false, video: false },
+    { id: 'kimi-k3.1-pro-free', name: 'Kimi k3.1 Pro', provider: 'Moonshot AI', color: '#8b5cf6', context: '1M', speed: 120, input: 1.00, output: 1.00, tag: null, category: 'chat', image: false, video: false },
+    { id: 'mistral-large-4', name: 'Mistral Large 4', provider: 'Mistral AI', color: '#ff7000', context: '1M', speed: 98, input: 0.45, output: 1.35, tag: null, category: 'chat', image: true, video: false },
+    { id: 'mercury-3', name: 'Mercury 3', provider: 'Inception', color: '#d946ef', context: '1M', speed: 1000, input: 0.10, output: 0.35, tag: 'Diffusion', category: 'code', image: false, video: false },
+    { id: 'glm-5.3-flash', name: 'GLM 5.3 Flash', provider: 'Z.ai', color: '#0ea5e9', context: '1M', speed: 240, input: 0.05, output: 0.20, tag: null, category: 'chat', image: false, video: false },
+    { id: 'glm-5.3', name: 'GLM 5.3', provider: 'Z.ai', color: '#0ea5e9', context: '1M', speed: 85, input: 0.30, output: 0.80, tag: null, category: 'chat', image: false, video: false },
+    { id: 'qwen/qwen3.7-flash:free', name: 'Qwen 3.7', provider: 'Alibaba', color: '#6366f1', context: '1M', speed: 130, input: 0.0, output: 0.0, tag: 'Free', category: 'chat', image: false, video: false },
+    { id: 'gemini-4-argon-free', name: 'Gemini 4 Argon', provider: 'Google', color: '#4285f4', context: '1M', speed: 110, input: 0.40, output: 1.20, tag: null, category: 'chat', image: false, video: false },
   ];
 
   const FALLBACK_BY_ID = {};
@@ -85,6 +85,8 @@
       input,
       output,
       tag: isFree ? 'Free' : (snapshot.tag || null),
+      image: Boolean(raw.capabilities ? raw.capabilities.image : (raw.image !== undefined ? raw.image : snapshot.image)),
+      video: Boolean(raw.capabilities ? raw.capabilities.video : (raw.video !== undefined ? raw.video : snapshot.video)),
       category: /deepseek|mercury/i.test(String(raw.id)) ? 'code' : 'chat',
     };
   }
@@ -148,7 +150,7 @@
             <span class="model-avatar flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-sm font-bold"
                   style="background:${rgba(m.color, 0.14)};color:${m.color};border:1px solid ${rgba(m.color, 0.3)}">${m.name.charAt(0)}</span>
             <div>
-              <p class="font-medium text-white">${m.name}${tagCell(m.tag)}</p>
+              <p class="font-medium text-white">${m.name}${tagCell(m.tag)}${m.image ? '<span class="ml-2 hidden sm:inline-flex items-center gap-1 rounded-full border border-cyan-400/25 bg-cyan-500/10 px-2 py-0.5 align-middle text-[10px] font-semibold text-cyan-300" title="Accepts image input"><svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="9" cy="9" r="2"></circle><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"></path></svg>IMG</span>' : ''}${m.video ? '<span class="ml-2 hidden sm:inline-flex items-center gap-1 rounded-full border border-fuchsia-400/25 bg-fuchsia-500/10 px-2 py-0.5 align-middle text-[10px] font-semibold text-fuchsia-300" title="Accepts video input"><svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="14" height="12" rx="2"></rect><path d="m16 10 6-3v10l-6-3z"></path></svg>VID</span>' : ''}</p>
               <p class="mt-0.5 font-mono text-xs text-slate-500">${m.id}</p>
             </div>
           </div>
