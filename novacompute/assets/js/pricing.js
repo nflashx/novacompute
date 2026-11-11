@@ -208,7 +208,7 @@
     html += `<div id="paypal-wrap" class="hidden pt-1">
       <p class="pb-2 text-xs font-semibold uppercase tracking-wider text-slate-500">PayPal</p>
       <div id="paypal-button"></div>
-      <p class="mt-2 text-[11px] leading-relaxed text-slate-500">Pay the monthly amount with PayPal, then send the receipt to <span class="text-slate-300">${pay.contact?.email || 'support'}</span> for manual activation.</p>
+      <p class="mt-2 text-[11px] leading-relaxed text-slate-500">Pay the monthly amount with PayPal, then send the receipt to <span class="text-slate-300">${pay.contact?.email || 'support'}</span> for manual activation. If the PayPal window does not open, allow pop-ups for this site.</p>
     </div>`;
     subBody.innerHTML = html;
     subModal.classList.remove('hidden');
