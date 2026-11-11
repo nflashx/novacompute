@@ -1,0 +1,19 @@
+[Unit]
+Description=NovaCompute API gateway
+After=network.target
+
+[Service]
+Type=simple
+User=novacompute
+Group=novacompute
+WorkingDirectory=/opt/novacompute/backend
+EnvironmentFile=/etc/novacompute.env
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/usr/bin/python3 /opt/novacompute/backend/app.py
+Restart=always
+RestartSec=3
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

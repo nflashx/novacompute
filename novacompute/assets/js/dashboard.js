@@ -252,7 +252,8 @@
     if (me.daily_quota > 0) {
       planEl.textContent = `${me.plan_name} — ${tokensShort(me.daily_quota)} quota tokens/day`;
       const until = me.plan_expires ? new Date(me.plan_expires).toLocaleDateString() : '—';
-      noteEl.textContent = `≈ ${tokensShort(me.daily_quota * 30)} tokens/month · active until ${until} · ${me.daily_tts || 0} TTS requests/day · activated automatically after payment.`;
+      const bonus = Number(me.plan_bonus || 0);
+      noteEl.textContent = `≈ ${tokensShort(me.daily_quota * 30)} tokens/month · active until ${until}${bonus ? ` · +$${bonus} bonus credit` : ''} · ${me.daily_tts || 0} TTS requests/day · activated automatically after payment.`;
     } else {
       planEl.textContent = 'Pay-as-you-go';
       noteEl.textContent = 'No monthly token quota — paid models are billed from your balance. Subscribe for a daily quota.';
@@ -327,7 +328,7 @@
     }
     tbody.innerHTML = rows.map((t) => {
       const amount = Number(t.amount);
-      const isTopup = t.type === 'topup';
+      const isTopup = t.type === 'topup' || t.type === 'bonus';
       const isSub = t.type === 'subscription';
       const cls = isTopup ? 'text-emerald-400' : isSub ? 'text-violet-300' : amount === 0 ? 'text-slate-500' : 'text-slate-200';
       return `<tr>

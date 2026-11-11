@@ -165,9 +165,9 @@ MODEL_IDS = set(PRICING)
 
 # ================= SUBSCRIPTION PLANS =================
 PLANS = {
-    "starter": {"name": "Starter", "price": 4.99, "quota": 1_500_000, "tts": 20},
-    "pro": {"name": "Pro", "price": 12.99, "quota": 6_000_000, "tts": 60},
-    "ultra": {"name": "Ultra", "price": 29.99, "quota": 20_000_000, "tts": 150},
+    "starter": {"name": "Starter", "price": 4.99, "quota": 1_500_000, "tts": 20, "bonus": 1.0},
+    "pro": {"name": "Pro", "price": 12.99, "quota": 6_000_000, "tts": 60, "bonus": 3.0},
+    "ultra": {"name": "Ultra", "price": 29.99, "quota": 20_000_000, "tts": 150, "bonus": 7.0},
 }
 PLAN_QUOTA = {key: value["quota"] for key, value in PLANS.items()}
 # Sub quota multipliers: how many quota tokens one real token burns.
@@ -733,6 +733,13 @@ def apply_payment(user, purpose, amount, plan, method, reference):
             "ts": now_ts, "type": "subscription", "description": f"{plan_def['name']} - 30 days",
             "method": method, "amount": round(float(amount), 2), "reference": reference,
         })
+        bonus = float(plan_def.get("bonus", 0) or 0)
+        if bonus > 0:
+            user["balance"] = round(user.get("balance", 0.0) + bonus, 6)
+            user["transactions"].append({
+                "ts": now_ts + 1, "type": "bonus", "description": f"{plan_def['name']} bonus credit",
+                "method": "Subscription bonus", "amount": bonus, "reference": reference,
+            })
     else:
         raise ValueError("Unknown payment purpose.")
     user["transactions"] = user.get("transactions", [])[-200:]
@@ -1228,7 +1235,7 @@ class NovaHandler(BaseHTTPRequestHandler):
         agg = usage_aggregates(user)
         active_plan = plan_active(user)
         plan = user.get("plan") if active_plan else "free"
-        self.send_json(200, {"user": {"name": user.get("name"), "email": user.get("email"), "company": user.get("company", ""), "created_at": user.get("created_at"), "verified": user.get("verified", True), "provider": user.get("provider", "email")}, "balance": round(user.get("balance", 0.0), 6), "plan": plan, "plan_name": PLANS.get(plan, {}).get("name", "Pay-as-you-go"), "plan_expires": user.get("plan_expires") if active_plan else None, "daily_quota": PLAN_QUOTA.get(plan, 0), "daily_tts": PLANS.get(plan, {}).get("tts", 0), "quota_used_today": plan_tokens_used_today(user) if active_plan else 0, "api_keys": [public_key(k) for k in user.get("api_keys", []) if k.get("status", "active") == "active"], "request_key_id": key["id"], "stats": agg["stats"], "daily": agg["daily"], "by_model": agg["by_model"], "recent": agg["recent"], "transactions": transactions(user)})
+        self.send_json(200, {"user": {"name": user.get("name"), "email": user.get("email"), "company": user.get("company", ""), "created_at": user.get("created_at"), "verified": user.get("verified", True), "provider": user.get("provider", "email")}, "balance": round(user.get("balance", 0.0), 6), "plan": plan, "plan_name": PLANS.get(plan, {}).get("name", "Pay-as-you-go"), "plan_expires": user.get("plan_expires") if active_plan else None, "daily_quota": PLAN_QUOTA.get(plan, 0), "plan_bonus": PLANS.get(plan, {}).get("bonus", 0), "daily_tts": PLANS.get(plan, {}).get("tts", 0), "quota_used_today": plan_tokens_used_today(user) if active_plan else 0, "api_keys": [public_key(k) for k in user.get("api_keys", []) if k.get("status", "active") == "active"], "request_key_id": key["id"], "stats": agg["stats"], "daily": agg["daily"], "by_model": agg["by_model"], "recent": agg["recent"], "transactions": transactions(user)})
 
     def handle_create_key(self):
         _db, user, _key = self.authenticate()
@@ -1327,8 +1334,10 @@ class NovaHandler(BaseHTTPRequestHandler):
         if cost > 0 and active_plan:
             tts_limit = int(PLANS.get(user.get("plan"), {}).get("tts", 0))
             if tts_limit and plan_tts_used_today(user) >= tts_limit:
-                return self.send_error_json(429, "rate_limit_error", "sub_tts_limit", "Daily TTS request limit reached. It resets at 00:00 UTC.")
-            cost = 0.0
+                if user.get("balance", 0) <= 0:
+                    return self.send_error_json(429, "rate_limit_error", "sub_tts_limit", "Daily TTS request limit reached. Top up or wait for the 00:00 UTC reset.")
+            else:
+                cost = 0.0
         elif cost > 0 and user.get("balance", 0) <= 0:
             return self.send_error_json(402, "insufficient_balance_error", "insufficient_balance", "Balance exhausted.")
         provider_name = MODEL_PROVIDER_MAP.get(model, DEFAULT_PROVIDER)
@@ -1414,7 +1423,9 @@ class NovaHandler(BaseHTTPRequestHandler):
             if plan_covered:
                 quota = PLAN_QUOTA.get(user.get("plan"), 0)
                 if plan_tokens_used_today(user) >= quota:
-                    return self.send_error_json(429, "rate_limit_error", "sub_quota_reached", "Daily subscription quota reached. It resets at 00:00 UTC.")
+                    if user.get("balance", 0) <= 0:
+                        return self.send_error_json(429, "rate_limit_error", "sub_quota_reached", "Daily subscription quota reached. Top up or wait for the 00:00 UTC reset.")
+                    plan_covered = False
             elif user.get("balance", 0) <= 0:
                 return self.send_error_json(402, "insufficient_balance_error", "insufficient_balance", "Balance exhausted.")
         bill_in, bill_out = (0, 0) if plan_covered else (price_in, price_out)

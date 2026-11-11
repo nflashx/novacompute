@@ -59,9 +59,9 @@
 
   /* ---------- Subscription plans + verified checkout ---------- */
   const PLANS = {
-    starter: { name: 'Starter', price: 4.99, quota: '1.5M quota tokens/day', tts: '20 TTS requests/day' },
-    pro: { name: 'Pro', price: 12.99, quota: '6M quota tokens/day', tts: '60 TTS requests/day' },
-    ultra: { name: 'Ultra', price: 29.99, quota: '20M quota tokens/day', tts: '150 TTS requests/day' },
+    starter: { name: 'Starter', price: 4.99, quota: '1.5M quota tokens/day', tts: '20 TTS requests/day', bonus: 1 },
+    pro: { name: 'Pro', price: 12.99, quota: '6M quota tokens/day', tts: '60 TTS requests/day', bonus: 3 },
+    ultra: { name: 'Ultra', price: 29.99, quota: '20M quota tokens/day', tts: '150 TTS requests/day', bonus: 7 },
   };
 
   const subModal = document.getElementById('sub-modal');
@@ -190,7 +190,7 @@
     const pay = window.NOVA_PAYMENT || {};
     const bank = pay.bank || {};
     subTitle.textContent = `${plan.name} — $${plan.price.toFixed(2)}/mo`;
-    subPrice.textContent = `${plan.quota} · ${plan.tts} · quota resets daily`;
+    subPrice.textContent = `${plan.quota} · ${plan.tts} · +$${plan.bonus} bonus credit · quota resets daily`;
     const session = (window.novaSession && window.novaSession.get()) || null;
     const email = (session && session.email) || '';
     const memo = `${pay.memo_prefix || 'NOVA'} ${plan.name} ${email || '{your-email}'}`;
