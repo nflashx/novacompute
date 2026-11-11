@@ -1,21 +1,21 @@
 NovaCompute — model speed test
-time: 2026-11-11 19:04:33   timeout: 25s
+time: 2026-11-11 19:17:20   timeout: 35s
 
 MODEL                            PROVIDER     STATUS       LATENCY   TOK  NOTE
 ------------------------------------------------------------------------------
-claude-opus-5.5-free             nightrouter  OK           1347 ms    14  Hello! How can I help you today?
-claude-sonnet-5-5-free           nightrouter  OK           1171 ms    13  Hi! How can I help you today?
-gpt-6-luna                       furry        OK           6476 ms    20  Hello! How can I help you today?
-gpt-5.6-luna                     furry        OK          24049 ms    20  Hello! How can I help you today?
-grok-4.6                         exosai       HTTP 401      814 ms     0  {"error":{"message":"Invalid or missing API key","code":"invalid_api_key","type":"invalid_request_error","request_id":"6
-deepseek-v4.1-flash              nightrouter  OK           1401 ms    17  Hello! How can I help you today?
-deepseek-v4.1-flash-1017         nightrouter  OK           1262 ms    17  Hello! How can I help you today?
-kimi-k3.1-pro-free               nightrouter  OK           3047 ms    23  Hello! Nice to meet you. I'm Kimi, and I
-mistral-large-4                  mistral      OK            821 ms    32  [{"type": "thinking", "thinking": [{"typ
-mercury-3                        inception    OK            461 ms    19  
-glm-5.3-flash                    nightrouter  OK           2415 ms    17  Hello! How can I help you today?
-glm-5.3                          nightrouter  OK           1937 ms    23  Hello
-qwen/qwen3.7-flash:free          bazaarlink   OK           1716 ms    22  Hello! How can I help you today?
-gemini-4-argon-free              nightrouter  OK          10478 ms    22  Hello! How can I help you today?
+claude-opus-5.5-free             nightrouter  OK           1270 ms    14  Hello! How can I help you today?
+claude-sonnet-5-5-free           nightrouter  OK           1718 ms    13  Hi! How can I help you today?
+gpt-6-luna                       furry        HTTP 429    30313 ms     0  {"error":{"code":"api_key_queue_timeout","message":"Timed out waiting for API key concurrency slot, please retry later",
+gpt-5.6-luna                     furry        OK           2514 ms    20  Hello! How can I help you today?
+grok-4.6                         exosai       OK           5790 ms   219  Hello! 😊 How can I help you today?
+deepseek-v4.1-flash              nightrouter  OK           1426 ms    17  Hello! How can I help you today?
+deepseek-v4.1-flash-1017         nightrouter  OK           1745 ms    17  Hello! How can I help you today?
+kimi-k3.1-pro-free               nightrouter  OK           3680 ms    22  Hello! How can I help you today?
+mistral-large-4                  mistral      OK           8051 ms    32  [{"type": "thinking", "thinking": [{"typ
+mercury-3                        inception    OK            652 ms    19  
+glm-5.3-flash                    nightrouter  OK           5155 ms   206  Hello! I'm GLM, a large language model d
+glm-5.3                          nightrouter  OK           3198 ms    23  Hello
+qwen/qwen3.7-flash:free          bazaarlink   OK           2626 ms    22  Hello! How can I help you today?
+gemini-4-argon-free              nightrouter  OK          12766 ms    22  Hello! How can I help you today?
 
-RESULT: 13/14 OK   avg latency: 4352 ms   fastest: 461 ms
+RESULT: 13/14 OK   avg latency: 3891 ms   fastest: 652 ms
