@@ -105,6 +105,7 @@ Postman: create a POST request to `http://127.0.0.1:8080/v1/chat/completions`, h
 ## Frontend ⇄ backend
 
 - `assets/js/api.js` — API base + session helpers (`localStorage.nova_user`)
+- `models-data.js` — baked-in snapshot + `fetchModels()` (GET `/v1/models`, 4 s timeout); every page renders the live catalogue, the fallback snapshot already includes Grok 4.6
 - `auth.js` — real register/login, stores the returned `nova-sk-…` key
 - `dashboard.js` — everything renders from `GET /api/me`; Create/Delete key and
   top-ups call the server
@@ -119,6 +120,8 @@ Asset URLs carry a `?v=6` cache-buster — bump it when changing JS/CSS.
 ```bat
 python admin_app.py
 ```
+
+`Create_Admin_Shortcut.vbs` adds a **NovaCompute Admin** icon to the Desktop (launches through `pythonw.exe`, so no console window appears).
 
 Three tabs:
 

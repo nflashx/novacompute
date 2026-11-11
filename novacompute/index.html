@@ -15,8 +15,8 @@
 
   <!-- Tailwind (Play CDN) + shared theme -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="assets/js/tailwind-config.js?v=6"></script>
-  <link rel="stylesheet" href="assets/css/main.css?v=6" />
+  <script src="assets/js/tailwind-config.js?v=7"></script>
+  <link rel="stylesheet" href="assets/css/main.css?v=7" />
 </head>
 
 <body class="bg-night font-sans text-slate-200 antialiased overflow-x-hidden">
@@ -297,7 +297,7 @@ stream = client.chat.completions.<span class="tok-fn">create</span>(
           </div>
         </div>
 
-        <p class="reveal mt-4 text-xs text-slate-500">
+        <p id="models-note" class="reveal mt-4 text-xs text-slate-500">
           Prices are per 1M tokens on standard tier. Latency measured from us-east-1 over the last 24h.
         </p>
       </div>
@@ -334,9 +334,10 @@ stream = client.chat.completions.<span class="tok-fn">create</span>(
 
   <div id="site-footer"></div>
 
-  <script src="assets/js/layout.js?v=6" defer></script>
-  <script src="assets/js/effects.js?v=6" defer></script>
-  <script src="assets/js/models-data.js?v=6" defer></script>
-  <script src="assets/js/landing.js?v=6" defer></script>
+  <script src="assets/js/layout.js?v=7" defer></script>
+  <script src="assets/js/effects.js?v=7" defer></script>
+  <script src="assets/js/api.js?v=7" defer></script>
+  <script src="assets/js/models-data.js?v=7" defer></script>
+  <script src="assets/js/landing.js?v=7" defer></script>
 </body>
 </html>

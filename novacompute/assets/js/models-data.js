@@ -1,7 +1,13 @@
 /* ============================================================
-   NovaCompute — shared model catalogue (single source of truth).
-   Consumed by landing.js, pricing.js, playground.js, dashboard.js.
-   Prices are reseller rates in USD per 1M tokens.
+   NovaCompute — shared model catalogue.
+   1) Renders immediately from a baked-in snapshot (so the UI never
+      flashes empty) — the snapshot includes every current model,
+      e.g. Grok 4.6 (xAI / ExosAI) at $0.50 / $1.50.
+   2) fetchModels() pulls the live catalogue from the backend
+      (GET /v1/models) and swaps window.NOVA_MODELS in place.
+      If the backend is down, the snapshot stays and
+      NOVA_MODELS_SOURCE = "fallback".
+   Consumers: landing.js, pricing.js, playground.js, dashboard.js.
    ============================================================ */
 
 (function () {
@@ -15,13 +21,14 @@
     Diffusion: 'border-fuchsia-400/25 bg-fuchsia-500/10 text-fuchsia-300',
   };
 
-  /* categories: "chat" = Claude / GPT / Kimi / Mistral / GLM / Qwen
-                 "code" = DeepSeek / Mercury                          */
-  const MODELS = [
+  /* Snapshot used when the backend is unreachable — keep in sync with
+     backend/app.py MODELS (plus custom_models.json if you rely on it offline). */
+  const FALLBACK_MODELS = [
     { id: 'claude-opus-5.5-free', name: 'Claude Opus 5.5', provider: 'Anthropic', color: '#d97757', context: '1M', speed: 85, input: 10.0, output: 50.0, tag: 'Popular', category: 'chat' },
     { id: 'claude-sonnet-5-5-free', name: 'Claude Sonnet 5.5', provider: 'Anthropic', color: '#d97757', context: '1M', speed: 92, input: 2.0, output: 10.0, tag: null, category: 'chat' },
     { id: 'gpt-6-luna', name: 'GPT-6', provider: 'OpenAI', color: '#10a37f', context: '900K', speed: 118, input: 6.0, output: 20.0, tag: 'New', category: 'chat' },
     { id: 'gpt-5.6-luna', name: 'GPT-5.6', provider: 'OpenAI', color: '#10a37f', context: '900K', speed: 130, input: 3.0, output: 10.0, tag: null, category: 'chat' },
+    { id: 'grok-4.6', name: 'Grok 4.6', provider: 'xAI', color: '#f43f5e', context: '500K', speed: 150, input: 0.50, output: 1.50, tag: null, category: 'chat' },
     { id: 'deepseek-v4.1-flash', name: 'DeepSeek V4.1', provider: 'DeepSeek', color: '#4d6bfe', context: '1M', speed: 145, input: 0.10, output: 0.20, tag: 'Best value', category: 'code' },
     { id: 'deepseek-v4.1-flash-1017', name: 'DeepSeek V4.1 1017', provider: 'DeepSeek', color: '#4d6bfe', context: '1M', speed: 145, input: 0.10, output: 0.30, tag: null, category: 'code' },
     { id: 'kimi-k3.1-pro-free', name: 'Kimi k3.1 Pro', provider: 'Moonshot AI', color: '#8b5cf6', context: '1M', speed: 120, input: 0.15, output: 1.50, tag: null, category: 'chat' },
@@ -31,6 +38,86 @@
     { id: 'glm-5.3', name: 'GLM 5.3', provider: 'Z.ai', color: '#0ea5e9', context: '1M', speed: 85, input: 0.50, output: 1.20, tag: null, category: 'chat' },
     { id: 'qwen/qwen3.7-flash:free', name: 'Qwen 3.7', provider: 'Alibaba', color: '#6366f1', context: '1M', speed: 130, input: 0.0, output: 0.0, tag: 'Free', category: 'chat' },
   ];
+
+  const FALLBACK_BY_ID = {};
+  FALLBACK_MODELS.forEach((m) => { FALLBACK_BY_ID[m.id] = m; });
+
+  const PROVIDER_COLORS = {
+    anthropic: '#d97757',
+    openai: '#10a37f',
+    deepseek: '#4d6bfe',
+    'moonshot ai': '#8b5cf6',
+    'mistral ai': '#ff7000',
+    inception: '#d946ef',
+    'z.ai': '#0ea5e9',
+    alibaba: '#6366f1',
+    xai: '#f43f5e',
+  };
+  const COLOR_PALETTE = ['#8b5cf6', '#22d3ee', '#f472b6', '#f59e0b', '#34d399', '#60a5fa'];
+
+  function colorFor(id, provider) {
+    if (FALLBACK_BY_ID[id]) return FALLBACK_BY_ID[id].color;
+    const key = String(provider || '').toLowerCase();
+    if (PROVIDER_COLORS[key]) return PROVIDER_COLORS[key];
+    let hash = 0;
+    for (const ch of key) hash = (hash + ch.charCodeAt(0)) % 997;
+    return COLOR_PALETTE[hash % COLOR_PALETTE.length];
+  }
+
+  /* Backend shape: { id, owned_by, name, context, speed_tps, pricing:{...} }
+     (also tolerates the static shape: provider / speed / input / output) */
+  function mapBackendModel(raw) {
+    if (!raw || !raw.id) return null;
+    const pricing = raw.pricing || {};
+    const input = parseFloat(pricing.input_per_1m !== undefined ? pricing.input_per_1m : raw.input) || 0;
+    const output = parseFloat(pricing.output_per_1m !== undefined ? pricing.output_per_1m : raw.output) || 0;
+    const snapshot = FALLBACK_BY_ID[raw.id] || {};
+    const isFree = input === 0 && output === 0;
+    return {
+      id: String(raw.id),
+      name: raw.name || snapshot.name || String(raw.id),
+      provider: raw.owned_by || raw.provider || snapshot.provider || 'Custom',
+      color: colorFor(raw.id, raw.owned_by || raw.provider),
+      context: raw.context || snapshot.context || '—',
+      speed: Number(raw.speed_tps !== undefined ? raw.speed_tps : (raw.speed !== undefined ? raw.speed : snapshot.speed)) || 0,
+      input,
+      output,
+      tag: isFree ? 'Free' : (snapshot.tag || null),
+      category: /deepseek|mercury/i.test(String(raw.id)) ? 'code' : 'chat',
+    };
+  }
+
+  window.NOVA_MODELS = FALLBACK_MODELS.slice();
+  window.NOVA_MODELS_SOURCE = 'fallback';
+  window.NOVA_TAG_STYLES = TAG_STYLES;
+
+  /**
+   * Pull the live catalogue from the backend.
+   * Resolves with the model array; never throws (falls back to the snapshot).
+   */
+  window.fetchModels = async function fetchModels() {
+    const base = (window.NOVA_API_BASE || 'http://127.0.0.1:8080').replace(/\/+$/, '');
+    try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 4000);
+      const res = await fetch(`${base}/v1/models`, {
+        signal: controller.signal,
+        headers: { Accept: 'application/json' },
+      });
+      clearTimeout(timer);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const payload = await res.json();
+      const list = (payload.data || []).map(mapBackendModel).filter(Boolean);
+      if (!list.length) throw new Error('empty catalogue');
+      window.NOVA_MODELS = list;
+      window.NOVA_MODELS_SOURCE = 'live';
+      return list;
+    } catch (err) {
+      window.NOVA_MODELS = FALLBACK_MODELS.slice();
+      window.NOVA_MODELS_SOURCE = 'fallback';
+      return window.NOVA_MODELS;
+    }
+  };
 
   function rgba(hex, a) {
     const n = parseInt(hex.slice(1), 16);
@@ -85,9 +172,7 @@
       </tr>`;
   }
 
-  window.NOVA_MODELS = MODELS;
-  window.NOVA_TAG_STYLES = TAG_STYLES;
-  window.NOVA_MODEL_BY_ID = (id) => MODELS.find((m) => m.id === id) || null;
+  window.NOVA_MODEL_BY_ID = (id) => (window.NOVA_MODELS || []).find((m) => m.id === id) || null;
   window.novaRgba = rgba;
   window.renderModelRow = renderModelRow;
 })();

@@ -40,20 +40,30 @@
     }
   }
 
-  /* ---------- Model select ---------- */
-  window.NOVA_MODELS.forEach((m) => {
-    const opt = document.createElement('option');
-    opt.value = m.id;
-    const price = m.input === 0 ? 'Free' : `$${m.input.toFixed(2)}/$${m.output.toFixed(2)}`;
-    opt.textContent = `${m.name} — ${price}`;
-    MODEL_SELECT.appendChild(opt);
-  });
-
-  /* Preselect from ?model= (the "Try" buttons on the model table) */
+  /* ---------- Model select (live catalogue; fallback offline) ---------- */
   const requested = new URLSearchParams(window.location.search).get('model');
+
+  function populateModelOptions(preferredId) {
+    MODEL_SELECT.innerHTML = '';
+    (window.NOVA_MODELS || []).forEach((m) => {
+      const opt = document.createElement('option');
+      opt.value = m.id;
+      const price = m.input === 0 ? 'Free' : `$${m.input.toFixed(2)}/$${m.output.toFixed(2)}`;
+      opt.textContent = `${m.name} — ${price}`;
+      MODEL_SELECT.appendChild(opt);
+    });
+    if (preferredId && window.NOVA_MODEL_BY_ID(preferredId)) {
+      MODEL_SELECT.value = preferredId;
+    }
+    updateModelInfo();
+  }
+
+  populateModelOptions(requested);
   if (requested && window.NOVA_MODEL_BY_ID(requested)) {
-    MODEL_SELECT.value = requested;
     window.novaToast(`Loaded model: ${window.NOVA_MODEL_BY_ID(requested).name}`);
+  }
+  if (window.fetchModels) {
+    window.fetchModels().then(() => populateModelOptions(MODEL_SELECT.value || requested));
   }
 
   function currentModel() {

@@ -13,6 +13,8 @@
   /* ---------- Model table + filter tabs ---------- */
   const filterWrap = document.getElementById('model-filters');
   if (filterWrap && tbody && window.renderModelRow) {
+    let currentFilter = 'all';
+
     const render = (filter) => {
       const rows = window.NOVA_MODELS.filter((m) =>
         filter === 'all' ? true :
@@ -22,17 +24,35 @@
       tbody.innerHTML = rows.map(window.renderModelRow).join('');
     };
 
+    const applySourceNote = () => {
+      const note = document.getElementById('models-note');
+      if (!note) return;
+      note.textContent = window.NOVA_MODELS_SOURCE === 'live'
+        ? 'Prices are per 1M tokens on standard tier. Latency measured from us-east-1. · catalogue synced live from backend'
+        : 'Prices are per 1M tokens on standard tier. Latency measured from us-east-1. · backend offline — showing cached catalogue';
+    };
+
     filterWrap.querySelectorAll('.filter-tab').forEach((btn) => {
       btn.addEventListener('click', () => {
+        currentFilter = btn.dataset.filter;
         filterWrap.querySelectorAll('.filter-tab').forEach((b) => {
           b.classList.toggle('is-active', b === btn);
           b.setAttribute('aria-pressed', String(b === btn));
         });
-        render(btn.dataset.filter);
+        render(currentFilter);
       });
     });
 
-    render('all');
+    render(currentFilter);
+    applySourceNote();
+
+    /* Swap in the live catalogue from GET /v1/models (fallback stays if offline) */
+    if (window.fetchModels) {
+      window.fetchModels().then(() => {
+        render(currentFilter);
+        applySourceNote();
+      });
+    }
   }
 
   /* ---------- Hero code window: language tabs ---------- */
