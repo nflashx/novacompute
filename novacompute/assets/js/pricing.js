@@ -59,9 +59,9 @@
 
   /* ---------- Subscription plans + verified checkout ---------- */
   const PLANS = {
-    starter: { name: 'Starter', price: 4.99, quota: '1.5M quota tokens/day', tts: '20 TTS requests/day', bonus: 1 },
-    pro: { name: 'Pro', price: 12.99, quota: '6M quota tokens/day', tts: '60 TTS requests/day', bonus: 3 },
-    ultra: { name: 'Ultra', price: 29.99, quota: '20M quota tokens/day', tts: '150 TTS requests/day', bonus: 7 },
+    starter: { name: 'Starter', price: 4.99, quota: '1.5M quota tokens/day', tts: '20 TTS requests/day', bonus: 3 },
+    pro: { name: 'Pro', price: 12.99, quota: '6M quota tokens/day', tts: '60 TTS requests/day', bonus: 5 },
+    ultra: { name: 'Ultra', price: 29.99, quota: '20M quota tokens/day', tts: '150 TTS requests/day', bonus: 12 },
   };
 
   const subModal = document.getElementById('sub-modal');

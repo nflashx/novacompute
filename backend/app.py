@@ -165,9 +165,9 @@ MODEL_IDS = set(PRICING)
 
 # ================= SUBSCRIPTION PLANS =================
 PLANS = {
-    "starter": {"name": "Starter", "price": 4.99, "quota": 1_500_000, "tts": 20, "bonus": 1.0},
-    "pro": {"name": "Pro", "price": 12.99, "quota": 6_000_000, "tts": 60, "bonus": 3.0},
-    "ultra": {"name": "Ultra", "price": 29.99, "quota": 20_000_000, "tts": 150, "bonus": 7.0},
+    "starter": {"name": "Starter", "price": 4.99, "quota": 1_500_000, "tts": 20, "bonus": 3.0},
+    "pro": {"name": "Pro", "price": 12.99, "quota": 6_000_000, "tts": 60, "bonus": 5.0},
+    "ultra": {"name": "Ultra", "price": 29.99, "quota": 20_000_000, "tts": 150, "bonus": 12.0},
 }
 PLAN_QUOTA = {key: value["quota"] for key, value in PLANS.items()}
 # Sub quota multipliers: how many quota tokens one real token burns.
