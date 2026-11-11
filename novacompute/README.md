@@ -136,6 +136,11 @@ Three tabs:
 `refresh_models()` re-reads `custom_models.json` whenever the file's mtime
 changes — new keys and models apply without restarting `app.py`.
 
+## Deploy free forever (Cloudflare)
+
+Worker API + D1 + Pages setup: see [`cloudflare-api/DEPLOY.md`](../cloudflare-api/DEPLOY.md).
+Set the Worker URL in `assets/js/config.js` before deploying the static site.
+
 ## Notes / limitations
 
 - HTTP only, no TLS; single-process JSON store — fine for demos, not for production.

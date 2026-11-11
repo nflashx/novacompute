@@ -1,0 +1,12 @@
+name = "novacompute-api"
+main = "src/index.js"
+compatibility_date = "2026-11-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "novacompute"
+database_id = "PASTE_YOUR_D1_DATABASE_ID_HERE"
+
+[vars]
+UPSTREAM_RETRY_DELAY_MS = "1500"
+UPSTREAM_RETRY_ATTEMPTS = "3"

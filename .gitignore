@@ -18,3 +18,9 @@ backend/app.py.bak*
 
 # Provider key pools — never commit
 backend/*_keys.json
+
+# Cloudflare Worker
+cloudflare-api/node_modules/
+cloudflare-api/.wrangler/
+cloudflare-api/.dev.vars
+cloudflare-api/worker-configuration.d.ts
