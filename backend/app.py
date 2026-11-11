@@ -932,6 +932,9 @@ class NovaHandler(BaseHTTPRequestHandler):
             return
         if path == "/api/me": self.handle_me(); return
         if path == "/api/fx": self.handle_fx(); return
+        if path == "/api/admin/overview": self.handle_admin_overview(); return
+        if path == "/api/admin/users": self.handle_admin_users(); return
+        if path == "/api/admin/transactions": self.handle_admin_transactions(); return
         if path.startswith("/api/oauth/") and path.endswith("/start"):
             self.handle_oauth_start(path.split("/")[3]); return
         if path.startswith("/api/auth/oauth/") and path.endswith("/callback"):
@@ -949,6 +952,7 @@ class NovaHandler(BaseHTTPRequestHandler):
         if path == "/api/paypal/create-order": self.handle_paypal_create(); return
         if path == "/api/paypal/capture-order": self.handle_paypal_capture(); return
         if path == "/api/payments/bank-webhook": self.handle_bank_webhook(); return
+        if path == "/api/admin/user": self.handle_admin_user_update(); return
         if path == "/api/keys": self.handle_create_key(); return
         if path == "/api/topup":
             self.send_error_json(410, "invalid_request_error", "use_checkout", "Top-up requires a verified payment. Use PayPal or a bank transfer.")
@@ -996,7 +1000,7 @@ class NovaHandler(BaseHTTPRequestHandler):
             db["oauth_sessions"].pop(token, None); save_users(db)
             active_keys = [k for k in user.get("api_keys", []) if k.get("status", "active") == "active"]
             if not active_keys: return self.send_error_json(403, "authentication_error", "no_active_key", "This account has no active API keys.")
-        self.send_json(200, {"user": {"name": user["name"], "email": user["email"], "created_at": user.get("created_at")}, "api_key": active_keys[0]["key"], "balance": round(user.get("balance", 0.0), 6)})
+        self.send_json(200, {"user": {"name": user["name"], "email": user["email"], "created_at": user.get("created_at"), "is_admin": bool(user.get("is_admin"))}, "api_key": active_keys[0]["key"], "balance": round(user.get("balance", 0.0), 6)})
 
     def handle_paypal_create(self):
         _db, user, _key = self.authenticate()
@@ -1228,7 +1232,7 @@ class NovaHandler(BaseHTTPRequestHandler):
             db["failed_logins"].pop(email, None); save_users(db)
             active_keys = [k for k in user.get("api_keys", []) if k.get("status", "active") == "active"]
             if not active_keys: return self.send_error_json(403, "authentication_error", "no_active_key", "This account has no active API keys.")
-        self.send_json(200, {"user": {"name": user["name"], "email": user["email"], "created_at": user.get("created_at")}, "api_key": active_keys[0]["key"], "balance": round(user.get("balance", 0.0), 6)})
+        self.send_json(200, {"user": {"name": user["name"], "email": user["email"], "created_at": user.get("created_at"), "is_admin": bool(user.get("is_admin"))}, "api_key": active_keys[0]["key"], "balance": round(user.get("balance", 0.0), 6)})
 
     def handle_me(self):
         _db, user, key = self.authenticate()
@@ -1236,7 +1240,119 @@ class NovaHandler(BaseHTTPRequestHandler):
         agg = usage_aggregates(user)
         active_plan = plan_active(user)
         plan = user.get("plan") if active_plan else "free"
-        self.send_json(200, {"user": {"name": user.get("name"), "email": user.get("email"), "company": user.get("company", ""), "created_at": user.get("created_at"), "verified": user.get("verified", True), "provider": user.get("provider", "email")}, "balance": round(user.get("balance", 0.0), 6), "plan": plan, "plan_name": PLANS.get(plan, {}).get("name", "Pay-as-you-go"), "plan_expires": user.get("plan_expires") if active_plan else None, "daily_quota": PLAN_QUOTA.get(plan, 0), "plan_bonus": PLANS.get(plan, {}).get("bonus", 0), "daily_tts": PLANS.get(plan, {}).get("tts", 0), "quota_used_today": plan_tokens_used_today(user) if active_plan else 0, "api_keys": [public_key(k) for k in user.get("api_keys", []) if k.get("status", "active") == "active"], "request_key_id": key["id"], "stats": agg["stats"], "daily": agg["daily"], "by_model": agg["by_model"], "recent": agg["recent"], "transactions": transactions(user)})
+        self.send_json(200, {"user": {"name": user.get("name"), "email": user.get("email"), "company": user.get("company", ""), "created_at": user.get("created_at"), "verified": user.get("verified", True), "provider": user.get("provider", "email"), "is_admin": bool(user.get("is_admin"))}, "balance": round(user.get("balance", 0.0), 6), "plan": plan, "plan_name": PLANS.get(plan, {}).get("name", "Pay-as-you-go"), "plan_expires": user.get("plan_expires") if active_plan else None, "daily_quota": PLAN_QUOTA.get(plan, 0), "plan_bonus": PLANS.get(plan, {}).get("bonus", 0), "daily_tts": PLANS.get(plan, {}).get("tts", 0), "quota_used_today": plan_tokens_used_today(user) if active_plan else 0, "api_keys": [public_key(k) for k in user.get("api_keys", []) if k.get("status", "active") == "active"], "request_key_id": key["id"], "stats": agg["stats"], "daily": agg["daily"], "by_model": agg["by_model"], "recent": agg["recent"], "transactions": transactions(user)})
+
+    def require_admin(self):
+        _db, user, _key = self.authenticate()
+        if not user or not user.get("is_admin"):
+            self.send_error_json(403, "authentication_error", "admin_required", "Admin access required.")
+            return None
+        return user
+
+    def handle_admin_overview(self):
+        if not self.require_admin(): return
+        db = load_users()
+        users = db["users"]
+        today = now_utc().date()
+        requests_today = 0
+        tokens_today = 0
+        for user in users:
+            for event in user.get("usage", []):
+                try:
+                    if datetime.fromtimestamp(event["ts"], timezone.utc).date() != today: continue
+                except (KeyError, ValueError, OSError):
+                    continue
+                requests_today += 1
+                tokens_today += int(event.get("prompt_tokens", 0)) + int(event.get("completion_tokens", 0))
+        revenue = 0.0
+        for user in users:
+            for tx in user.get("transactions", []):
+                if tx.get("type") in ("topup", "subscription"):
+                    revenue += float(tx.get("amount", 0) or 0)
+        keys_loaded = sum(len(load_keys_from_file(p["keys_file"], p.get("fallback_key"))) for p in PROVIDERS.values())
+        self.send_json(200, {
+            "users": len(users),
+            "active_plans": sum(1 for u in users if plan_active(u)),
+            "total_balance": round(sum(float(u.get("balance", 0) or 0) for u in users), 2),
+            "revenue": round(revenue, 2),
+            "requests_today": requests_today,
+            "tokens_today": tokens_today,
+            "provider_keys": keys_loaded,
+            "models": len(MODELS),
+        })
+
+    def handle_admin_users(self):
+        if not self.require_admin(): return
+        db = load_users()
+        rows = []
+        for user in db["users"]:
+            usage = user.get("usage", [])
+            tokens = sum(int(e.get("prompt_tokens", 0)) + int(e.get("completion_tokens", 0)) for e in usage)
+            last = max((e.get("ts", 0) for e in usage), default=0)
+            rows.append({
+                "email": user.get("email"),
+                "name": user.get("name", ""),
+                "plan": user.get("plan", "free") if plan_active(user) else "free",
+                "plan_expires": user.get("plan_expires") if plan_active(user) else None,
+                "balance": round(float(user.get("balance", 0) or 0), 2),
+                "requests": len(usage),
+                "tokens": tokens,
+                "last_used": last,
+                "is_admin": bool(user.get("is_admin")),
+                "created_at": user.get("created_at"),
+            })
+        rows.sort(key=lambda r: r.get("created_at") or "", reverse=True)
+        self.send_json(200, {"users": rows})
+
+    def handle_admin_transactions(self):
+        if not self.require_admin(): return
+        db = load_users()
+        rows = []
+        for user in db["users"]:
+            for tx in user.get("transactions", []):
+                rows.append({
+                    "email": user.get("email"),
+                    "ts": tx.get("ts", 0),
+                    "type": tx.get("type", "usage"),
+                    "description": tx.get("description", ""),
+                    "method": tx.get("method", ""),
+                    "amount": tx.get("amount", 0),
+                })
+        rows.sort(key=lambda r: r.get("ts", 0), reverse=True)
+        self.send_json(200, {"transactions": rows[:100]})
+
+    def handle_admin_user_update(self):
+        if not self.require_admin(): return
+        body = self.read_json_body() or {}
+        email = str(body.get("email", "")).strip().lower()
+        with DB_LOCK:
+            db = load_users()
+            target = find_user_by_email(db, email)
+            if not target: return self.send_error_json(404, "not_found", "user_missing", "Account not found.")
+            if "plan" in body:
+                plan = str(body.get("plan", "free")).lower()
+                if plan not in ("free", *PLANS.keys()):
+                    return self.send_error_json(400, "invalid_request_error", "invalid_plan", "Unknown plan.")
+                target["plan"] = plan
+                if plan == "free":
+                    target.pop("plan_expires", None); target.pop("plan_started", None)
+                else:
+                    target["plan_started"] = iso(now_utc())
+                    target["plan_expires"] = iso(now_utc() + timedelta(days=30))
+            if "balance_delta" in body:
+                try: delta = round(float(body.get("balance_delta", 0)), 2)
+                except (TypeError, ValueError): delta = 0
+                if delta:
+                    target["balance"] = round(max(0.0, float(target.get("balance", 0)) + delta), 6)
+                    target.setdefault("transactions", []).append({
+                        "ts": int(time.time()), "type": "admin_adjustment", "description": "Admin balance adjustment",
+                        "method": "Admin", "amount": delta,
+                    })
+                    target["transactions"] = target["transactions"][-200:]
+            if "is_admin" in body:
+                target["is_admin"] = bool(body.get("is_admin"))
+            save_users(db)
+        self.send_json(200, {"ok": True, "email": email, "plan": target.get("plan", "free"), "balance": round(float(target.get("balance", 0)), 2), "is_admin": bool(target.get("is_admin"))})
 
     def handle_create_key(self):
         _db, user, _key = self.authenticate()
@@ -1414,6 +1530,17 @@ class NovaHandler(BaseHTTPRequestHandler):
         
         messages = body.get("messages")
         if not isinstance(messages, list) or not messages: return self.send_error_json(400, "invalid_request_error", "invalid_messages", "'messages' must be a non-empty array.")
+        # Always mirror the language of the user's latest message.
+        language_rule = ("Always answer in the same language as the user's most recent message. "
+                         "Detect it from their text and never switch to another language unless they ask. "
+                         "A short greeting such as \"alo\" is Vietnamese, so answer in Vietnamese.")
+        messages = [dict(m) for m in messages if isinstance(m, dict)]
+        if messages and messages[0].get("role") == "system":
+            base = str(messages[0].get("content") or "").rstrip()
+            messages[0]["content"] = (base + "\n\n" + language_rule).strip()
+        else:
+            messages.insert(0, {"role": "system", "content": language_rule})
+        body["messages"] = messages
         upstream_model = (MODEL_LOOKUP.get(model) or {}).get("upstream_id") or model
         
         price_in, price_out = PRICING[model]

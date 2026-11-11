@@ -190,6 +190,11 @@
     if (subtitle) subtitle.textContent = `${me.user.email} · ${me.stats.total_requests} requests all-time`;
     const badge = document.getElementById('dash-badge');
     if (badge) badge.textContent = 'live workspace';
+    const adminLink = document.getElementById('nav-admin');
+    if (adminLink) {
+      adminLink.classList.toggle('hidden', !me.user.is_admin);
+      adminLink.classList.toggle('flex', !!me.user.is_admin);
+    }
   }
 
   function renderStats() {

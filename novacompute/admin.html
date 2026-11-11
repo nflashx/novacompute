@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <style>html{background-color:#05070e;color-scheme:dark}body{background-color:#05070e}</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Console — NovaCompute</title>
+  <meta name="theme-color" content="#05070e" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='24' y2='24' gradientUnits='userSpaceOnUse'%3E%3Cstop stop-color='%23a78bfa'/%3E%3Cstop offset='1' stop-color='%2322d3ee'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M12 1.5l2.6 7.9 7.9 2.6-7.9 2.6L12 22.5l-2.6-7.9-7.9-2.6 7.9-2.6L12 1.5z' fill='url(%23g)'/%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/tailwind.css?v=6" />
+  <link rel="stylesheet" href="assets/css/main.css?v=26" />
+</head>
+
+<body class="bg-night font-sans text-slate-200 antialiased overflow-x-hidden">
+  <div id="site-header"></div>
+
+  <main class="relative mx-auto max-w-7xl px-6 pb-20 pt-10">
+    <div class="orb right-[-180px] top-[60px] h-[360px] w-[360px]" style="background:rgba(124,58,237,.10)"></div>
+
+    <div class="reveal relative flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <div>
+        <div class="flex items-center gap-3">
+          <h1 class="font-display text-3xl font-bold tracking-tight text-white">Admin console</h1>
+          <span class="rounded-full border border-amber-400/30 bg-amber-400/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-amber-300">Admin</span>
+        </div>
+        <p class="mt-2 max-w-2xl text-sm leading-relaxed text-slate-400">
+          Live users, plans, balances and payments. Changes are written to <code class="font-mono text-xs text-slate-300">users_db.json</code> immediately.
+        </p>
+      </div>
+      <a href="dashboard.html" class="btn-ghost inline-flex w-fit items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-slate-200">Back to dashboard</a>
+    </div>
+
+    <div id="admin-stats" class="relative mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4"></div>
+
+    <section class="relative mt-8">
+      <div class="reveal flex items-end justify-between">
+        <div>
+          <h2 class="font-display text-lg font-semibold text-white">Users</h2>
+          <p class="mt-1 text-xs text-slate-500">Set plan, adjust balance, grant admin.</p>
+        </div>
+        <button type="button" id="admin-refresh" class="btn-ghost rounded-lg px-3 py-2 text-xs font-medium text-slate-200">Refresh</button>
+      </div>
+      <div class="reveal glass mt-4 overflow-hidden rounded-2xl">
+        <div class="overflow-x-auto">
+          <table class="w-full min-w-[980px] text-left text-sm">
+            <thead>
+              <tr class="border-b border-white/[0.06] bg-white/[0.02] text-[11px] uppercase tracking-wider text-slate-500">
+                <th class="px-5 py-3 font-medium">Account</th>
+                <th class="px-4 py-3 font-medium">Plan</th>
+                <th class="px-4 py-3 font-medium">Balance</th>
+                <th class="px-4 py-3 text-right font-medium">Requests</th>
+                <th class="px-4 py-3 text-right font-medium">Tokens</th>
+                <th class="px-4 py-3 font-medium">Last used</th>
+                <th class="px-5 py-3 text-right font-medium">Admin</th>
+              </tr>
+            </thead>
+            <tbody id="admin-users" class="divide-y divide-white/[0.04] text-slate-300">
+              <tr><td colspan="7" class="px-5 py-10 text-center text-sm text-slate-500">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="relative mt-8">
+      <div class="reveal">
+        <h2 class="font-display text-lg font-semibold text-white">Recent payments</h2>
+        <p class="mt-1 text-xs text-slate-500">Top-ups, subscriptions and admin adjustments across all accounts.</p>
+      </div>
+      <div class="reveal glass mt-4 overflow-hidden rounded-2xl">
+        <div class="overflow-x-auto">
+          <table class="w-full min-w-[760px] text-left text-sm">
+            <thead>
+              <tr class="border-b border-white/[0.06] bg-white/[0.02] text-[11px] uppercase tracking-wider text-slate-500">
+                <th class="px-5 py-3 font-medium">Date</th>
+                <th class="px-4 py-3 font-medium">Account</th>
+                <th class="px-4 py-3 font-medium">Description</th>
+                <th class="px-4 py-3 font-medium">Method</th>
+                <th class="px-5 py-3 text-right font-medium">Amount</th>
+              </tr>
+            </thead>
+            <tbody id="admin-transactions" class="divide-y divide-white/[0.04] text-slate-300">
+              <tr><td colspan="5" class="px-5 py-10 text-center text-sm text-slate-500">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="site-footer"></div>
+
+  <script src="assets/js/layout.js?v=27" defer></script>
+  <script src="assets/js/effects.js?v=26" defer></script>
+  <script src="assets/js/config.js?v=1" defer></script>
+  <script src="assets/js/api.js?v=27" defer></script>
+  <script src="assets/js/admin.js?v=1" defer></script>
+</body>
+</html>

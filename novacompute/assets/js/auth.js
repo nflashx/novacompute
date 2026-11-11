@@ -34,6 +34,7 @@
       email: data.user.email,
       api_key: data.api_key,
       balance: data.balance,
+      is_admin: !!(data.user && data.user.is_admin),
     });
     window.novaToast(message || 'Signed in — loading your dashboard…');
     setTimeout(() => { window.location.href = 'dashboard.html'; }, 320);
