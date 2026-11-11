@@ -230,6 +230,14 @@
     const noteEl = document.getElementById('quota-note');
     const trackEl = document.getElementById('quota-track');
     if (!planEl || !numEl || !barEl || !noteEl) return;
+    if (me.user.is_admin) {
+      planEl.textContent = 'Administrator — unlimited';
+      numEl.textContent = `${used.toLocaleString()} tokens today`;
+      barEl.style.width = '0%';
+      if (trackEl) trackEl.style.display = 'none';
+      noteEl.textContent = 'Admin account: paid models and TTS are not billed.';
+      return;
+    }
 
     if (quota > 0) {
       const pct = Math.min(100, Math.round((used / quota) * 100000) / 1000);
@@ -254,6 +262,11 @@
     const planEl = document.getElementById('billing-plan');
     const noteEl = document.getElementById('billing-plan-note');
     if (!planEl || !noteEl) return;
+    if (me.user.is_admin) {
+      planEl.textContent = 'Administrator — unlimited';
+      noteEl.textContent = 'No billing on this account. Manage users and payments from the Admin console.';
+      return;
+    }
     if (me.daily_quota > 0) {
       planEl.textContent = `${me.plan_name} — ${tokensShort(me.daily_quota)} quota tokens/day`;
       const until = me.plan_expires ? new Date(me.plan_expires).toLocaleDateString() : '—';

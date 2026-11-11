@@ -192,11 +192,13 @@ RATE_LIMITS = {
     "starter": {"rpm": 60, "daily": 1000},
     "pro": {"rpm": 300, "daily": 5000},
     "ultra": {"rpm": 600, "daily": 20000},
+    "admin": {"rpm": 1200, "daily": 100000},
 }
 RATE_LOCK = threading.Lock()
 RATE_BUCKETS = {}
 
 def rate_tier(user):
+    if user.get("is_admin"): return "admin"
     if plan_active(user): return user.get("plan")
     return "payg" if user.get("balance", 0) > 0 else "free"
 
@@ -797,6 +799,49 @@ def paypal_capture_order(user, order_id):
         db["paypal_orders"][order_id] = meta
         save_users(db)
     return {"status": "completed", "balance": target.get("balance", 0.0), "plan": target.get("plan", "free"), "plan_expires": target.get("plan_expires")}
+
+def message_text(message):
+    content = message.get("content") if isinstance(message, dict) else ""
+    if isinstance(content, str):
+        return content
+    if isinstance(content, list):
+        return " ".join(str(p.get("text", "")) for p in content if isinstance(p, dict) and p.get("type") == "text")
+    return ""
+
+def detect_reply_language(messages, accept_language=""):
+    """Cheap language detection: strong script signals + word lists + client locale."""
+    latest = ""
+    for message in reversed(messages):
+        if isinstance(message, dict) and message.get("role") == "user":
+            latest = message_text(message).strip()
+            if latest: break
+    if not latest: return None
+    text = latest.lower()
+    scores = {"Vietnamese": 0, "English": 0, "Spanish": 0, "French": 0, "Indonesian": 0, "German": 0}
+    if re.search(r"[ăâđêôơư]", text): scores["Vietnamese"] += 4
+    if re.search(r"[¿¡ñ]", text): scores["Spanish"] += 4
+    words = {
+        "Vietnamese": ["chào", "bạn", "tôi", "mình", "cảm ơn", "không", "được", "giúp", "như thế nào", "là gì", "tiếng việt", "ở đâu", "với", "cho tôi"],
+        "English": ["the", "is", "are", "what", "where", "when", "why", "how", "who", "you", "your", "please", "hello", "hi", "thanks", "from", "this", "that", "can", "does"],
+        "Spanish": ["hola", "qué", "como", "cómo", "dónde", "gracias", "puedo", "ayudarte", "eres", "por favor", "estás"],
+        "French": ["bonjour", "comment", "pourquoi", "merci", "vous", "je", "où", "avec", "être"],
+        "Indonesian": ["apa", "yang", "saya", "bisa", "dengan", "kabar", "terima kasih", "dari", "halo"],
+        "German": ["hallo", "wie", "was", "warum", "danke", "ich", "sie", "mit"],
+    }
+    for language, tokens in words.items():
+        for token in tokens:
+            if re.search(r"(?<!\w)" + re.escape(token) + r"(?!\w)", text):
+                scores[language] += 1
+    best = max(scores, key=scores.get)
+    if scores[best] >= 2:
+        return best
+    if scores[best] == 1 and len(text) <= 16:
+        return best
+    locale = (accept_language or "").split(",")[0].split("-")[0].strip().lower()
+    fallback = {"vi": "Vietnamese", "en": "English", "es": "Spanish", "fr": "French", "id": "Indonesian", "de": "German"}
+    if locale in fallback and len(text) <= 12:
+        return fallback[locale]
+    return None
 
 def record_usage(user_id, key_id, model_id, prompt_tokens, completion_tokens, latency_ms, status="ok", cost=0.0, client=""):
     with DB_LOCK:
@@ -1448,7 +1493,9 @@ class NovaHandler(BaseHTTPRequestHandler):
         price_per_1k = float(entry.get("output", 0) or 0)
         cost = round(len(text) / 1000.0 * price_per_1k, 6)
         active_plan = plan_active(user)
-        if cost > 0 and active_plan:
+        if cost > 0 and user.get("is_admin"):
+            cost = 0.0
+        elif cost > 0 and active_plan:
             tts_limit = int(PLANS.get(user.get("plan"), {}).get("tts", 0))
             if tts_limit and plan_tts_used_today(user) >= tts_limit:
                 if user.get("balance", 0) <= 0:
@@ -1531,9 +1578,13 @@ class NovaHandler(BaseHTTPRequestHandler):
         messages = body.get("messages")
         if not isinstance(messages, list) or not messages: return self.send_error_json(400, "invalid_request_error", "invalid_messages", "'messages' must be a non-empty array.")
         # Always mirror the language of the user's latest message.
-        language_rule = ("Always answer in the same language as the user's most recent message. "
-                         "Detect it from their text and never switch to another language unless they ask. "
-                         "A short greeting such as \"alo\" is Vietnamese, so answer in Vietnamese.")
+        detected_language = detect_reply_language(messages, self.headers.get("Accept-Language", ""))
+        if detected_language:
+            language_rule = (f"The user's latest message is in {detected_language}. "
+                             f"Always answer in {detected_language}. Never switch language unless the user asks.")
+        else:
+            language_rule = ("Always answer in the same language as the user's most recent message. "
+                             "Detect the language from their text and never switch unless the user asks.")
         messages = [dict(m) for m in messages if isinstance(m, dict)]
         if messages and messages[0].get("role") == "system":
             base = str(messages[0].get("content") or "").rstrip()
@@ -1545,9 +1596,10 @@ class NovaHandler(BaseHTTPRequestHandler):
         
         price_in, price_out = PRICING[model]
         is_paid = (price_in or price_out) > 0
+        is_admin = bool(user.get("is_admin"))
         active_plan = plan_active(user)
         plan_covered = bool(is_paid and active_plan)
-        if is_paid:
+        if is_paid and not is_admin:
             if plan_covered:
                 quota = PLAN_QUOTA.get(user.get("plan"), 0)
                 if plan_tokens_used_today(user) >= quota:
@@ -1556,7 +1608,7 @@ class NovaHandler(BaseHTTPRequestHandler):
                     plan_covered = False
             elif user.get("balance", 0) <= 0:
                 return self.send_error_json(402, "insufficient_balance_error", "insufficient_balance", "Balance exhausted.")
-        bill_in, bill_out = (0, 0) if plan_covered else (price_in, price_out)
+        bill_in, bill_out = (0, 0) if (plan_covered or is_admin) else (price_in, price_out)
 
         provider_name = MODEL_PROVIDER_MAP.get(model, DEFAULT_PROVIDER)
         provider_info = PROVIDERS.get(provider_name)

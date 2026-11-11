@@ -33,7 +33,7 @@
   if (MODE_BADGE) {
     if (signedIn) {
       MODE_BADGE.className = 'inline-flex w-fit items-center gap-2 rounded-full border border-emerald-400/25 bg-emerald-400/[0.07] px-3.5 py-1.5 text-xs font-medium text-emerald-300';
-      MODE_BADGE.innerHTML = '<span class="relative flex h-2 w-2"><span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60"></span><span class="relative inline-flex h-2 w-2 rounded-full bg-emerald-400"></span></span>Live API — billed to your account';
+      MODE_BADGE.innerHTML = '<span class="relative flex h-2 w-2"><span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60"></span><span class="relative inline-flex h-2 w-2 rounded-full bg-emerald-400"></span></span>' + (session.is_admin ? 'Live API — admin (not billed)' : 'Live API — billed to your account');
     } else {
       MODE_BADGE.className = 'inline-flex w-fit items-center gap-2 rounded-full border border-amber-400/20 bg-amber-400/[0.07] px-3.5 py-1.5 text-xs font-medium text-amber-300';
       MODE_BADGE.textContent = 'Sign in required — the playground calls the live API';
