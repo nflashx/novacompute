@@ -1,6 +1,7 @@
 # Secrets / local state — never commit these
 backend/users_db.json
 backend/upstream_config.json
+backend/nightrouter_keys.json
 
 # Python
 __pycache__/

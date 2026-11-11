@@ -10,8 +10,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="assets/js/tailwind-config.js?v=4"></script>
-  <link rel="stylesheet" href="assets/css/main.css?v=4" />
+  <script src="assets/js/tailwind-config.js?v=5"></script>
+  <link rel="stylesheet" href="assets/css/main.css?v=5" />
 </head>
 
 <body class="bg-night font-sans text-slate-200 antialiased overflow-x-hidden">
@@ -90,6 +90,15 @@
                     class="w-full resize-none rounded-lg border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white placeholder-slate-500 outline-none transition focus:border-violet-400/50 focus:ring-2 focus:ring-violet-500/20"></textarea>
         </div>
 
+        <!-- Temporary test switch -->
+        <label class="mt-6 flex cursor-pointer items-start gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
+          <input id="pg-mock-toggle" type="checkbox" class="mt-0.5 h-4 w-4 shrink-0 rounded border-white/20 bg-white/5 accent-violet-500" />
+          <span class="text-xs leading-relaxed text-slate-400">
+            <span class="font-medium text-slate-200">Mock test mode</span><br/>
+            Don't call the API — the bot uses canned replies. Useful for UI testing before an upstream key is configured. Untick to chat live.
+          </span>
+        </label>
+
         <button type="button" id="pg-clear" class="btn-ghost mt-6 w-full rounded-lg px-4 py-2.5 text-sm font-medium text-slate-200">
           Clear conversation
         </button>
@@ -135,10 +144,10 @@
 
   <div id="site-footer"></div>
 
-  <script src="assets/js/layout.js?v=4" defer></script>
-  <script src="assets/js/effects.js?v=4" defer></script>
-  <script src="assets/js/models-data.js?v=4" defer></script>
-  <script src="assets/js/api.js?v=4" defer></script>
-  <script src="assets/js/playground.js?v=4" defer></script>
+  <script src="assets/js/layout.js?v=5" defer></script>
+  <script src="assets/js/effects.js?v=5" defer></script>
+  <script src="assets/js/models-data.js?v=5" defer></script>
+  <script src="assets/js/api.js?v=5" defer></script>
+  <script src="assets/js/playground.js?v=5" defer></script>
 </body>
 </html>

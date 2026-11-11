@@ -27,20 +27,37 @@
   let history = [];
 
   /* Live mode: requires a signed-in session (api.js stored it at login).
-     Without it the playground keeps its local mock so the demo still works. */
+     The "Mock test mode" checkbox forces local canned replies so the UI can
+     be exercised without touching the API at all. */
   const session = window.novaSession ? window.novaSession.get() : null;
-  const live = !!(session && session.api_key);
+  let mockOverride = localStorage.getItem('pg_mock') === '1';
 
-  /* Mode badge: live vs mock */
   const MODE_BADGE = document.getElementById('pg-mode-badge');
-  if (MODE_BADGE) {
-    if (live) {
+  const MOCK_TOGGLE = document.getElementById('pg-mock-toggle');
+
+  function updateModeBadge() {
+    if (!MODE_BADGE) return;
+    if (!session || !session.api_key) {
+      MODE_BADGE.className = 'inline-flex w-fit items-center gap-2 rounded-full border border-amber-400/20 bg-amber-400/[0.07] px-3.5 py-1.5 text-xs font-medium text-amber-300';
+      MODE_BADGE.textContent = 'Demo mode — sign in for live API';
+    } else if (mockOverride) {
+      MODE_BADGE.className = 'inline-flex w-fit items-center gap-2 rounded-full border border-violet-400/25 bg-violet-500/10 px-3.5 py-1.5 text-xs font-medium text-violet-300';
+      MODE_BADGE.textContent = 'Mock test mode — no API calls';
+    } else {
       MODE_BADGE.className = 'inline-flex w-fit items-center gap-2 rounded-full border border-emerald-400/25 bg-emerald-400/[0.07] px-3.5 py-1.5 text-xs font-medium text-emerald-300';
       MODE_BADGE.innerHTML = '<span class="relative flex h-2 w-2"><span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60"></span><span class="relative inline-flex h-2 w-2 rounded-full bg-emerald-400"></span></span>Live API — billed to your account';
-    } else {
-      MODE_BADGE.textContent = 'Demo mode — sign in for live API';
     }
   }
+
+  if (MOCK_TOGGLE) {
+    MOCK_TOGGLE.checked = mockOverride;
+    MOCK_TOGGLE.addEventListener('change', () => {
+      mockOverride = MOCK_TOGGLE.checked;
+      localStorage.setItem('pg_mock', mockOverride ? '1' : '0');
+      updateModeBadge();
+    });
+  }
+  updateModeBadge();
 
   /* ---------- Model select ---------- */
   window.NOVA_MODELS.forEach((m) => {
@@ -212,7 +229,8 @@
     INPUT.value = '';
     INPUT.style.height = 'auto';
 
-    if (live) {
+    const useLive = !!(session && session.api_key) && !mockOverride;
+    if (useLive) {
       sendLive(text);
       return;
     }
