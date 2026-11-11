@@ -15,3 +15,6 @@ Thumbs.db
 
 # Local backups
 backend/app.py.bak*
+
+# Provider key pools — never commit
+backend/*_keys.json

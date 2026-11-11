@@ -37,6 +37,7 @@
     { id: 'glm-5.3-flash', name: 'GLM 5.3 Flash', provider: 'Z.ai', color: '#0ea5e9', context: '1M', speed: 240, input: 0.08, output: 0.30, tag: null, category: 'chat' },
     { id: 'glm-5.3', name: 'GLM 5.3', provider: 'Z.ai', color: '#0ea5e9', context: '1M', speed: 85, input: 0.50, output: 1.20, tag: null, category: 'chat' },
     { id: 'qwen/qwen3.7-flash:free', name: 'Qwen 3.7', provider: 'Alibaba', color: '#6366f1', context: '1M', speed: 130, input: 0.0, output: 0.0, tag: 'Free', category: 'chat' },
+    { id: 'gemini-4-argon-free', name: 'Gemini 4 Argon', provider: 'Google', color: '#4285f4', context: '1M', speed: 110, input: 0.50, output: 1.50, tag: null, category: 'chat' },
   ];
 
   const FALLBACK_BY_ID = {};
@@ -52,6 +53,7 @@
     'z.ai': '#0ea5e9',
     alibaba: '#6366f1',
     xai: '#f43f5e',
+    google: '#4285f4',
   };
   const COLOR_PALETTE = ['#8b5cf6', '#22d3ee', '#f472b6', '#f59e0b', '#34d399', '#60a5fa'];
 
