@@ -25,6 +25,13 @@ backend is pure Python standard library (`http.server` + `urllib`, no frameworks
 start.bat
 ```
 
+### 1-click silent launcher
+
+Run `Create_Shortcut.vbs` once → a **NovaCompute** icon appears on the Desktop.
+Double-clicking it starts both servers with **no console window** and opens the
+site after 3 seconds (`silent_start.vbs`). `start.bat` remains available for a
+manual launch with minimized log windows.
+
 Or manually:
 
 ```bash
