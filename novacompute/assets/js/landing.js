@@ -15,21 +15,25 @@
   if (filterWrap && tbody && window.renderModelRow) {
     let currentFilter = 'all';
 
+    const isFree = (m) => m.input === 0 && m.output === 0;
     const render = (filter) => {
       const rows = window.NOVA_MODELS.filter((m) =>
         filter === 'all' ? true :
-        filter === 'free' ? m.input === 0 && m.output === 0 :
+        filter === 'free' ? isFree(m) :
+        filter === 'paid' ? !isFree(m) :
         m.category === filter
       );
-      tbody.innerHTML = rows.map(window.renderModelRow).join('');
+      tbody.innerHTML = window.renderModelRowsGrouped
+        ? window.renderModelRowsGrouped(rows)
+        : rows.map(window.renderModelRow).join('');
     };
 
     const applySourceNote = () => {
       const note = document.getElementById('models-note');
       if (!note) return;
       note.textContent = window.NOVA_MODELS_SOURCE === 'live'
-        ? 'Prices are per 1M tokens on standard tier. Latency measured from us-east-1. · catalogue synced live from backend'
-        : 'Prices are per 1M tokens on standard tier. Latency measured from us-east-1. · backend offline — showing cached catalogue';
+        ? 'Prices are per 1M tokens on standard tier. Latency measured from us-east-1. · catalogue synced live from backend · Free tier + TTS subscription included'
+        : 'Prices are per 1M tokens on standard tier. Latency measured from us-east-1. · backend offline — showing cached catalogue · Free tier + TTS subscription included';
     };
 
     filterWrap.querySelectorAll('.filter-tab').forEach((btn) => {

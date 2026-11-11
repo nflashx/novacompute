@@ -403,7 +403,7 @@ async function handleChat(request, env, ctx) {
   if (!keys.length) return apiError(503, "configuration_error", "upstream_not_configured", `No keys configured for provider '${model.upstream}'. Add the ${provider.secret} secret.`);
 
   const stream = Boolean(body.stream);
-  const payload = JSON.stringify({ ...body, model: model.id });
+  const payload = JSON.stringify({ ...body, model: model.upstream_id || model.id });
   const retryDelay = Number(env.UPSTREAM_RETRY_DELAY_MS || 1500);
   const attempts = Math.max(1, Number(env.UPSTREAM_RETRY_ATTEMPTS || 3));
   const transient = new Set([429, 500, 502, 503, 504]);
@@ -518,6 +518,9 @@ export default {
             speed_tps: m.speed,
             pricing: { input_per_1m: m.input, output_per_1m: m.output },
             capabilities: { image: Boolean(m.image), video: Boolean(m.video) },
+            category: m.category || "chat",
+            tag: m.tag ?? null,
+            note: m.note || "",
           })),
         });
       }

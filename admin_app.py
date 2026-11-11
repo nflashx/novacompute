@@ -39,10 +39,16 @@ from tkinter import ttk, messagebox
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
 BACKEND_DIR = os.path.join(APP_DIR, "backend") if os.path.isdir(os.path.join(APP_DIR, "backend")) else APP_DIR
 
-KEY_FILES = {
-    "nightrouter": os.path.join(BACKEND_DIR, "nightrouter_keys.json"),
-    "exosai": os.path.join(BACKEND_DIR, "exosai_keys.json"),
-}
+PROVIDER_LIST = [
+    ("nightrouter", "NightRouter"),
+    ("exosai", "ExosAI"),
+    ("mistral", "Mistral"),
+    ("inception", "Inception"),
+    ("furry", "Furry"),
+    ("bazaarlink", "BazaarLink"),
+    ("nagaai", "NagaAI"),
+]
+KEY_FILES = {key: os.path.join(BACKEND_DIR, f"{key}_keys.json") for key, _title in PROVIDER_LIST}
 CUSTOM_MODELS_FILE = os.path.join(BACKEND_DIR, "custom_models.json")
 BACKEND_URL = os.getenv("NOVA_BACKEND_URL", "http://127.0.0.1:8080").rstrip("/")
 
@@ -322,7 +328,7 @@ class AdminConsole(tk.Tk):
         self.minsize(940, 580)
 
         self.reveal_keys = tk.BooleanVar(value=False)
-        self.key_rows = {"nightrouter": {}, "exosai": {}}
+        self.key_rows = {}
         self.model_rows = {}
 
         self._setup_style()
@@ -408,14 +414,31 @@ class AdminConsole(tk.Tk):
     def _build_keys_tab(self):
         top = tk.Frame(self.tab_keys, bg=BG)
         top.pack(fill="x", pady=(6, 4))
-        tk.Label(top, text="Key pools read/written straight to the JSON files the backend loads.",
+        tk.Label(top, text="One section per provider — keys are written straight to the JSON file the backend loads.",
                  bg=BG, fg=MUTED, font=("Segoe UI", 9)).pack(side="left")
         ttk.Checkbutton(top, text="Reveal keys", variable=self.reveal_keys,
                         command=self.refresh_all).pack(side="right")
 
-        for provider, title in (("nightrouter", "NightRouter Keys"), ("exosai", "ExosAI Keys")):
-            frame = ttk.Labelframe(self.tab_keys, text=f" {title} ")
-            frame.pack(fill="both", expand=True, pady=(6, 6))
+        outer = tk.Frame(self.tab_keys, bg=BG)
+        outer.pack(fill="both", expand=True, pady=(6, 0))
+        canvas = tk.Canvas(outer, bg=BG, highlightthickness=0)
+        scroll = ttk.Scrollbar(outer, orient="vertical", command=canvas.yview)
+        holder = tk.Frame(canvas, bg=BG)
+        holder.bind("<Configure>", lambda _e: canvas.configure(scrollregion=canvas.bbox("all")))
+        window_id = canvas.create_window((0, 0), window=holder, anchor="nw")
+        canvas.bind("<Configure>", lambda e: canvas.itemconfigure(window_id, width=e.width))
+        canvas.configure(yscrollcommand=scroll.set)
+        canvas.pack(side="left", fill="both", expand=True)
+        scroll.pack(side="right", fill="y")
+
+        def _wheel(event):
+            canvas.yview_scroll(int(-event.delta / 120), "units")
+        canvas.bind("<Enter>", lambda _e: canvas.bind_all("<MouseWheel>", _wheel))
+        canvas.bind("<Leave>", lambda _e: canvas.unbind_all("<MouseWheel>"))
+
+        for provider, title in PROVIDER_LIST:
+            frame = ttk.Labelframe(holder, text=f" {title} Keys ")
+            frame.pack(fill="x", expand=False, padx=(0, 8), pady=(0, 8))
 
             toolbar = tk.Frame(frame, bg=BG, padx=8, pady=6)
             toolbar.pack(fill="x")
@@ -428,19 +451,19 @@ class AdminConsole(tk.Tk):
             count_label.pack(side="right", padx=(8, 0))
             setattr(self, f"{provider}_count", count_label)
 
-            tree = ttk.Treeview(frame, columns=("key", "status", "label"), show="headings", selectmode="browse")
+            tree = ttk.Treeview(frame, columns=("key", "status", "label"), show="headings", selectmode="browse", height=4)
             tree.heading("key", text="API Key")
             tree.heading("status", text="Status")
             tree.heading("label", text="Label / Account")
-            tree.column("key", width=360, anchor="w")
+            tree.column("key", width=330, anchor="w")
             tree.column("status", width=90, anchor="center", stretch=False)
-            tree.column("label", width=220, anchor="w")
+            tree.column("label", width=200, anchor="w")
             tree.tag_configure("active", foreground=OK)
             tree.tag_configure("dead", foreground=ERR)
-            scroll = ttk.Scrollbar(frame, orient="vertical", command=tree.yview)
-            tree.configure(yscrollcommand=scroll.set)
-            tree.pack(side="left", fill="both", expand=True, padx=(8, 0), pady=(0, 8))
-            scroll.pack(side="right", fill="y", padx=(0, 8), pady=(0, 8))
+            vsb = ttk.Scrollbar(frame, orient="vertical", command=tree.yview)
+            tree.configure(yscrollcommand=vsb.set)
+            tree.pack(side="left", fill="x", expand=True, padx=(8, 0), pady=(0, 8))
+            vsb.pack(side="right", fill="y", padx=(0, 8), pady=(0, 8))
             setattr(self, f"{provider}_tree", tree)
 
     def _render_keys(self, provider):
@@ -803,7 +826,7 @@ class AdminConsole(tk.Tk):
 
     # ---------------- shared ----------------
     def refresh_all(self):
-        for provider in ("nightrouter", "exosai"):
+        for provider, _title in PROVIDER_LIST:
             if hasattr(self, f"{provider}_tree"):
                 self._render_keys(provider)
         if hasattr(self, "models_tree"):

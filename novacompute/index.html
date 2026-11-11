@@ -15,8 +15,8 @@
 
   <!-- Tailwind (Play CDN) + shared theme -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="assets/js/tailwind-config.js?v=12"></script>
-  <link rel="stylesheet" href="assets/css/main.css?v=12" />
+  <script src="assets/js/tailwind-config.js?v=15"></script>
+  <link rel="stylesheet" href="assets/css/main.css?v=15" />
 </head>
 
 <body class="bg-night font-sans text-slate-200 antialiased overflow-x-hidden">
@@ -273,9 +273,11 @@ stream = client.chat.completions.<span class="tok-fn">create</span>(
         <!-- Filters -->
         <div id="model-filters" class="reveal mt-9 flex flex-wrap gap-2" role="group" aria-label="Filter models">
           <button type="button" class="filter-tab is-active" data-filter="all" aria-pressed="true">All models</button>
+          <button type="button" class="filter-tab" data-filter="free" aria-pressed="false">Free</button>
+          <button type="button" class="filter-tab" data-filter="paid" aria-pressed="false">Paid</button>
           <button type="button" class="filter-tab" data-filter="chat" aria-pressed="false">Chat</button>
           <button type="button" class="filter-tab" data-filter="code" aria-pressed="false">Code</button>
-          <button type="button" class="filter-tab" data-filter="free" aria-pressed="false">Free</button>
+          <button type="button" class="filter-tab" data-filter="tts" aria-pressed="false">TTS</button>
         </div>
 
         <!-- Table -->
@@ -287,8 +289,8 @@ stream = client.chat.completions.<span class="tok-fn">create</span>(
                   <th scope="col" class="px-6 py-4 font-medium">Model</th>
                   <th scope="col" class="px-4 py-4 font-medium">Context</th>
                   <th scope="col" class="px-4 py-4 font-medium">Output speed</th>
-                  <th scope="col" class="px-4 py-4 text-right font-medium">Input / 1M</th>
-                  <th scope="col" class="px-4 py-4 text-right font-medium">Output / 1M</th>
+                  <th scope="col" class="whitespace-nowrap px-4 py-4 text-right font-medium">Input / 1M</th>
+                  <th scope="col" class="whitespace-nowrap px-4 py-4 text-right font-medium">Output / 1M</th>
                   <th scope="col" class="px-6 py-4"><span class="sr-only">Actions</span></th>
                 </tr>
               </thead>
@@ -334,10 +336,10 @@ stream = client.chat.completions.<span class="tok-fn">create</span>(
 
   <div id="site-footer"></div>
 
-  <script src="assets/js/layout.js?v=12" defer></script>
-  <script src="assets/js/effects.js?v=12" defer></script>
-  <script src="assets/js/api.js?v=12" defer></script>
-  <script src="assets/js/models-data.js?v=12" defer></script>
-  <script src="assets/js/landing.js?v=12" defer></script>
+  <script src="assets/js/layout.js?v=15" defer></script>
+  <script src="assets/js/effects.js?v=15" defer></script>
+  <script src="assets/js/api.js?v=15" defer></script>
+  <script src="assets/js/models-data.js?v=15" defer></script>
+  <script src="assets/js/landing.js?v=15" defer></script>
 </body>
 </html>

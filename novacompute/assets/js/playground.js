@@ -45,7 +45,7 @@
 
   function populateModelOptions(preferredId) {
     MODEL_SELECT.innerHTML = '';
-    (window.NOVA_MODELS || []).forEach((m) => {
+    (window.NOVA_MODELS || []).filter((m) => m.category === 'chat' || m.category === 'code').forEach((m) => {
       const opt = document.createElement('option');
       opt.value = m.id;
       const price = m.input === 0 ? 'Free' : `$${m.input.toFixed(2)}/$${m.output.toFixed(2)}`;

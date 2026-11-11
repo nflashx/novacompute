@@ -45,6 +45,7 @@ npx wrangler secret put MISTRAL_KEYS
 npx wrangler secret put INCEPTION_KEYS
 npx wrangler secret put FURRY_KEYS
 npx wrangler secret put BAZAARLINK_KEYS
+npx wrangler secret put NAGA_KEYS
 ```
 
 Use only keys you are authorised to resell through. Secrets are encrypted and

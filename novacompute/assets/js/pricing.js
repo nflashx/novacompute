@@ -13,21 +13,26 @@
 
   let currentFilter = 'all';
 
+  const isFree = (m) => m.input === 0 && m.output === 0;
+
   function render(filter) {
     const rows = window.NOVA_MODELS.filter((m) =>
       filter === 'all' ? true :
-      filter === 'free' ? m.input === 0 && m.output === 0 :
+      filter === 'free' ? isFree(m) :
+      filter === 'paid' ? !isFree(m) :
       m.category === filter
     );
-    tbody.innerHTML = rows.map(window.renderModelRow).join('');
+    tbody.innerHTML = window.renderModelRowsGrouped
+      ? window.renderModelRowsGrouped(rows)
+      : rows.map(window.renderModelRow).join('');
   }
 
   const applySourceNote = () => {
     const note = document.getElementById('pricing-note');
     if (!note) return;
     note.textContent = window.NOVA_MODELS_SOURCE === 'live'
-      ? 'Prices are per 1M tokens on the standard tier. Failed requests (5xx from our side) are never billed. · synced live from backend'
-      : 'Prices are per 1M tokens on the standard tier. Failed requests (5xx from our side) are never billed. · backend offline — cached catalogue';
+      ? 'Prices are per 1M tokens on the standard tier. Failed requests (5xx from our side) are never billed. · synced live from backend · Free tier + TTS subscription included'
+      : 'Prices are per 1M tokens on the standard tier. Failed requests (5xx from our side) are never billed. · backend offline — cached catalogue · Free tier + TTS subscription included';
   };
 
   filterWrap.querySelectorAll('.filter-tab').forEach((btn) => {
