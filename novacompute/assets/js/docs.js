@@ -75,10 +75,13 @@
         : isFree
           ? '<span class="rounded bg-emerald-500/10 px-1.5 py-0.5 font-mono text-[10px] text-emerald-300">FREE</span>'
           : '';
+      const mult = (!isTts && m.quota_multiplier > 1)
+        ? `<span class="rounded bg-indigo-500/10 px-1.5 py-0.5 font-mono text-[10px] text-indigo-300" title="Sub quota multiplier">Sub ×${m.quota_multiplier}</span>`
+        : '';
       return `<tr>
         <td class="px-4 py-3">
           <div class="flex items-center gap-2">
-            <span class="font-medium text-white">${m.name}</span>${category}
+            <span class="font-medium text-white">${m.name}</span>${category}${mult}
           </div>
           <p class="mt-0.5 text-[11px] text-slate-500">${m.provider}</p>
         </td>

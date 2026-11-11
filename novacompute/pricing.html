@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="assets/css/tailwind.css?v=3" />
+  <link rel="stylesheet" href="assets/css/tailwind.css?v=4" />
   <link rel="stylesheet" href="assets/css/main.css?v=26" />
 </head>
 
@@ -76,7 +76,7 @@
           Huge daily quotas. <span class="text-gradient">Below-market price.</span>
         </h2>
         <p class="reveal reveal-d2 mt-4 leading-relaxed text-slate-400">
-          Free models are unlimited (fair use). Paid-model tokens are capped by your plan, and premium models use 5× quota.
+          Free models are unlimited (fair use). Paid-model tokens are capped by your plan; each model shows its Sub × multiplier in the table below.
           Quotas reset every day — no top-ups, no per-request credit packs.
         </p>
       </div>
@@ -86,8 +86,8 @@
         <div class="reveal card-hover glass rounded-2xl p-6">
           <p class="text-xs font-semibold uppercase tracking-widest text-slate-500">Starter</p>
           <p class="mt-3 font-display text-4xl font-bold text-white">$4.99<span class="text-base font-medium text-slate-500">/mo</span></p>
-          <p class="mt-4 font-display text-2xl font-semibold text-cyan-300">1.5M <span class="text-sm font-normal text-slate-400">paid tokens/day</span></p>
-          <p class="mt-1 text-xs text-slate-500">≈ 45M tokens / month</p>
+          <p class="mt-4 font-display text-2xl font-semibold text-cyan-300">1.5M <span class="text-sm font-normal text-slate-400">quota tokens/day</span></p>
+          <p class="mt-1 text-xs text-slate-500">≈ 45M quota tokens / month</p>
           <ul class="mt-5 space-y-2.5 text-sm text-slate-400">
             <li class="flex gap-2"><span class="text-emerald-400">✓</span> Free models unlimited (fair use)</li>
             <li class="flex gap-2"><span class="text-emerald-400">✓</span> 20 TTS requests/day</li>
@@ -101,8 +101,8 @@
           <span class="absolute right-4 top-4 rounded-full border border-violet-300/30 bg-violet-500/20 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-violet-200">Most popular</span>
           <p class="text-xs font-semibold uppercase tracking-widest text-violet-300/80">Pro</p>
           <p class="mt-3 font-display text-4xl font-bold text-white">$12.99<span class="text-base font-medium text-slate-500">/mo</span></p>
-          <p class="mt-4 font-display text-2xl font-semibold text-violet-300">6M <span class="text-sm font-normal text-slate-400">paid tokens/day</span></p>
-          <p class="mt-1 text-xs text-slate-500">≈ 180M tokens / month</p>
+          <p class="mt-4 font-display text-2xl font-semibold text-violet-300">6M <span class="text-sm font-normal text-slate-400">quota tokens/day</span></p>
+          <p class="mt-1 text-xs text-slate-500">≈ 180M quota tokens / month</p>
           <ul class="mt-5 space-y-2.5 text-sm text-slate-300">
             <li class="flex gap-2"><span class="text-emerald-400">✓</span> Free models unlimited (fair use)</li>
             <li class="flex gap-2"><span class="text-emerald-400">✓</span> 60 TTS requests/day</li>
@@ -115,8 +115,8 @@
         <div class="reveal reveal-d2 card-hover glass rounded-2xl p-6">
           <p class="text-xs font-semibold uppercase tracking-widest text-slate-500">Ultra</p>
           <p class="mt-3 font-display text-4xl font-bold text-white">$29.99<span class="text-base font-medium text-slate-500">/mo</span></p>
-          <p class="mt-4 font-display text-2xl font-semibold text-fuchsia-300">20M <span class="text-sm font-normal text-slate-400">paid tokens/day</span></p>
-          <p class="mt-1 text-xs text-slate-500">≈ 600M tokens / month</p>
+          <p class="mt-4 font-display text-2xl font-semibold text-fuchsia-300">20M <span class="text-sm font-normal text-slate-400">quota tokens/day</span></p>
+          <p class="mt-1 text-xs text-slate-500">≈ 600M quota tokens / month</p>
           <ul class="mt-5 space-y-2.5 text-sm text-slate-400">
             <li class="flex gap-2"><span class="text-emerald-400">✓</span> Free models unlimited (fair use)</li>
             <li class="flex gap-2"><span class="text-emerald-400">✓</span> 150 TTS requests/day</li>
@@ -127,8 +127,8 @@
       </div>
 
       <p class="reveal mt-4 text-center text-xs text-slate-500">
-        Paid-model tokens only. Premium models (Claude · Kimi · Gemini) consume 5× quota. Quota resets daily; no resale of quota.
-        Pro ≈ $0.07 / 1M effective — below list prices.
+        Paid-model tokens only. Sub quota is weighted by model cost: GLM 2× · DeepSeek 5× · GPT-6 8× · Gemini 25× · Grok 100× · Claude/Kimi 180–320×. Quota resets daily; no resale of quota.
+        Pro ≈ $0.07 / 1M quota tokens.
       </p>
     </section>
 
@@ -251,8 +251,8 @@
   <script src="assets/js/effects.js?v=26" defer></script>
   <script src="assets/js/config.js?v=1" defer></script>
   <script src="assets/js/api.js?v=27" defer></script>
-  <script src="assets/js/models-data.js?v=26" defer></script>
+  <script src="assets/js/models-data.js?v=27" defer></script>
   <script src="assets/js/payment-config.js?v=26" defer></script>
-  <script src="assets/js/pricing.js?v=30" defer></script>
+  <script src="assets/js/pricing.js?v=31" defer></script>
 </body>
 </html>

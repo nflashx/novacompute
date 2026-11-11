@@ -43,6 +43,21 @@
   const FALLBACK_BY_ID = {};
   FALLBACK_MODELS.forEach((m) => { FALLBACK_BY_ID[m.id] = m; });
 
+  /* Sub plans count quota tokens, weighted by real model cost. */
+  const QUOTA_MULT = {
+    'glm-5.3-flash': 2,
+    'deepseek-v4.1-flash-1017': 5,
+    'mercury-3': 7,
+    'gpt-6-luna': 8,
+    'ernie-5.5-flash': 12,
+    'gemini-4-argon': 25,
+    'grok-4.6': 100,
+    'kimi-k3.1-pro': 180,
+    'claude-sonnet-5.5': 180,
+    'claude-opus-5.5': 320,
+  };
+  FALLBACK_MODELS.forEach((m) => { m.quota_multiplier = QUOTA_MULT[m.id] || 1; });
+
   const PROVIDER_COLORS = {
     anthropic: '#d97757', openai: '#10a37f', deepseek: '#4d6bfe',
     'moonshot ai': '#8b5cf6', 'mistral ai': '#ff7000', inception: '#d946ef',
@@ -100,6 +115,7 @@
       video: Boolean(raw.capabilities ? raw.capabilities.video : (raw.video !== undefined ? raw.video : snapshot.video)),
       note: raw.note || snapshot.note || '',
       price_unit: raw.price_unit || snapshot.price_unit || null,
+      quota_multiplier: Number(raw.quota_multiplier || QUOTA_MULT[raw.id] || 1),
     };
   }
 
@@ -158,6 +174,9 @@
     const bar = m.speed > 0 ? Math.max(8, Math.min(100, Math.round((m.speed / MAX_SPEED) * 100))) : 8;
     const canTry = ['chat', 'code', 'tts'].includes(m.category);
     const speedText = m.speed > 0 ? `${m.speed >= 1000 ? '1000+' : m.speed} tok/s` : '— tok/s';
+    const multBadge = m.quota_multiplier > 1 && m.category !== 'tts'
+      ? `<span class="ml-2 rounded-full border border-sky-400/25 bg-sky-500/10 px-1.5 py-0.5 align-middle text-[10px] font-semibold text-sky-300" title="Sub quota multiplier: each token burns this many quota tokens">Sub ×${m.quota_multiplier}</span>`
+      : '';
     return `
       <tr class="model-row group" style="--m:${m.color}">
         <td class="px-6 py-4">
@@ -165,7 +184,7 @@
             <span class="model-avatar flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-sm font-bold"
                   style="background:${rgba(m.color, 0.14)};color:${m.color};border:1px solid ${rgba(m.color, 0.3)}">${m.name.charAt(0)}</span>
             <div>
-              <p class="font-medium text-white">${m.name}${tagCell(m.tag)}</p>
+              <p class="font-medium text-white">${m.name}${tagCell(m.tag)}${multBadge}</p>
               <p class="mt-0.5 font-mono text-xs text-slate-500">${displayCode(m)}</p>
             </div>
           </div>

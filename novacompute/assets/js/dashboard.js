@@ -229,7 +229,7 @@
     if (quota > 0) {
       const pct = Math.min(100, Math.round((used / quota) * 100000) / 1000);
       planEl.textContent = `${me.plan_name || plan} · ${used >= quota ? 'quota reached' : 'active'}`;
-      numEl.textContent = `${used.toLocaleString()} / ${quota.toLocaleString()} tokens today · ${pct.toFixed(3)}%`;
+      numEl.textContent = `${used.toLocaleString()} / ${quota.toLocaleString()} quota tokens today · ${pct.toFixed(3)}%`;
       barEl.style.width = `${pct}%`;
       if (trackEl) trackEl.style.display = '';
       barEl.className = `h-full rounded-full transition-[width] duration-500 ${used >= quota ? 'bg-red-400' : 'bg-gradient-to-r from-violet-500 to-cyan-400'}`;
@@ -250,7 +250,7 @@
     const noteEl = document.getElementById('billing-plan-note');
     if (!planEl || !noteEl) return;
     if (me.daily_quota > 0) {
-      planEl.textContent = `${me.plan_name} — ${tokensShort(me.daily_quota)} paid tokens/day`;
+      planEl.textContent = `${me.plan_name} — ${tokensShort(me.daily_quota)} quota tokens/day`;
       const until = me.plan_expires ? new Date(me.plan_expires).toLocaleDateString() : '—';
       noteEl.textContent = `≈ ${tokensShort(me.daily_quota * 30)} tokens/month · active until ${until} · ${me.daily_tts || 0} TTS requests/day · activated automatically after payment.`;
     } else {
@@ -485,7 +485,7 @@
     if (paypalSdkPromise) return paypalSdkPromise;
     paypalSdkPromise = new Promise((resolve, reject) => {
       const script = document.createElement('script');
-      const params = new URLSearchParams({ 'client-id': clientId, currency: 'USD', intent: 'capture', components: 'buttons' });
+      const params = new URLSearchParams({ 'client-id': clientId, currency: 'USD', intent: 'capture', components: 'buttons', 'disable-funding': 'card,credit' });
       script.src = `https://www.paypal.com/sdk/js?${params.toString()}`;
       script.async = true;
       script.onload = () => (window.paypal && window.paypal.Buttons) ? resolve(window.paypal) : reject(new Error('PayPal SDK loaded without Buttons'));

@@ -47,3 +47,19 @@ and Casso (`data[].amount`, `data[].description`, `data[].id`). The endpoint:
 If no webhook is connected, the QR still works but activation is manual after
 the receipt is checked. The dashboard no longer has any fake top-up button or
 stored demo card.
+
+## Anti-abuse rules for payments
+
+- PayPal SDK is loaded with `disable-funding=card,credit`: no guest debit/credit
+  card button. A verified PayPal account is required, which removes the easiest
+  virtual-card testing path. PayPal still performs its own risk checks.
+- New accounts: max $20 in the first 10 minutes, max $100/day for the first 7 days.
+- Max 3 payment attempts per 10 minutes.
+- One PayPal payer ID can fund only one NovaCompute account; a second account is
+  rejected before capture.
+- One bank sender account (when provided by the webhook) can fund only one account.
+- All payment credits are idempotent by PayPal order id / bank transaction id.
+
+These checks stop casual card-testing and multi-account farming. They cannot see
+the card BIN inside a PayPal account; use Stripe Radar, Seon, Sumsub or a phone
+verification step if you need hard KYC.

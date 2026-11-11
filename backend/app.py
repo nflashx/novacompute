@@ -3,6 +3,7 @@
 
 import hashlib
 import json
+from collections import deque
 import os
 import random
 import re
@@ -169,7 +170,59 @@ PLANS = {
     "ultra": {"name": "Ultra", "price": 29.99, "quota": 20_000_000, "tts": 150},
 }
 PLAN_QUOTA = {key: value["quota"] for key, value in PLANS.items()}
-PREMIUM_MODELS = {"claude-opus-5.5", "claude-sonnet-5.5", "kimi-k3.1-pro", "gemini-4-argon"}
+# Sub quota multipliers: how many quota tokens one real token burns.
+# Based on the Ultra budget (the most generous plan) so no plan loses at 100% output.
+QUOTA_MULTIPLIERS = {
+    "glm-5.3-flash": 2,
+    "deepseek-v4.1-flash-1017": 5,
+    "mercury-3": 7,
+    "gpt-6-luna": 8,
+    "ernie-5.5-flash": 12,
+    "gemini-4-argon": 25,
+    "grok-4.6": 100,
+    "kimi-k3.1-pro": 180,
+    "claude-sonnet-5.5": 180,
+    "claude-opus-5.5": 320,
+}
+
+# ================= REQUEST RATE LIMITS =================
+RATE_LIMITS = {
+    "free": {"rpm": 30, "daily": 500},
+    "payg": {"rpm": 120, "daily": 5000},
+    "starter": {"rpm": 60, "daily": 1000},
+    "pro": {"rpm": 300, "daily": 5000},
+    "ultra": {"rpm": 600, "daily": 20000},
+}
+RATE_LOCK = threading.Lock()
+RATE_BUCKETS = {}
+
+def rate_tier(user):
+    if plan_active(user): return user.get("plan")
+    return "payg" if user.get("balance", 0) > 0 else "free"
+
+def check_request_rate(user, key):
+    limits = RATE_LIMITS.get(rate_tier(user), RATE_LIMITS["free"])
+    now = time.time()
+    with RATE_LOCK:
+        bucket = RATE_BUCKETS.setdefault(key["id"], deque())
+        while bucket and now - bucket[0] >= 60:
+            bucket.popleft()
+        if len(bucket) >= limits["rpm"]:
+            retry = max(1, int(60 - (now - bucket[0])) + 1)
+            return False, limits, retry, "rpm"
+        today = now_utc().date()
+        used_today = 0
+        for event in user.get("usage", []):
+            try:
+                if event.get("key_id") not in (None, key["id"]): continue
+                if datetime.fromtimestamp(event["ts"], timezone.utc).date() == today:
+                    used_today += 1
+            except (KeyError, ValueError, OSError):
+                continue
+        if used_today >= limits["daily"]:
+            return False, limits, None, "daily"
+        bucket.append(now)
+    return True, limits, 0, ""
 
 def plan_active(user):
     plan = user.get("plan")
@@ -193,7 +246,7 @@ def plan_tokens_used_today(user):
         price_in, price_out = PRICING.get(model, (0, 0))
         if not price_in and not price_out: continue
         tokens = int(event.get("prompt_tokens", 0)) + int(event.get("completion_tokens", 0))
-        total += tokens * (5 if model in PREMIUM_MODELS else 1)
+        total += tokens * QUOTA_MULTIPLIERS.get(model, 10)
     return total
 
 def plan_tts_used_today(user):
@@ -302,7 +355,7 @@ def load_users():
         if not isinstance(data.get("users"), list): data = {"users": []}
         for field, default in (("pending", {}), ("ip_signups", {}), ("banned_ips", []),
                                ("fake_mail", {}), ("failed_logins", {}), ("oauth_sessions", {}),
-                               ("paypal_orders", {}), ("bank_txns", {})):
+                               ("paypal_orders", {}), ("bank_txns", {}), ("paypal_payers", {}), ("bank_senders", {})):
             data.setdefault(field, default)
         return data
 
@@ -594,6 +647,27 @@ def paypal_request(method, path, payload=None):
         detail = exc.read().decode("utf-8", "replace")[:400]
         raise ValueError(f"PayPal HTTP {exc.code}: {detail}")
 
+def payment_risk(user, amount):
+    """Cheap velocity/age checks for card-testing and multi-account abuse."""
+    now_ts = time.time()
+    created = None
+    try:
+        created = datetime.fromisoformat(str(user.get("created_at", "")).replace("Z", "+00:00"))
+    except ValueError:
+        pass
+    age_min = ((now_utc() - created).total_seconds() / 60) if created else 99999
+    if age_min < 10 and amount > 20:
+        return "New accounts can top up up to $20 during the first 10 minutes."
+    recent = [t for t in user.get("transactions", [])
+              if t.get("type") in ("topup", "subscription") and now_ts - t.get("ts", 0) < 600]
+    if len(recent) >= 3:
+        return "Too many payment attempts. Wait a few minutes and try again."
+    day_total = sum(float(t.get("amount", 0)) for t in user.get("transactions", [])
+                    if t.get("type") in ("topup", "subscription") and now_ts - t.get("ts", 0) < 86400)
+    if age_min < 7 * 1440 and day_total + amount > 100:
+        return "New accounts are limited to $100 of payments per day."
+    return None
+
 def paypal_create_order(user, purpose, amount, plan=None):
     if purpose == "sub":
         plan_def = PLANS.get(str(plan))
@@ -609,6 +683,9 @@ def paypal_create_order(user, purpose, amount, plan=None):
     else:
         raise ValueError("Unknown payment purpose.")
 
+    risk = payment_risk(user, amount)
+    if risk:
+        raise ValueError(risk)
     order = paypal_request("POST", "/v2/checkout/orders", {
         "intent": "CAPTURE",
         "purchase_units": [{
@@ -670,6 +747,15 @@ def paypal_capture_order(user, order_id):
     if meta.get("status") == "captured":
         return {"status": "already_captured", "balance": user.get("balance", 0.0), "plan": user.get("plan", "free")}
 
+    # Check the payer before charging: one PayPal identity cannot fund multiple accounts.
+    details = paypal_request("GET", f"/v2/checkout/orders/{order_id}")
+    payer_id = (details.get("payer") or {}).get("payer_id", "")
+    if payer_id:
+        with DB_LOCK:
+            linked = load_users().get("paypal_payers", {}).get(payer_id)
+        if linked and linked != user["id"]:
+            raise ValueError("This PayPal account is already linked to another NovaCompute account.")
+
     result = paypal_request("POST", f"/v2/checkout/orders/{order_id}/capture", {})
     if str(result.get("status", "")).upper() != "COMPLETED":
         raise ValueError("PayPal payment was not completed.")
@@ -687,10 +773,20 @@ def paypal_capture_order(user, order_id):
         meta = db["paypal_orders"].get(order_id) or meta
         if meta.get("status") == "captured":
             return {"status": "already_captured", "balance": target.get("balance", 0.0), "plan": target.get("plan", "free")}
+        payer_id = (result.get("payer") or {}).get("payer_id", "") or payer_id
+        linked = db.get("paypal_payers", {}).get(payer_id) if payer_id else None
+        if linked and linked != target["id"]:
+            meta["status"] = "review"
+            meta["payer_id"] = payer_id
+            db["paypal_orders"][order_id] = meta
+            save_users(db)
+            raise ValueError("Payment captured but held for review: this PayPal account is linked to another NovaCompute account.")
         apply_payment(target, meta["purpose"], meta["amount"], meta.get("plan"), "PayPal", order_id)
         meta["status"] = "captured"
         meta["captured_at"] = int(time.time())
-        meta["payer_id"] = (result.get("payer") or {}).get("payer_id", "")
+        meta["payer_id"] = payer_id
+        if payer_id:
+            db["paypal_payers"][payer_id] = target["id"]
         db["paypal_orders"][order_id] = meta
         save_users(db)
     return {"status": "completed", "balance": target.get("balance", 0.0), "plan": target.get("plan", "free"), "plan_expires": target.get("plan_expires")}
@@ -700,7 +796,7 @@ def record_usage(user_id, key_id, model_id, prompt_tokens, completion_tokens, la
         db = load_users()
         for user in db["users"]:
             if user.get("id") != user_id: continue
-            event = {"ts": int(time.time()), "model": model_id, "prompt_tokens": int(prompt_tokens), "completion_tokens": int(completion_tokens), "latency_ms": int(latency_ms), "status": status, "cost": round(float(cost), 6), "client": client}
+            event = {"ts": int(time.time()), "model": model_id, "key_id": key_id, "prompt_tokens": int(prompt_tokens), "completion_tokens": int(completion_tokens), "latency_ms": int(latency_ms), "status": status, "cost": round(float(cost), 6), "client": client}
             user.setdefault("usage", []).append(event)
             user["usage"] = user["usage"][-800:]
             if cost:
@@ -773,6 +869,8 @@ class NovaHandler(BaseHTTPRequestHandler):
         self.send_header("Access-Control-Allow-Origin", "*")
         self.send_header("Access-Control-Allow-Headers", "Authorization, Content-Type")
         self.send_header("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS")
+        for name, value in getattr(self, "_rate_headers", {}).items():
+            self.send_header(name, value)
         super().end_headers()
 
     def log_message(self, fmt, *args):
@@ -822,7 +920,7 @@ class NovaHandler(BaseHTTPRequestHandler):
             self.send_json(200, {"status": "ok", "service": "nova-backend", "keys_loaded": total_keys, "models": len(MODELS), "time": iso(now_utc())})
             return
         if path == "/v1/models":
-            self.send_json(200, {"object": "list", "data": [{"id": m["id"], "object": "model", "owned_by": m["provider"], "name": m["name"], "context": m["context"], "speed_tps": m["speed"], "pricing": {"input_per_1m": m["input"], "output_per_1m": m["output"]}, "capabilities": {"image": bool(m.get("image")), "video": bool(m.get("video"))}, "category": m.get("category", "chat"), "tag": m.get("tag"), "note": m.get("note", ""), "price_unit": m.get("price_unit")} for m in MODELS]})
+            self.send_json(200, {"object": "list", "data": [{"id": m["id"], "object": "model", "owned_by": m["provider"], "name": m["name"], "context": m["context"], "speed_tps": m["speed"], "pricing": {"input_per_1m": m["input"], "output_per_1m": m["output"]}, "capabilities": {"image": bool(m.get("image")), "video": bool(m.get("video"))}, "category": m.get("category", "chat"), "tag": m.get("tag"), "note": m.get("note", ""), "price_unit": m.get("price_unit"), "quota_multiplier": QUOTA_MULTIPLIERS.get(m["id"], 1)} for m in MODELS]})
             return
         if path == "/api/me": self.handle_me(); return
         if path == "/api/fx": self.handle_fx(); return
@@ -958,12 +1056,22 @@ class NovaHandler(BaseHTTPRequestHandler):
                 if not user:
                     db["bank_txns"][txid] = {"ts": int(time.time()), "status": "user_missing", "email": email, "amount_vnd": amount_vnd}
                     save_users(db); continue
+                sender = str(event.get("accountNumber") or event.get("senderAccount") or event.get("senderAccountNumber") or "").strip()
+                if sender and db.get("bank_senders", {}).get(sender) not in (None, user["id"]):
+                    db["bank_txns"][txid] = {"ts": int(time.time()), "status": "sender_linked", "email": email, "sender": sender}
+                    save_users(db); continue
+                risk_amount = (amount_vnd / rate) if kind == "TOPUP" else float((PLANS.get(kind.lower()) or {}).get("price", 0))
+                risk = payment_risk(user, risk_amount)
+                if risk:
+                    db["bank_txns"][txid] = {"ts": int(time.time()), "status": "risk_blocked", "email": email, "reason": risk}
+                    save_users(db); continue
                 if kind == "TOPUP":
                     usd = round(amount_vnd / rate, 2)
                     if usd < 1:
                         db["bank_txns"][txid] = {"ts": int(time.time()), "status": "too_small", "amount_vnd": amount_vnd}
                     else:
                         apply_payment(user, "topup", usd, None, "Bank transfer", txid)
+                        if sender: db["bank_senders"][sender] = user["id"]
                         db["bank_txns"][txid] = {"ts": int(time.time()), "status": "credited", "email": email, "usd": usd, "amount_vnd": amount_vnd}
                         processed += 1; matched += 1
                 else:
@@ -974,6 +1082,7 @@ class NovaHandler(BaseHTTPRequestHandler):
                         db["bank_txns"][txid] = {"ts": int(time.time()), "status": "amount_mismatch", "plan": plan, "amount_vnd": amount_vnd, "required_vnd": round(required_vnd)}
                     else:
                         apply_payment(user, "sub", plan_def["price"], plan, "Bank transfer", txid)
+                        if sender: db["bank_senders"][sender] = user["id"]
                         db["bank_txns"][txid] = {"ts": int(time.time()), "status": "activated", "email": email, "plan": plan, "amount_vnd": amount_vnd}
                         processed += 1; matched += 1
                 db["bank_txns"] = dict(list(db["bank_txns"].items())[-1000:])
@@ -1174,12 +1283,28 @@ class NovaHandler(BaseHTTPRequestHandler):
                 continue
         return used >= limit
 
+    def enforce_rate_limit(self, user, key):
+        ok, limits, retry, reason = check_request_rate(user, key)
+        self._rate_headers = {
+            "X-RateLimit-Limit-Requests": str(limits["rpm"]),
+            "X-RateLimit-Limit-Daily": str(limits["daily"]),
+        }
+        if ok:
+            return True
+        if retry:
+            self._rate_headers["Retry-After"] = str(retry)
+        message = (f"Rate limit reached: {limits['rpm']} requests per minute." if reason == "rpm"
+                   else f"Daily request limit reached: {limits['daily']} requests per day.")
+        self.send_error_json(429, "rate_limit_error", "rate_limit_exceeded", message)
+        return False
+
     # ================= TTS (NagaAI /v1/audio/speech) =================
     def handle_speech(self):
         refresh_models()
         _db, user, key = self.authenticate()
         if not user:
             return self.send_error_json(401, "authentication_error", "invalid_api_key", "Missing or invalid API key.")
+        if not self.enforce_rate_limit(user, key): return
         body = self.read_json_body()
         if body is None:
             return self.send_error_json(400, "invalid_request_error", "invalid_json", "Request body must be valid JSON.")
@@ -1264,6 +1389,7 @@ class NovaHandler(BaseHTTPRequestHandler):
         refresh_models()
         _db, user, key = self.authenticate()
         if not user: return self.send_error_json(401, "authentication_error", "invalid_api_key", "Missing or invalid API key.")
+        if not self.enforce_rate_limit(user, key): return
         body = self.read_json_body()
         if body is None: return self.send_error_json(400, "invalid_request_error", "invalid_json", "Request body must be valid JSON.")
         

@@ -89,7 +89,7 @@
         'client-id': clientId,
         currency: 'USD',
         intent: 'capture',
-        components: 'buttons',
+        components: 'buttons', 'disable-funding': 'card,credit',
       });
       script.src = `https://www.paypal.com/sdk/js?${params.toString()}`;
       script.async = true;
