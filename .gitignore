@@ -2,6 +2,7 @@
 backend/users_db.json
 backend/upstream_config.json
 backend/nightrouter_keys.json
+backend/exosai_keys.json
 
 # Python
 __pycache__/
