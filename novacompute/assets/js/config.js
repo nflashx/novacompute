@@ -1,4 +1,6 @@
 /* NovaCompute — deployment config.
-   Local dev: leave empty (defaults to http://127.0.0.1:8080).
-   Production: set your Worker URL, e.g. "https://novacompute-api.xxx.workers.dev". */
+   Leave empty to use the same origin as the website (recommended):
+     https://your-domain.com  →  https://your-domain.com/v1
+   Local dev on :8123 automatically talks to the Python backend on :8080.
+   If the API lives on another host (e.g. a Worker), set it explicitly: */
 window.NOVA_API_BASE = "";

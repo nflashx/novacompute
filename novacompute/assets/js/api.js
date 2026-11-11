@@ -10,7 +10,9 @@
 
   const preset = (window.NOVA_API_BASE || '').trim();
   const meta = document.querySelector('meta[name="nova-api"]');
-  window.NOVA_API_BASE = (preset || (meta && meta.content) || 'http://127.0.0.1:8080').replace(/\/+$/, '');
+  const localStatic = (location.hostname === '127.0.0.1' || location.hostname === 'localhost') && location.port === '8123';
+  const sameOrigin = location.protocol === 'http:' || location.protocol === 'https:' ? location.origin : 'http://127.0.0.1:8080';
+  window.NOVA_API_BASE = (preset || (meta && meta.content) || (localStatic ? 'http://127.0.0.1:8080' : sameOrigin)).replace(/\/+$/, '');
 
   /* Optional override for local testing: ?api=http://127.0.0.1:PORT */
   const apiOverride = new URLSearchParams(window.location.search).get('api');

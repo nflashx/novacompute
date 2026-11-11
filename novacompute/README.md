@@ -9,7 +9,7 @@ backend is pure Python standard library (`http.server` + `urllib`, no frameworks
 ├── start.bat                 # launches both servers (start /b)
 ├── backend/                  # API gateway (:8080)
 │   ├── app.py                # auth, billing, /v1/chat/completions proxy, /api/*
-│   ├── seed_demo.py          # demo account + 14 days of synthetic usage
+│   ├── seed_demo.py          # clean demo account (real usage only)
 │   ├── upstream_config.example.json
 │   ├── users_db.json         # local state (gitignored)
 │   └── upstream_config.json  # your provider key (gitignored)
@@ -146,7 +146,7 @@ Set the Worker URL in `assets/js/config.js` before deploying the static site.
 - HTTP only, no TLS; single-process JSON store — fine for demos, not for production.
 - Password hashing: PBKDF2-SHA256 (120k iterations, per-user salt).
 - `users_db.json` and `upstream_config.json` are gitignored. Never commit real keys.
-- `backend/seed_demo.py` writes synthetic usage rows so the dashboard charts have data.
+- `backend/seed_demo.py` creates a clean demo account; dashboard charts only show real API calls.
 
 ## Push to GitHub
 

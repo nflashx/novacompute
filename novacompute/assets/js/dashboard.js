@@ -2,7 +2,7 @@
    NovaCompute — Dashboard (live data from backend/app.py).
    Requires a session in localStorage (set by login/register).
    All numbers come from GET /api/me; key changes hit the real
-   /api/keys endpoints, top-ups hit /api/topup.
+   /api/keys endpoints, top-ups use server-verified PayPal/bank payments.
    ============================================================ */
 
 (function () {
@@ -214,6 +214,33 @@
     if (companyInput) companyInput.value = me.user.company || '';
   }
 
+  function renderQuota() {
+    const me = state.me;
+    const plan = me.plan || 'free';
+    const quota = Number(me.daily_quota || 0);
+    const used = quota > 0 ? Number(me.quota_used_today || 0) : Number(me.stats.tokens_today || 0);
+    const planEl = document.getElementById('quota-plan');
+    const numEl = document.getElementById('quota-numbers');
+    const barEl = document.getElementById('quota-bar');
+    const noteEl = document.getElementById('quota-note');
+    if (!planEl || !numEl || !barEl || !noteEl) return;
+
+    if (quota > 0) {
+      const pct = Math.min(100, Math.round((used / quota) * 100000) / 1000);
+      planEl.textContent = `${me.plan_name || plan} · ${used >= quota ? 'quota reached' : 'active'}`;
+      numEl.textContent = `${used.toLocaleString()} / ${quota.toLocaleString()} tokens today · ${pct.toFixed(3)}%`;
+      barEl.style.width = `${pct}%`;
+      barEl.className = `h-full rounded-full transition-[width] duration-500 ${used >= quota ? 'bg-red-400' : 'bg-gradient-to-r from-violet-500 to-cyan-400'}`;
+      noteEl.textContent = `Resets daily at 00:00 UTC${me.plan_expires ? ` · renews ${new Date(me.plan_expires).toLocaleDateString()}` : ''}. Free models do not consume this quota.`;
+    } else {
+      planEl.textContent = 'Pay-as-you-go — no daily token cap';
+      numEl.textContent = `${used.toLocaleString()} tokens today`;
+      barEl.style.width = '0%';
+      barEl.className = 'h-full rounded-full bg-gradient-to-r from-violet-500 to-cyan-400';
+      noteEl.textContent = 'Usage is billed from your balance at the model rates. Subscribe for a daily paid-token quota.';
+    }
+  }
+
   function renderRecent() {
     const tbody = document.getElementById('recent-requests');
     if (!tbody) return;
@@ -281,14 +308,14 @@
       return;
     }
     tbody.innerHTML = rows.map((t) => {
-      const isTopup = t.type === 'topup';
       const amount = Number(t.amount);
+      const positive = amount > 0;
       return `<tr>
         <td class="px-6 py-3.5 text-slate-400">${dateShort(t.ts)}</td>
         <td class="px-4 py-3.5">${t.description}</td>
         <td class="px-4 py-3.5 text-slate-400">${t.method}</td>
-        <td class="px-6 py-3.5 text-right font-mono ${isTopup ? 'text-emerald-400' : amount === 0 ? 'text-slate-500' : 'text-slate-200'}">
-          ${isTopup ? '+' : ''}${money(amount)}
+        <td class="px-6 py-3.5 text-right font-mono ${positive ? 'text-emerald-400' : amount === 0 ? 'text-slate-500' : 'text-slate-200'}">
+          ${positive ? '+' : ''}${money(amount)}
         </td>
       </tr>`;
     }).join('');
@@ -415,19 +442,121 @@
     window.novaToast(ok ? 'API key copied to clipboard' : 'Copy failed', ok);
   });
 
-  /* ================= billing ================= */
-  document.querySelectorAll('[data-topup]').forEach((btn) => {
-    btn.addEventListener('click', async () => {
-      const amount = parseFloat(btn.dataset.topup);
-      const res = await window.novaApi('/api/topup', { method: 'POST', body: { amount } });
-      if (!res.ok) {
-        window.novaToast(res.data.error?.message || 'Top-up failed.', false);
-        return;
-      }
-      window.novaToast(`Demo top-up of $${amount.toFixed(2)} applied`);
-      await loadDashboard();
+  /* ================= billing / real top-up ================= */
+  const topupModal = document.getElementById('topup-modal');
+  const topupLabel = document.getElementById('topup-amount-label');
+  const topupQr = document.getElementById('topup-qr');
+  const topupVnd = document.getElementById('topup-vnd');
+  const topupMemo = document.getElementById('topup-memo');
+  const topupPaypalWrap = document.getElementById('topup-paypal-wrap');
+  const topupPaypalButton = document.getElementById('topup-paypal-button');
+  let topupAmount = 0;
+  let topupRate = 0;
+  let paypalSdkPromise = null;
+
+  function closeTopup() {
+    if (!topupModal) return;
+    topupModal.classList.add('hidden');
+    topupModal.classList.remove('flex');
+  }
+
+  function loadPaypalSdk(clientId) {
+    if (window.paypal && window.paypal.Buttons) return Promise.resolve(window.paypal);
+    if (paypalSdkPromise) return paypalSdkPromise;
+    paypalSdkPromise = new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      const params = new URLSearchParams({ 'client-id': clientId, currency: 'USD', intent: 'capture', components: 'buttons' });
+      script.src = `https://www.paypal.com/sdk/js?${params.toString()}`;
+      script.async = true;
+      script.onload = () => (window.paypal && window.paypal.Buttons) ? resolve(window.paypal) : reject(new Error('PayPal SDK loaded without Buttons'));
+      script.onerror = () => reject(new Error('PayPal SDK failed to load'));
+      document.head.appendChild(script);
+    }).catch((err) => { paypalSdkPromise = null; throw err; });
+    return paypalSdkPromise;
+  }
+
+  function mountTopupPaypal() {
+    const pay = window.NOVA_PAYMENT || {};
+    const pp = pay.paypal || {};
+    if (!topupPaypalWrap || !topupPaypalButton) return;
+    if (!pp.clientId) { topupPaypalWrap.classList.add('hidden'); return; }
+    topupPaypalWrap.classList.remove('hidden');
+    topupPaypalButton.innerHTML = '<div class="rounded-lg border border-white/[0.08] bg-white/[0.02] px-3 py-3 text-center text-xs text-slate-500">Loading PayPal…</div>';
+    loadPaypalSdk(pp.clientId).then((paypal) => {
+      topupPaypalButton.innerHTML = '';
+      paypal.Buttons({
+        style: { layout: 'vertical', color: 'blue', shape: 'rect', label: 'paypal', height: 40 },
+        createOrder: async () => {
+          const res = await window.novaApi('/api/paypal/create-order', {
+            method: 'POST', body: { purpose: 'topup', amount: topupAmount },
+          });
+          if (!res.ok) throw new Error((res.data.error && res.data.error.message) || 'Could not create PayPal order');
+          return res.data.id;
+        },
+        onApprove: async (data) => {
+          const res = await window.novaApi('/api/paypal/capture-order', {
+            method: 'POST', body: { order_id: data.orderID },
+          });
+          if (!res.ok) {
+            window.novaToast((res.data.error && res.data.error.message) || 'PayPal capture failed.', false);
+            return;
+          }
+          window.novaToast(`Payment received — balance ${money(res.data.balance)}`, true);
+          closeTopup();
+          await loadDashboard();
+        },
+        onCancel: () => window.novaToast('PayPal checkout cancelled', false),
+        onError: (err) => {
+          console.error('[paypal topup]', err);
+          window.novaToast('PayPal could not start — use bank transfer.', false);
+        },
+      }).render('#topup-paypal-button').catch((err) => {
+        console.error('[paypal topup] render', err);
+        topupPaypalButton.innerHTML = '<div class="rounded-lg border border-amber-400/25 bg-amber-400/[0.07] p-3 text-xs text-amber-200/80">PayPal is unavailable — use bank transfer.</div>';
+      });
+    }).catch((err) => {
+      console.error('[paypal topup] sdk', err);
+      topupPaypalButton.innerHTML = '<div class="rounded-lg border border-amber-400/25 bg-amber-400/[0.07] p-3 text-xs text-amber-200/80">PayPal could not load — use bank transfer.</div>';
     });
+  }
+
+  async function openTopup(amount) {
+    if (!topupModal) return;
+    topupAmount = amount;
+    const pay = window.NOVA_PAYMENT || {};
+    const bank = pay.bank || {};
+    const email = state.me?.user?.email || session.email;
+    if (topupLabel) topupLabel.textContent = `Top up $${amount.toFixed(2)}`;
+    if (topupMemo) topupMemo.textContent = `${pay.memo_prefix || 'NOVA'} TOPUP ${email}`;
+    if (topupQr) topupQr.removeAttribute('src');
+    if (topupVnd) topupVnd.textContent = 'loading…';
+    topupModal.classList.remove('hidden');
+    topupModal.classList.add('flex');
+    mountTopupPaypal();
+
+    const fx = await window.novaApi('/api/fx', { auth: false });
+    topupRate = Number((fx.data && fx.data.usd_vnd) || 0);
+    const vnd = Math.round(amount * topupRate);
+    if (topupVnd) {
+      topupVnd.textContent = topupRate
+        ? `${vnd.toLocaleString('vi-VN')} VND (≈ $${amount.toFixed(2)})`
+        : 'your bank will convert from USD';
+    }
+    if (topupQr && bank.account) {
+      const params = new URLSearchParams({ addInfo: `${pay.memo_prefix || 'NOVA'} TOPUP ${email}`, accountName: bank.holder || '' });
+      if (vnd) params.set('amount', String(vnd));
+      topupQr.src = `https://img.vietqr.io/image/${encodeURIComponent(bank.code || 'TCB')}-${encodeURIComponent(bank.account)}-compact2.png?${params.toString()}`;
+    }
+  }
+
+  document.querySelectorAll('[data-topup]').forEach((btn) => {
+    btn.addEventListener('click', () => openTopup(parseFloat(btn.dataset.topup)));
   });
+  document.querySelectorAll('[data-topup-close]').forEach((btn) => btn.addEventListener('click', closeTopup));
+  if (topupModal) {
+    topupModal.addEventListener('click', (e) => { if (e.target === topupModal) closeTopup(); });
+  }
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeTopup(); });
 
   /* ================= settings ================= */
   document.querySelector('[data-action="save-settings"]').addEventListener('click', async () => {
@@ -442,9 +571,6 @@
     window.novaToast('Settings saved');
   });
 
-  document.querySelector('[data-action="update-card"]').addEventListener('click', () => {
-    window.novaToast('Card updates are disabled in the demo build.', false);
-  });
   document.querySelector('[data-action="delete-account"]').addEventListener('click', () => {
     window.novaToast('Account deletion is disabled in the demo build.', false);
   });
@@ -465,6 +591,7 @@
     keysCache = res.data.api_keys || [];
     renderHeader();
     renderStats();
+    renderQuota();
     renderRecent();
     renderUsageByModel();
     renderTransactions();

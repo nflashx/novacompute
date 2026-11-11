@@ -22,6 +22,8 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 USERS_DB_FILE = os.path.join(BASE_DIR, "users_db.json")
 OAUTH_CONFIG_FILE = os.path.join(BASE_DIR, "oauth_config.json")
 MAIL_CONFIG_FILE = os.path.join(BASE_DIR, "mail_config.json")
+PAYPAL_CONFIG_FILE = os.path.join(BASE_DIR, "paypal_config.json")
+PAYMENT_CONFIG_FILE = os.path.join(BASE_DIR, "payment_config.json")
 PORT = int(os.getenv("NOVA_PORT", "8080"))
 SITE_URL = os.getenv("NOVA_SITE_URL", "http://127.0.0.1:8123").rstrip("/")
 OAUTH_CALLBACK_BASE = os.getenv("NOVA_OAUTH_BASE", "http://127.0.0.1:8600").rstrip("/")
@@ -160,6 +162,50 @@ MODELS = [
 PRICING = {m["id"]: (m["input"], m["output"]) for m in MODELS}
 MODEL_IDS = set(PRICING)
 
+# ================= SUBSCRIPTION PLANS =================
+PLANS = {
+    "starter": {"name": "Starter", "price": 4.99, "quota": 1_500_000, "tts": 20},
+    "pro": {"name": "Pro", "price": 12.99, "quota": 6_000_000, "tts": 60},
+    "ultra": {"name": "Ultra", "price": 29.99, "quota": 20_000_000, "tts": 150},
+}
+PLAN_QUOTA = {key: value["quota"] for key, value in PLANS.items()}
+PREMIUM_MODELS = {"claude-opus-5.5", "claude-sonnet-5.5", "kimi-k3.1-pro", "gemini-4-argon"}
+
+def plan_active(user):
+    plan = user.get("plan")
+    if plan not in PLANS: return False
+    raw = user.get("plan_expires")
+    if not raw: return False
+    try:
+        return datetime.fromisoformat(str(raw).replace("Z", "+00:00")) > now_utc()
+    except ValueError:
+        return False
+
+def plan_tokens_used_today(user):
+    today = now_utc().date(); total = 0
+    for event in user.get("usage", []):
+        try:
+            if datetime.fromtimestamp(event["ts"], timezone.utc).date() != today: continue
+        except (KeyError, ValueError, OSError):
+            continue
+        model = event.get("model")
+        price_in, price_out = PRICING.get(model, (0, 0))
+        if not price_in and not price_out: continue
+        tokens = int(event.get("prompt_tokens", 0)) + int(event.get("completion_tokens", 0))
+        total += tokens * (5 if model in PREMIUM_MODELS else 1)
+    return total
+
+def plan_tts_used_today(user):
+    today = now_utc().date(); count = 0
+    for event in user.get("usage", []):
+        model = event.get("model")
+        if not model or model not in MODEL_LOOKUP or MODEL_LOOKUP[model].get("category") != "tts": continue
+        try:
+            if datetime.fromtimestamp(event["ts"], timezone.utc).date() == today: count += 1
+        except (KeyError, ValueError, OSError):
+            continue
+    return count
+
 # Map Model ID -> Provider (CHUẨN THEO FILE CŨ)
 MODEL_PROVIDER_MAP = {
     "grok-4.6": "exosai",
@@ -254,7 +300,8 @@ def load_users():
             except json.JSONDecodeError: data = {"users": []}
         if not isinstance(data.get("users"), list): data = {"users": []}
         for field, default in (("pending", {}), ("ip_signups", {}), ("banned_ips", []),
-                               ("fake_mail", {}), ("failed_logins", {}), ("oauth_sessions", {})):
+                               ("fake_mail", {}), ("failed_logins", {}), ("oauth_sessions", {}),
+                               ("paypal_orders", {}), ("bank_txns", {})):
             data.setdefault(field, default)
         return data
 
@@ -467,7 +514,7 @@ def oauth_session_token(provider, query):
                 "api_keys": [{"id": "key_" + secrets.token_hex(6), "name": "Default",
                               "key": new_api_key(), "created_at": iso(now_utc()),
                               "last_used": None, "status": "active"}],
-                "usage": [], "transactions": [], "verified": True, "provider": provider,
+                "usage": [], "transactions": [], "verified": True, "provider": provider, "plan": "free",
             }
             db["users"].append(user)
         else:
@@ -481,6 +528,171 @@ def oauth_session_token(provider, query):
         db["oauth_sessions"][token] = {"user_id": user["id"], "expires": time.time() + 600}
         save_users(db)
     return token
+
+# ================= PAYMENTS (PayPal + bank webhook) =================
+PAYPAL_TOKEN_CACHE = {"value": None, "expires": 0}
+PAYPAL_TOKEN_LOCK = threading.Lock()
+FX_CACHE = {"rate": 0.0, "ts": 0.0}
+
+def usd_vnd_rate():
+    """Live USD→VND rate, cached for one hour. No invented exchange rate."""
+    now = time.time()
+    if FX_CACHE["rate"] and now - FX_CACHE["ts"] < 3600:
+        return FX_CACHE["rate"]
+    try:
+        req = urllib.request.Request("https://open.er-api.com/v6/latest/USD",
+                                     headers={"Accept": "application/json", "User-Agent": "NovaCompute/1.0"})
+        with urllib.request.urlopen(req, timeout=8) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+        rate = float((data.get("rates") or {}).get("VND") or 0)
+        if rate > 0:
+            FX_CACHE["rate"] = rate
+            FX_CACHE["ts"] = now
+    except Exception as exc:
+        print(f"[fx] USD/VND lookup failed: {exc}")
+    return FX_CACHE["rate"]
+
+def paypal_cfg():
+    return load_json_cfg(PAYPAL_CONFIG_FILE) or {}
+
+def paypal_base():
+    return "https://api-m.paypal.com" if (paypal_cfg().get("mode") or "live") == "live" else "https://api-m.sandbox.paypal.com"
+
+def paypal_token():
+    cfg = paypal_cfg()
+    if not cfg.get("client_id") or not cfg.get("secret"):
+        raise ValueError("PayPal is not configured.")
+    with PAYPAL_TOKEN_LOCK:
+        if PAYPAL_TOKEN_CACHE["value"] and time.time() < PAYPAL_TOKEN_CACHE["expires"]:
+            return PAYPAL_TOKEN_CACHE["value"]
+        import base64
+        auth = base64.b64encode(f"{cfg['client_id']}:{cfg['secret']}".encode()).decode()
+        req = urllib.request.Request(
+            paypal_base() + "/v1/oauth2/token",
+            data=b"grant_type=client_credentials",
+            headers={"Authorization": "Basic " + auth, "Content-Type": "application/x-www-form-urlencoded", "Accept": "application/json"},
+            method="POST",
+        )
+        with urllib.request.urlopen(req, timeout=25) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+        PAYPAL_TOKEN_CACHE["value"] = data["access_token"]
+        PAYPAL_TOKEN_CACHE["expires"] = time.time() + int(data.get("expires_in", 3000)) - 60
+        return PAYPAL_TOKEN_CACHE["value"]
+
+def paypal_request(method, path, payload=None):
+    token = paypal_token()
+    data = json.dumps(payload).encode("utf-8") if payload is not None else None
+    req = urllib.request.Request(
+        paypal_base() + path, data=data, method=method,
+        headers={"Authorization": "Bearer " + token, "Content-Type": "application/json", "Accept": "application/json"},
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=35) as resp:
+            return json.loads(resp.read().decode("utf-8"))
+    except urllib.error.HTTPError as exc:
+        detail = exc.read().decode("utf-8", "replace")[:400]
+        raise ValueError(f"PayPal HTTP {exc.code}: {detail}")
+
+def paypal_create_order(user, purpose, amount, plan=None):
+    if purpose == "sub":
+        plan_def = PLANS.get(str(plan))
+        if not plan_def:
+            raise ValueError("Unknown plan.")
+        amount = float(plan_def["price"])
+        description = f"NovaCompute {plan_def['name']} - 30 days"
+    elif purpose == "topup":
+        amount = round(float(amount), 2)
+        if not 1 <= amount <= 1000:
+            raise ValueError("Top-up must be between $1 and $1000.")
+        description = "NovaCompute account credit"
+    else:
+        raise ValueError("Unknown payment purpose.")
+
+    order = paypal_request("POST", "/v2/checkout/orders", {
+        "intent": "CAPTURE",
+        "purchase_units": [{
+            "description": description,
+            "custom_id": f"{user['id']}|{purpose}|{plan or ''}",
+            "amount": {"currency_code": "USD", "value": f"{amount:.2f}"},
+        }],
+        "application_context": {
+            "brand_name": "NovaCompute",
+            "shipping_preference": "NO_SHIPPING",
+            "user_action": "PAY_NOW",
+            "return_url": SITE_URL + "/dashboard.html?paypal=return",
+            "cancel_url": SITE_URL + "/dashboard.html?paypal=cancel",
+        },
+    })
+    order_id = order.get("id")
+    if not order_id:
+        raise ValueError("PayPal did not return an order id.")
+    with DB_LOCK:
+        db = load_users()
+        db["paypal_orders"][order_id] = {
+            "user_id": user["id"], "purpose": purpose, "amount": amount,
+            "plan": plan, "status": "created", "ts": int(time.time()),
+        }
+        save_users(db)
+    approve = next((l.get("href") for l in order.get("links", []) if l.get("rel") == "approve"), None)
+    return {"id": order_id, "approve_url": approve, "amount": amount}
+
+def apply_payment(user, purpose, amount, plan, method, reference):
+    now_ts = int(time.time())
+    if purpose == "topup":
+        user["balance"] = round(user.get("balance", 0.0) + float(amount), 6)
+        user.setdefault("transactions", []).append({
+            "ts": now_ts, "type": "topup", "description": "Balance top-up",
+            "method": method, "amount": round(float(amount), 2), "reference": reference,
+        })
+    elif purpose == "sub":
+        plan_def = PLANS.get(str(plan))
+        if not plan_def:
+            raise ValueError("Unknown plan.")
+        user["plan"] = plan
+        user["plan_started"] = iso(now_utc())
+        user["plan_expires"] = iso(now_utc() + timedelta(days=30))
+        user.setdefault("transactions", []).append({
+            "ts": now_ts, "type": "subscription", "description": f"{plan_def['name']} - 30 days",
+            "method": method, "amount": round(float(amount), 2), "reference": reference,
+        })
+    else:
+        raise ValueError("Unknown payment purpose.")
+    user["transactions"] = user.get("transactions", [])[-200:]
+    return user
+
+def paypal_capture_order(user, order_id):
+    with DB_LOCK:
+        db = load_users()
+        meta = db["paypal_orders"].get(order_id)
+    if not meta or meta.get("user_id") != user["id"]:
+        raise ValueError("Payment order not found for this account.")
+    if meta.get("status") == "captured":
+        return {"status": "already_captured", "balance": user.get("balance", 0.0), "plan": user.get("plan", "free")}
+
+    result = paypal_request("POST", f"/v2/checkout/orders/{order_id}/capture", {})
+    if str(result.get("status", "")).upper() != "COMPLETED":
+        raise ValueError("PayPal payment was not completed.")
+    unit = (result.get("purchase_units") or [{}])[0]
+    capture = ((unit.get("payments") or {}).get("captures") or [{}])[0]
+    paid = float((capture.get("amount") or {}).get("value", 0))
+    if abs(paid - float(meta["amount"])) > 0.011:
+        raise ValueError("Paid amount does not match the order.")
+
+    with DB_LOCK:
+        db = load_users()
+        target = next((u for u in db["users"] if u.get("id") == user["id"]), None)
+        if not target:
+            raise ValueError("Account not found.")
+        meta = db["paypal_orders"].get(order_id) or meta
+        if meta.get("status") == "captured":
+            return {"status": "already_captured", "balance": target.get("balance", 0.0), "plan": target.get("plan", "free")}
+        apply_payment(target, meta["purpose"], meta["amount"], meta.get("plan"), "PayPal", order_id)
+        meta["status"] = "captured"
+        meta["captured_at"] = int(time.time())
+        meta["payer_id"] = (result.get("payer") or {}).get("payer_id", "")
+        db["paypal_orders"][order_id] = meta
+        save_users(db)
+    return {"status": "completed", "balance": target.get("balance", 0.0), "plan": target.get("plan", "free"), "plan_expires": target.get("plan_expires")}
 
 def record_usage(user_id, key_id, model_id, prompt_tokens, completion_tokens, latency_ms, status="ok", cost=0.0, client=""):
     with DB_LOCK:
@@ -518,7 +730,9 @@ def usage_aggregates(user):
         if previous <= 0: return None
         return round((current - previous) / previous * 100, 1)
     per_model = {}
+    cutoff = time.time() - 30 * 86400
     for event in usage:
+        if event.get("ts", 0) < cutoff: continue
         entry = per_model.setdefault(event["model"], {"requests": 0, "tokens": 0})
         entry["requests"] += 1
         entry["tokens"] += event.get("prompt_tokens", 0) + event.get("completion_tokens", 0)
@@ -610,6 +824,7 @@ class NovaHandler(BaseHTTPRequestHandler):
             self.send_json(200, {"object": "list", "data": [{"id": m["id"], "object": "model", "owned_by": m["provider"], "name": m["name"], "context": m["context"], "speed_tps": m["speed"], "pricing": {"input_per_1m": m["input"], "output_per_1m": m["output"]}, "capabilities": {"image": bool(m.get("image")), "video": bool(m.get("video"))}, "category": m.get("category", "chat"), "tag": m.get("tag"), "note": m.get("note", ""), "price_unit": m.get("price_unit")} for m in MODELS]})
             return
         if path == "/api/me": self.handle_me(); return
+        if path == "/api/fx": self.handle_fx(); return
         if path.startswith("/api/oauth/") and path.endswith("/start"):
             self.handle_oauth_start(path.split("/")[3]); return
         if path.startswith("/api/auth/oauth/") and path.endswith("/callback"):
@@ -624,8 +839,13 @@ class NovaHandler(BaseHTTPRequestHandler):
         if path == "/api/resend": self.handle_resend(); return
         if path == "/api/login": self.handle_login(); return
         if path == "/api/oauth/exchange": self.handle_oauth_exchange(); return
+        if path == "/api/paypal/create-order": self.handle_paypal_create(); return
+        if path == "/api/paypal/capture-order": self.handle_paypal_capture(); return
+        if path == "/api/payments/bank-webhook": self.handle_bank_webhook(); return
         if path == "/api/keys": self.handle_create_key(); return
-        if path == "/api/topup": self.handle_topup(); return
+        if path == "/api/topup":
+            self.send_error_json(410, "invalid_request_error", "use_checkout", "Top-up requires a verified payment. Use PayPal or a bank transfer.")
+            return
         if path == "/api/profile": self.handle_profile(); return
         if path == "/v1/audio/speech": self.handle_speech(); return
         self.send_error_json(404, "not_found", "not_found", f"No route for POST {path}")
@@ -670,6 +890,94 @@ class NovaHandler(BaseHTTPRequestHandler):
             active_keys = [k for k in user.get("api_keys", []) if k.get("status", "active") == "active"]
             if not active_keys: return self.send_error_json(403, "authentication_error", "no_active_key", "This account has no active API keys.")
         self.send_json(200, {"user": {"name": user["name"], "email": user["email"], "created_at": user.get("created_at")}, "api_key": active_keys[0]["key"], "balance": round(user.get("balance", 0.0), 6)})
+
+    def handle_paypal_create(self):
+        _db, user, _key = self.authenticate()
+        if not user: return self.send_error_json(401, "authentication_error", "invalid_api_key", "Sign in before paying.")
+        body = self.read_json_body() or {}
+        purpose = str(body.get("purpose", "sub")).strip().lower()
+        try:
+            result = paypal_create_order(user, purpose, body.get("amount", 0), body.get("plan"))
+        except ValueError as exc:
+            return self.send_error_json(400, "payment_error", "paypal_create_failed", str(exc))
+        except Exception as exc:
+            print(f"[paypal] create: {exc}")
+            return self.send_error_json(502, "payment_error", "paypal_unavailable", "PayPal is unavailable right now.")
+        self.send_json(200, result)
+
+    def handle_paypal_capture(self):
+        _db, user, _key = self.authenticate()
+        if not user: return self.send_error_json(401, "authentication_error", "invalid_api_key", "Sign in before paying.")
+        body = self.read_json_body() or {}
+        order_id = str(body.get("order_id", "")).strip()
+        if not order_id: return self.send_error_json(400, "invalid_request_error", "missing_order", "Order id is required.")
+        try:
+            result = paypal_capture_order(user, order_id)
+        except ValueError as exc:
+            return self.send_error_json(400, "payment_error", "paypal_capture_failed", str(exc))
+        except Exception as exc:
+            print(f"[paypal] capture: {exc}")
+            return self.send_error_json(502, "payment_error", "paypal_unavailable", "PayPal is unavailable right now.")
+        self.send_json(200, result)
+
+    def handle_fx(self):
+        rate = usd_vnd_rate()
+        self.send_json(200, {"usd_vnd": rate, "updated_at": int(FX_CACHE["ts"]) if rate else 0})
+
+    def handle_bank_webhook(self):
+        cfg = load_json_cfg(PAYMENT_CONFIG_FILE) or {}
+        secret = os.getenv("NOVA_BANK_WEBHOOK_SECRET") or cfg.get("webhook_token") or ""
+        if not secret or self.headers.get("Authorization", "") != "Bearer " + secret:
+            return self.send_error_json(401, "authentication_error", "invalid_webhook_token", "Invalid bank webhook token.")
+        body = self.read_json_body() or {}
+        events = body.get("data") if isinstance(body.get("data"), list) else [body]
+        rate = usd_vnd_rate()
+        if not rate:
+            return self.send_error_json(503, "configuration_error", "fx_unavailable", "USD/VND rate is unavailable; retry later.")
+        processed = 0
+        matched = 0
+        for event in events:
+            if not isinstance(event, dict): continue
+            txid = str(event.get("id") or event.get("referenceCode") or event.get("tid") or event.get("transactionId") or "").strip()
+            try: amount_vnd = float(event.get("transferAmount") or event.get("amount") or 0)
+            except (TypeError, ValueError): amount_vnd = 0
+            content = str(event.get("content") or event.get("description") or "")
+            if not txid or amount_vnd <= 0: continue
+            with DB_LOCK:
+                db = load_users()
+                if txid in db["bank_txns"]: continue
+                match = re.search(r"NOVA[\s\-_]+(TOPUP|STARTER|PRO|ULTRA)[\s\-_]+([^\s]+@[^\s]+)", content, re.I)
+                if not match:
+                    db["bank_txns"][txid] = {"ts": int(time.time()), "status": "unmatched", "amount_vnd": amount_vnd, "content": content[:200]}
+                    db["bank_txns"] = dict(list(db["bank_txns"].items())[-1000:])
+                    save_users(db)
+                    continue
+                kind = match.group(1).upper(); email = match.group(2).lower().rstrip(".,;")
+                user = find_user_by_email(db, email)
+                if not user:
+                    db["bank_txns"][txid] = {"ts": int(time.time()), "status": "user_missing", "email": email, "amount_vnd": amount_vnd}
+                    save_users(db); continue
+                if kind == "TOPUP":
+                    usd = round(amount_vnd / rate, 2)
+                    if usd < 1:
+                        db["bank_txns"][txid] = {"ts": int(time.time()), "status": "too_small", "amount_vnd": amount_vnd}
+                    else:
+                        apply_payment(user, "topup", usd, None, "Bank transfer", txid)
+                        db["bank_txns"][txid] = {"ts": int(time.time()), "status": "credited", "email": email, "usd": usd, "amount_vnd": amount_vnd}
+                        processed += 1; matched += 1
+                else:
+                    plan = kind.lower()
+                    plan_def = PLANS.get(plan)
+                    required_vnd = float(plan_def["price"]) * rate if plan_def else 0
+                    if not plan_def or amount_vnd + 1 < required_vnd * 0.98:
+                        db["bank_txns"][txid] = {"ts": int(time.time()), "status": "amount_mismatch", "plan": plan, "amount_vnd": amount_vnd, "required_vnd": round(required_vnd)}
+                    else:
+                        apply_payment(user, "sub", plan_def["price"], plan, "Bank transfer", txid)
+                        db["bank_txns"][txid] = {"ts": int(time.time()), "status": "activated", "email": email, "plan": plan, "amount_vnd": amount_vnd}
+                        processed += 1; matched += 1
+                db["bank_txns"] = dict(list(db["bank_txns"].items())[-1000:])
+                save_users(db)
+        self.send_json(200, {"success": True, "processed": processed, "matched": matched})
 
     def handle_register(self):
         body = self.read_json_body() or {}
@@ -755,7 +1063,7 @@ class NovaHandler(BaseHTTPRequestHandler):
                 "password_hash": pending["password_hash"], "created_at": iso(now_utc()), "balance": 0.0,
                 "api_keys": [{"id": "key_" + secrets.token_hex(6), "name": "Default", "key": api_key,
                               "created_at": iso(now_utc()), "last_used": None, "status": "active"}],
-                "usage": [], "transactions": [], "verified": True, "provider": "email",
+                "usage": [], "transactions": [], "verified": True, "provider": "email", "plan": "free",
             }
             db["users"].append(user)
             db["pending"].pop(email, None)
@@ -808,7 +1116,9 @@ class NovaHandler(BaseHTTPRequestHandler):
         _db, user, key = self.authenticate()
         if not user: return self.send_error_json(401, "authentication_error", "invalid_api_key", "Missing or invalid API key. Send Authorization: Bearer nova-sk-…")
         agg = usage_aggregates(user)
-        self.send_json(200, {"user": {"name": user.get("name"), "email": user.get("email"), "company": user.get("company", ""), "created_at": user.get("created_at"), "verified": user.get("verified", True), "provider": user.get("provider", "email")}, "balance": round(user.get("balance", 0.0), 6), "api_keys": [public_key(k) for k in user.get("api_keys", []) if k.get("status", "active") == "active"], "request_key_id": key["id"], "stats": agg["stats"], "daily": agg["daily"], "by_model": agg["by_model"], "recent": agg["recent"], "transactions": transactions(user)})
+        active_plan = plan_active(user)
+        plan = user.get("plan") if active_plan else "free"
+        self.send_json(200, {"user": {"name": user.get("name"), "email": user.get("email"), "company": user.get("company", ""), "created_at": user.get("created_at"), "verified": user.get("verified", True), "provider": user.get("provider", "email")}, "balance": round(user.get("balance", 0.0), 6), "plan": plan, "plan_name": PLANS.get(plan, {}).get("name", "Pay-as-you-go"), "plan_expires": user.get("plan_expires") if active_plan else None, "daily_quota": PLAN_QUOTA.get(plan, 0), "quota_used_today": plan_tokens_used_today(user) if active_plan else 0, "api_keys": [public_key(k) for k in user.get("api_keys", []) if k.get("status", "active") == "active"], "request_key_id": key["id"], "stats": agg["stats"], "daily": agg["daily"], "by_model": agg["by_model"], "recent": agg["recent"], "transactions": transactions(user)})
 
     def handle_create_key(self):
         _db, user, _key = self.authenticate()
@@ -836,19 +1146,7 @@ class NovaHandler(BaseHTTPRequestHandler):
         self.send_json(200, {"deleted": key_id, "deleted_current_key": key_id == auth_key["id"], "keys": [public_key(k) for k in remaining], "auth_key": remaining[0]["key"] if key_id == auth_key["id"] else auth_key["key"]})
 
     def handle_topup(self):
-        _db, user, _key = self.authenticate()
-        if not user: return self.send_error_json(401, "authentication_error", "invalid_api_key", "Not authenticated.")
-        body = self.read_json_body() or {}
-        try: amount = round(float(body.get("amount", 0)), 2)
-        except (TypeError, ValueError): amount = 0
-        if not 0 < amount <= 1000: return self.send_error_json(400, "invalid_request_error", "invalid_amount", "Amount must be between $0.01 and $1000.")
-        with DB_LOCK:
-            db = load_users(); target = next((u for u in db["users"] if u["id"] == user["id"]), None)
-            if not target: return self.send_error_json(404, "not_found", "user_missing", "Account not found.")
-            target["balance"] = round(target.get("balance", 0.0) + amount, 6)
-            target.setdefault("transactions", []).append({"ts": int(time.time()), "type": "topup", "description": "Demo top-up", "method": "Visa •••• 4242", "amount": amount})
-            target["transactions"] = target["transactions"][-200:]; save_users(db); balance = target["balance"]
-        self.send_json(200, {"balance": round(balance, 6)})
+        return self.send_error_json(410, "invalid_request_error", "use_checkout", "Top-up requires a verified payment. Use PayPal or a bank transfer.")
 
     def handle_profile(self):
         _db, user, _key = self.authenticate()
@@ -899,7 +1197,13 @@ class NovaHandler(BaseHTTPRequestHandler):
                                             f"Try limit reached ({limit}/day). Use your API key for production traffic.")
         price_per_1k = float(entry.get("output", 0) or 0)
         cost = round(len(text) / 1000.0 * price_per_1k, 6)
-        if cost > 0 and user.get("balance", 0) <= 0:
+        active_plan = plan_active(user)
+        if cost > 0 and active_plan:
+            tts_limit = int(PLANS.get(user.get("plan"), {}).get("tts", 0))
+            if tts_limit and plan_tts_used_today(user) >= tts_limit:
+                return self.send_error_json(429, "rate_limit_error", "sub_tts_limit", "Daily TTS request limit reached. It resets at 00:00 UTC.")
+            cost = 0.0
+        elif cost > 0 and user.get("balance", 0) <= 0:
             return self.send_error_json(402, "insufficient_balance_error", "insufficient_balance", "Balance exhausted.")
         provider_name = MODEL_PROVIDER_MAP.get(model, DEFAULT_PROVIDER)
         provider = PROVIDERS.get(provider_name)
@@ -977,7 +1281,16 @@ class NovaHandler(BaseHTTPRequestHandler):
         
         price_in, price_out = PRICING[model]
         is_paid = (price_in or price_out) > 0
-        if is_paid and user.get("balance", 0) <= 0: return self.send_error_json(402, "insufficient_balance_error", "insufficient_balance", "Balance exhausted.")
+        active_plan = plan_active(user)
+        plan_covered = bool(is_paid and active_plan)
+        if is_paid:
+            if plan_covered:
+                quota = PLAN_QUOTA.get(user.get("plan"), 0)
+                if plan_tokens_used_today(user) >= quota:
+                    return self.send_error_json(429, "rate_limit_error", "sub_quota_reached", "Daily subscription quota reached. It resets at 00:00 UTC.")
+            elif user.get("balance", 0) <= 0:
+                return self.send_error_json(402, "insufficient_balance_error", "insufficient_balance", "Balance exhausted.")
+        bill_in, bill_out = (0, 0) if plan_covered else (price_in, price_out)
 
         provider_name = MODEL_PROVIDER_MAP.get(model, DEFAULT_PROVIDER)
         provider_info = PROVIDERS.get(provider_name)
@@ -1048,7 +1361,7 @@ class NovaHandler(BaseHTTPRequestHandler):
         if not upstream:
             return self.send_error_json(502, "upstream_error", "all_keys_failed", f"All keys for {provider_name} failed. Last error: {str(last_exc)}")
 
-        if stream: return self.relay_stream(upstream, user, key, model, price_in, price_out, started, client)
+        if stream: return self.relay_stream(upstream, user, key, model, bill_in, bill_out, started, client)
 
         try:
             raw = upstream.read(); data = json.loads(raw.decode("utf-8"))
@@ -1057,7 +1370,7 @@ class NovaHandler(BaseHTTPRequestHandler):
 
         latency = int((time.time() - started) * 1000); usage = data.get("usage") or {}
         prompt_tokens = int(usage.get("prompt_tokens") or 0); completion_tokens = int(usage.get("completion_tokens") or 0)
-        cost = (prompt_tokens * price_in + completion_tokens * price_out) / 1_000_000
+        cost = (prompt_tokens * bill_in + completion_tokens * bill_out) / 1_000_000
         record_usage(user["id"], key["id"], model, prompt_tokens, completion_tokens, latency, status="ok", cost=cost, client=client)
         self.send_json(200, data)
 

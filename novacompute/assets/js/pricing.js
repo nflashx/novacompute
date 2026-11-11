@@ -57,7 +57,7 @@
     });
   }
 
-  /* ---------- Subscription plans + manual checkout ---------- */
+  /* ---------- Subscription plans + verified checkout ---------- */
   const PLANS = {
     starter: { name: 'Starter', price: 4.99, quota: '1.5M paid tokens/day', tts: '20 TTS requests/day' },
     pro: { name: 'Pro', price: 12.99, quota: '6M paid tokens/day', tts: '60 TTS requests/day' },
@@ -70,13 +70,13 @@
   const subBody = document.getElementById('sub-body');
   let paypalSdkPromise = null;
 
-  function vietQrUrl(plan, bank, memo) {
+  function vietQrUrl(plan, bank, memo, rate) {
     const code = bank.code || 'TCB';
     const params = new URLSearchParams({
-      amount: plan.price.toFixed(2),
       addInfo: memo,
       accountName: bank.holder || '',
     });
+    if (rate > 0) params.set('amount', String(Math.round(plan.price * rate)));
     return `https://img.vietqr.io/image/${encodeURIComponent(code)}-${encodeURIComponent(bank.account)}-compact2.png?${params.toString()}`;
   }
 
@@ -105,7 +105,7 @@
     return paypalSdkPromise;
   }
 
-  function mountPaypal(plan, pay, memo) {
+  function mountPaypal(planId, plan, pay, memo) {
     const wrap = document.getElementById('paypal-wrap');
     const holder = document.getElementById('paypal-button');
     if (!wrap || !holder) return;
@@ -121,27 +121,40 @@
       }
       return;
     }
+    const session = (window.novaSession && window.novaSession.get()) || null;
+    if (!session || !session.api_key) {
+      wrap.classList.remove('hidden');
+      holder.innerHTML = `<a href="login.html" class="btn-ghost flex items-center justify-center rounded-lg px-4 py-2.5 text-sm font-medium text-slate-200">Sign in to pay with PayPal</a>`;
+      return;
+    }
     wrap.classList.remove('hidden');
     holder.innerHTML = `<div class="rounded-lg border border-white/[0.08] bg-white/[0.02] px-3.5 py-3 text-center text-xs text-slate-500">Loading PayPal…</div>`;
     loadPaypalSdk(pp.clientId).then((paypal) => {
       holder.innerHTML = '';
       const buttons = paypal.Buttons({
         style: { layout: 'vertical', color: 'blue', shape: 'rect', label: 'paypal', height: 40 },
-        createOrder: (_data, actions) => actions.order.create({
-          purchase_units: [{
-            description: `NovaCompute ${plan.name} — monthly subscription`,
-            custom_id: memo,
-            amount: { value: plan.price.toFixed(2), currency_code: 'USD' },
-          }],
-        }),
-        onApprove: (_data, actions) => actions.order.capture().then((details) => {
-          const payer = details?.payer?.name?.given_name || 'your PayPal account';
+        createOrder: async () => {
+          const res = await window.novaApi('/api/paypal/create-order', {
+            method: 'POST', body: { purpose: 'sub', plan: planId },
+          });
+          if (!res.ok) throw new Error((res.data.error && res.data.error.message) || 'Could not create PayPal order');
+          return res.data.id;
+        },
+        onApprove: async (data) => {
+          const res = await window.novaApi('/api/paypal/capture-order', {
+            method: 'POST', body: { order_id: data.orderID },
+          });
+          if (!res.ok) {
+            holder.innerHTML = `<div class="rounded-lg border border-red-400/25 bg-red-400/[0.07] p-3 text-xs text-red-200/90">${(res.data.error && res.data.error.message) || 'Payment capture failed.'}</div>`;
+            return;
+          }
+          if (window.novaSession && res.data.plan) window.novaSession.update({ plan: res.data.plan });
           holder.innerHTML = `<div class="rounded-lg border border-emerald-400/25 bg-emerald-500/[0.08] p-3 text-xs leading-relaxed text-emerald-200/90">
-            <p class="font-semibold text-emerald-300">Payment received — thank you!</p>
-            <p class="mt-1">Paid with ${payer}. Send the PayPal receipt to <span class="text-white">${pay.contact?.email || 'support'}</span> and we will activate <strong>${plan.name}</strong> manually, usually within a few minutes.</p>
+            <p class="font-semibold text-emerald-300">${plan.name} activated — thank you!</p>
+            <p class="mt-1">Payment captured by PayPal. Your plan is active${res.data.plan_expires ? ` until ${new Date(res.data.plan_expires).toLocaleDateString()}` : ''}; daily quota is now live on your account.</p>
           </div>`;
-          window.novaToast('PayPal payment received', true);
-        }),
+          window.novaToast(`${plan.name} activated`, true);
+        },
         onCancel: () => window.novaToast('PayPal checkout cancelled', false),
         onError: (err) => {
           console.error('[paypal]', err);
@@ -171,7 +184,7 @@
     </div>`;
   }
 
-  function openSubModal(planId) {
+  async function openSubModal(planId) {
     const plan = PLANS[planId];
     if (!plan || !subModal) return;
     const pay = window.NOVA_PAYMENT || {};
@@ -181,6 +194,12 @@
     const session = (window.novaSession && window.novaSession.get()) || null;
     const email = (session && session.email) || '';
     const memo = `${pay.memo_prefix || 'NOVA'} ${plan.name} ${email || '{your-email}'}`;
+    let rate = 0;
+    try {
+      const fx = await window.novaApi('/api/fx', { auth: false });
+      rate = Number((fx.data && fx.data.usd_vnd) || 0);
+    } catch (err) { rate = 0; }
+    const vnd = rate > 0 ? Math.round(plan.price * rate) : 0;
     let html = '';
     if (bank.account) {
       html += `<p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Bank transfer</p>`;
@@ -189,18 +208,19 @@
       html += row('Account holder', bank.holder || '—');
       html += row('Transfer memo', memo, true);
       html += `<div class="flex flex-col items-center gap-4 rounded-xl border border-white/[0.08] bg-white/[0.03] p-3.5 sm:flex-row">
-        <img src="${vietQrUrl(plan, bank, memo)}" alt="VietQR — ${plan.name} payment" width="128" height="128"
+        <img src="${vietQrUrl(plan, bank, memo, rate)}" alt="VietQR — ${plan.name} payment" width="128" height="128"
              class="h-32 w-32 shrink-0 rounded-lg bg-white p-1.5" loading="lazy" referrerpolicy="no-referrer" />
         <div class="text-xs leading-relaxed text-slate-400">
           <p class="font-semibold text-slate-200">Scan to pay — amount &amp; memo pre-filled</p>
-          <p class="mt-1">Open any Vietnamese banking app, scan this VietQR code, and confirm. The transfer memo already contains your plan and email.</p>
+          <p class="mt-1">Amount: <span class="text-slate-200">${vnd ? `${vnd.toLocaleString('vi-VN')} VND (≈ $${plan.price.toFixed(2)})` : `$${plan.price.toFixed(2)} — your bank converts to VND`}</span></p>
+          <p class="mt-1">The memo already contains your plan and email. Keep it unchanged.</p>
           <p class="mt-1.5 font-mono text-[11px] text-slate-500">${bank.name || ''} · ${bank.holder || ''}</p>
         </div>
       </div>`;
       if (!email) {
         html += `<p class="mt-2 rounded-lg border border-amber-400/25 bg-amber-400/[0.07] p-3 text-xs text-amber-200/80">Sign in first — the memo must contain your account email so we can match your transfer.</p>`;
       }
-      html += `<p class="text-xs leading-relaxed text-slate-500">Transfer the exact amount, then send the receipt to <span class="text-slate-300">${pay.contact?.email || 'support'}</span> — your plan is activated manually (usually within a few minutes).</p>`;
+      html += `<p class="text-xs leading-relaxed text-slate-500">Bank transfers auto-credit when the bank webhook is configured; otherwise send the receipt to <span class="text-slate-300">${pay.contact?.email || 'support'}</span>.</p>`;
     } else {
       html += `<div class="rounded-lg border border-amber-400/25 bg-amber-400/[0.07] p-3.5 text-xs text-amber-200/80">Payment details are not configured yet. Add them to <code class="font-mono">assets/js/payment-config.js</code>.</div>`;
     }
@@ -208,12 +228,12 @@
     html += `<div id="paypal-wrap" class="hidden pt-1">
       <p class="pb-2 text-xs font-semibold uppercase tracking-wider text-slate-500">PayPal</p>
       <div id="paypal-button"></div>
-      <p class="mt-2 text-[11px] leading-relaxed text-slate-500">Pay the monthly amount with PayPal, then send the receipt to <span class="text-slate-300">${pay.contact?.email || 'support'}</span> for manual activation. If the PayPal window does not open, allow pop-ups for this site.</p>
+      <p class="mt-2 text-[11px] leading-relaxed text-slate-500">Payment is captured server-side; your plan activates automatically. If the PayPal window does not open, allow pop-ups for this site.</p>
     </div>`;
     subBody.innerHTML = html;
     subModal.classList.remove('hidden');
     subModal.classList.add('flex');
-    if (pp.clientId) mountPaypal(plan, pay, memo);
+    if (pp.clientId) mountPaypal(planId, plan, pay, memo);
   }
 
   function closeSubModal() {

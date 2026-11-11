@@ -30,6 +30,24 @@
     });
   });
 
+  /* Keep every example on the same origin as the site (or NOVA_API_BASE). */
+  function rewriteApiOrigin() {
+    const base = window.novaApiBase ? window.novaApiBase() : '';
+    if (!base) return;
+    const origin = base.replace(/\/v1$/, '');
+    const old = 'https://YOUR-DOMAIN';
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    const nodes = [];
+    while (walker.nextNode()) nodes.push(walker.currentNode);
+    nodes.forEach((node) => {
+      if (node.nodeValue.includes(old)) node.nodeValue = node.nodeValue.replaceAll(old, origin);
+    });
+    document.querySelectorAll('[data-copy-text]').forEach((el) => {
+      if (el.dataset.copyText.includes(old)) el.dataset.copyText = el.dataset.copyText.replaceAll(old, origin);
+    });
+  }
+  rewriteApiOrigin();
+
   /* ---------- Model reference table ---------- */
   const modelRows = document.getElementById('docs-model-rows');
 

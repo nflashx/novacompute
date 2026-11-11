@@ -34,3 +34,5 @@ backend/mail_config.json
 
 # Tailwind build
 novacompute/node_modules/
+backend/paypal_config.json
+backend/payment_config.json
