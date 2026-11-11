@@ -1,0 +1,8 @@
+{
+  "enabled": false,
+  "host": "smtp.gmail.com",
+  "port": 465,
+  "user": "yourgmail@gmail.com",
+  "pass": "your-16-char-app-password",
+  "from": "NovaCompute <yourgmail@gmail.com>"
+}

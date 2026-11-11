@@ -57,8 +57,8 @@
         </nav>
 
         <div class="hidden items-center gap-3 md:flex">
-          <a href="login.html" class="btn-ghost rounded-lg px-4 py-2 text-sm font-medium text-slate-200">Sign In</a>
-          <a href="register.html" class="btn-primary rounded-lg px-4 py-2 text-sm font-semibold text-white">Get Started</a>
+          <a id="auth-primary" href="login.html" class="btn-ghost rounded-lg px-4 py-2 text-sm font-medium text-slate-200">Sign In</a>
+          <a id="auth-secondary" href="register.html" class="btn-primary rounded-lg px-4 py-2 text-sm font-semibold text-white">Get Started</a>
         </div>
 
         <button id="nav-toggle" type="button"
@@ -77,8 +77,8 @@
               ${l.label}
             </a>`).join('')}
           <div class="mt-3 flex gap-3 border-t border-white/[0.06] pt-4">
-            <a href="login.html" class="btn-ghost flex-1 rounded-lg px-4 py-2.5 text-center text-sm font-medium text-slate-200">Sign In</a>
-            <a href="register.html" class="btn-primary flex-1 rounded-lg px-4 py-2.5 text-center text-sm font-semibold text-white">Get Started</a>
+            <a id="auth-primary-m" href="login.html" class="btn-ghost flex-1 rounded-lg px-4 py-2.5 text-center text-sm font-medium text-slate-200">Sign In</a>
+            <a id="auth-secondary-m" href="register.html" class="btn-primary flex-1 rounded-lg px-4 py-2.5 text-center text-sm font-semibold text-white">Get Started</a>
           </div>
         </nav>
       </div>
@@ -88,6 +88,27 @@
        so it becomes a direct child of <body> and stays pinned on scroll */
     const headerEl = headerRoot.querySelector('header');
     headerRoot.replaceWith(headerEl);
+
+    /* Swap auth CTAs when a session exists (same localStorage key as api.js). */
+    let session = null;
+    try { session = JSON.parse(localStorage.getItem('nova_user') || 'null'); } catch (err) { session = null; }
+    if (session && session.api_key) {
+      ['auth-primary', 'auth-primary-m'].forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) { el.textContent = 'Dashboard'; el.href = 'dashboard.html'; }
+      });
+      ['auth-secondary', 'auth-secondary-m'].forEach((id) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.textContent = 'Sign out';
+        el.href = '#';
+        el.addEventListener('click', (e) => {
+          e.preventDefault();
+          localStorage.removeItem('nova_user');
+          window.location.href = 'login.html';
+        });
+      });
+    }
 
     /* Mobile menu toggle */
     const toggle = document.getElementById('nav-toggle');
@@ -192,7 +213,7 @@
 
         <div class="mt-14 flex flex-col items-center justify-between gap-4 border-t border-white/[0.06] pt-8 sm:flex-row">
           <p class="text-sm text-slate-500">© 2026 NovaCompute, Inc. All rights reserved.</p>
-          <p class="text-xs text-slate-600">SOC 2 Type II · GDPR ready · 99.9% uptime SLA</p>
+          <p class="text-xs text-slate-600">OpenAI-compatible · 18 models · pay-as-you-go</p>
         </div>
       </div>
     </footer>`;

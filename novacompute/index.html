@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
 <head>
+  <style>html{background-color:#05070e;color-scheme:dark}body{background-color:#05070e}</style>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>NovaCompute — One API for the World's Best AI Models</title>
-  <meta name="description" content="NovaCompute — one OpenAI-compatible API for 18 frontier AI models. Auto-routing failover, 99.9% uptime, pay-as-you-go billing." />
+  <meta name="description" content="NovaCompute — one OpenAI-compatible API for 18 frontier AI models. Provider failover, streaming responses, pay-as-you-go billing." />
   <meta name="theme-color" content="#05070e" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='24' y2='24' gradientUnits='userSpaceOnUse'%3E%3Cstop stop-color='%23a78bfa'/%3E%3Cstop offset='1' stop-color='%2322d3ee'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M12 1.5l2.6 7.9 7.9 2.6-7.9 2.6L12 22.5l-2.6-7.9-7.9-2.6 7.9-2.6L12 1.5z' fill='url(%23g)'/%3E%3C/svg%3E" />
 
@@ -14,9 +15,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
 
   <!-- Tailwind (Play CDN) + shared theme -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="assets/js/tailwind-config.js?v=25"></script>
-  <link rel="stylesheet" href="assets/css/main.css?v=25" />
+  <link rel="stylesheet" href="assets/css/tailwind.css?v=2" />
+  <link rel="stylesheet" href="assets/css/main.css?v=26" />
 </head>
 
 <body class="bg-night font-sans text-slate-200 antialiased overflow-x-hidden">
@@ -51,8 +51,8 @@
           </h1>
 
           <p class="reveal reveal-d2 mt-6 max-w-xl text-base leading-relaxed text-slate-400 sm:text-lg">
-            One OpenAI-compatible endpoint for 18 frontier models. Auto-routing failover,
-            sub-100ms first tokens and per-token billing — so you ship AI features,
+            One OpenAI-compatible endpoint for 18 frontier models. Provider failover, streaming
+            responses and per-token billing — so you ship AI features,
             not infrastructure.
           </p>
 
@@ -70,20 +70,20 @@
           <!-- Stats -->
           <dl class="reveal reveal-d3 mt-14 grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-4">
             <div class="border-l border-white/10 pl-4">
-              <dd class="font-display text-2xl font-bold text-white"><span class="stat-value" data-target="99.99" data-decimals="2" data-suffix="%">0</span></dd>
-              <dt class="mt-1 text-xs text-slate-500">Uptime SLA</dt>
-            </div>
-            <div class="border-l border-white/10 pl-4">
-              <dd class="font-display text-2xl font-bold text-white"><span class="stat-value" data-target="1.2" data-decimals="1" data-suffix="B">0</span></dd>
-              <dt class="mt-1 text-xs text-slate-500">Tokens served daily</dt>
-            </div>
-            <div class="border-l border-white/10 pl-4">
-              <dd class="font-display text-2xl font-bold text-white"><span class="stat-value" data-target="85" data-prefix="&lt;" data-suffix="ms">0</span></dd>
-              <dt class="mt-1 text-xs text-slate-500">Median TTFB</dt>
-            </div>
-            <div class="border-l border-white/10 pl-4">
-              <dd class="font-display text-2xl font-bold text-white"><span class="stat-value" data-target="50" data-suffix="+">0</span></dd>
+              <dd class="font-display text-2xl font-bold text-white"><span class="stat-value" data-target="18">0</span></dd>
               <dt class="mt-1 text-xs text-slate-500">Frontier models</dt>
+            </div>
+            <div class="border-l border-white/10 pl-4">
+              <dd class="font-display text-2xl font-bold text-white"><span class="stat-value" data-target="6">0</span></dd>
+              <dt class="mt-1 text-xs text-slate-500">Free models</dt>
+            </div>
+            <div class="border-l border-white/10 pl-4">
+              <dd class="font-display text-2xl font-bold text-white"><span class="stat-value" data-target="0.005" data-decimals="3" data-prefix="$">0</span></dd>
+              <dt class="mt-1 text-xs text-slate-500">Cheapest paid input / 1M</dt>
+            </div>
+            <div class="border-l border-white/10 pl-4">
+              <dd class="font-display text-2xl font-bold text-white"><span class="stat-value" data-target="1">0</span></dd>
+              <dt class="mt-1 text-xs text-slate-500">API key for every model</dt>
             </div>
           </dl>
         </div>
@@ -200,15 +200,15 @@ stream = client.chat.completions.<span class="tok-fn">create</span>(
         </div>
 
         <div class="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          <!-- High Uptime -->
+          <!-- Provider failover -->
           <article class="reveal card-hover glass rounded-2xl p-7">
             <div class="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-gradient-to-br from-violet-500/25 to-cyan-400/10 text-violet-300">
               <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
             </div>
-            <h3 class="mt-5 font-display text-lg font-semibold text-white">99.9% High Uptime</h3>
+            <h3 class="mt-5 font-display text-lg font-semibold text-white">Provider failover</h3>
             <p class="mt-2.5 text-sm leading-relaxed text-slate-400">
-              Multi-region failover with a public status page. We get paged at 3 a.m.
-              so your on-call doesn't have to.
+              Requests retry across healthy upstream providers and keys. If one channel fails,
+              the next one takes over automatically — no code changes on your side.
             </p>
           </article>
 
@@ -335,10 +335,10 @@ stream = client.chat.completions.<span class="tok-fn">create</span>(
 
   <div id="site-footer"></div>
 
-  <script src="assets/js/layout.js?v=25" defer></script>
-  <script src="assets/js/effects.js?v=25" defer></script>
-  <script src="assets/js/api.js?v=25" defer></script>
-  <script src="assets/js/models-data.js?v=25" defer></script>
-  <script src="assets/js/landing.js?v=25" defer></script>
+  <script src="assets/js/layout.js?v=27" defer></script>
+  <script src="assets/js/effects.js?v=26" defer></script>
+  <script src="assets/js/api.js?v=26" defer></script>
+  <script src="assets/js/models-data.js?v=26" defer></script>
+  <script src="assets/js/landing.js?v=26" defer></script>
 </body>
 </html>

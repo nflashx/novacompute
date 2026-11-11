@@ -27,3 +27,10 @@ cloudflare-api/worker-configuration.d.ts
 
 # Local payment details (bank/PayPal)
 novacompute/assets/js/payment-config.js
+
+# OAuth + mail credentials (never commit)
+backend/oauth_config.json
+backend/mail_config.json
+
+# Tailwind build
+novacompute/node_modules/

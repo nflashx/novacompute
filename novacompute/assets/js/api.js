@@ -77,4 +77,20 @@
     }
     return { ok: res.ok, status: res.status, data };
   };
+
+  /* Show the real API base URL anywhere a [data-api-base] element exists. */
+  window.novaApiBase = function () {
+    const base = String(window.NOVA_API_BASE || 'http://127.0.0.1:8080').replace(/\/+$/, '').replace(/\/v1$/, '');
+    return base + '/v1';
+  };
+  function paintApiBase() {
+    document.querySelectorAll('[data-api-base]').forEach((el) => { el.textContent = window.novaApiBase(); });
+  }
+  paintApiBase();
+  document.addEventListener('click', async (e) => {
+    const btn = e.target.closest('[data-copy-api-base]');
+    if (!btn) return;
+    const ok = window.novaCopy ? await window.novaCopy(window.novaApiBase()) : false;
+    if (window.novaToast) window.novaToast(ok ? 'API base URL copied' : 'Copy failed', ok);
+  });
 })();

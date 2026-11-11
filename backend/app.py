@@ -7,22 +7,99 @@ import os
 import random
 import re
 import secrets
+import smtplib
 import threading
 import time
 import urllib.error
 import urllib.request
 from datetime import datetime, timedelta, timezone
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from urllib.parse import urlparse
+from urllib.parse import parse_qs, urlencode, urlparse
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 USERS_DB_FILE = os.path.join(BASE_DIR, "users_db.json")
+OAUTH_CONFIG_FILE = os.path.join(BASE_DIR, "oauth_config.json")
+MAIL_CONFIG_FILE = os.path.join(BASE_DIR, "mail_config.json")
 PORT = int(os.getenv("NOVA_PORT", "8080"))
+SITE_URL = os.getenv("NOVA_SITE_URL", "http://127.0.0.1:8123").rstrip("/")
+OAUTH_CALLBACK_BASE = os.getenv("NOVA_OAUTH_BASE", "http://127.0.0.1:8600").rstrip("/")
+OAUTH_CALLBACK_PORT = int(os.getenv("NOVA_OAUTH_PORT", "8600"))
 UPSTREAM_TIMEOUT = 120
 UPSTREAM_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
 
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 DB_LOCK = threading.RLock()
+
+# ================= SIGN-UP / ANTI-ABUSE =================
+SIGNUP_WINDOW = 3600
+SIGNUP_LIMIT = int(os.getenv("NOVA_SIGNUP_LIMIT", "3"))
+SIGNUP_DAILY = int(os.getenv("NOVA_SIGNUP_DAILY", "6"))
+IP_BAN_SECONDS = 86400
+FAILED_LIMIT = 8
+LOCK_SECONDS = 900
+CODE_TTL = 600
+FAKE_MAIL_LIMIT = 3
+FAKE_MAIL_BASE = 600
+FAKE_MAIL_MAX = 86400
+
+DISPOSABLE_DOMAINS = {
+    "mailinator.com", "10minutemail.com", "10minutemail.net", "guerrillamail.com", "guerrillamail.net",
+    "guerrillamail.org", "sharklasers.com", "grr.la", "yopmail.com", "yopmail.net", "trashmail.com",
+    "trashmail.net", "trash-mail.com", "tempmail.com", "temp-mail.org", "tempmailo.com", "tempmail.dev",
+    "getnada.com", "nada.email", "dispostable.com", "fakeinbox.com", "throwawaymail.com", "maildrop.cc",
+    "mintemail.com", "mytemp.email", "spam4.me", "mailnesia.com", "tempinbox.com", "tmpmail.org",
+    "throwam.com", "moakt.com", "mohmal.com", "emailondeck.com", "email-fake.com", "fakemailgenerator.com",
+    "fake-mail.net", "mailtemp.net", "tempr.email", "discard.email", "spamgourmet.com", "burnermail.io",
+    "anonaddy.me", "33mail.com", "mailcatch.com", "inboxbear.com", "tempmailaddress.com", "mailsac.com",
+    "inboxkitten.com", "harakirimail.com", "mailde.de", "mailde.info", "luxusmail.org", "cs.email",
+    "edumail.edu.pl", "1secmail.com", "1secmail.net", "1secmail.org", "esiix.com", "wwjmp.com", "xojxe.com",
+    "yoggm.com", "vjuum.com", "laafd.com", "txcct.com", "kzccv.com", "qiott.com", "wuuvo.com", "icznn.com",
+    "ezztt.com", "crymail.com", "tempmail.plus", "internxt.com", "altmails.com", "temprmail.com",
+    "getairmail.com", "airmail.cc", "10minutemail.pl", "binkmail.com", "bobmail.info", "chammy.info",
+    "devnullmail.com", "letthemeatspam.com", "mailin8r.com", "mailinater.com", "notmailinator.com",
+    "reallymymail.com", "sogetthis.com", "spambog.com", "spamhole.com", "thisisnotmyrealemail.com",
+    "trbvm.com", "uggsrock.com", "wegwerfmail.de", "zoemail.net", "sneakemail.com", "jetable.org",
+    "mail-temporaire.fr", "moncourrier.fr.nf", "monmail.fr.nf", "discardmail.com", "spambog.de",
+    "example.com", "example.org", "example.net", "test.com", "localhost", "invalid", "local",
+}
+DISPOSABLE_PATTERNS = re.compile(
+    r"^(temp|trash|fake|throwaway|disposable|10minute|burner|junk|spam|onetime|one-time)[\w.-]*", re.I)
+
+def email_family(email):
+    """Canonicalize Gmail: drop dots, +alias, googlemail -> gmail."""
+    e = (email or "").strip().lower()
+    local, _, domain = e.partition("@")
+    if domain in ("gmail.com", "googlemail.com"):
+        domain = "gmail.com"
+        local = local.split("+")[0].replace(".", "")
+    return local + "@" + domain
+
+def mail_allowed(email):
+    domain = email.rsplit("@", 1)[-1].lower() if "@" in email else ""
+    if not domain or domain in DISPOSABLE_DOMAINS or any(domain.endswith("." + d) for d in DISPOSABLE_DOMAINS):
+        return False, "Disposable / temporary email domains are not allowed. Use a real mailbox."
+    if domain.endswith((".test", ".invalid", ".localhost", ".local")):
+        return False, "This email domain cannot receive mail. Use a real mailbox."
+    if DISPOSABLE_PATTERNS.match(domain.split(".")[0]):
+        return False, "This looks like a throwaway email domain. Use a real mailbox."
+    return True, ""
+
+def domain_has_mx(domain):
+    """Ask Cloudflare DNS-over-HTTPS for MX/A records. Fails open on network errors."""
+    for rtype in ("MX", "A"):
+        try:
+            url = "https://cloudflare-dns.com/dns-query?" + urlencode({"name": domain, "type": rtype})
+            req = urllib.request.Request(url, headers={"Accept": "application/dns-json", "User-Agent": "NovaCompute/1.0"})
+            with urllib.request.urlopen(req, timeout=4) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+            if int(data.get("Status", 0)) == 0 and data.get("Answer"):
+                return True
+        except Exception as exc:
+            print(f"[signup] DNS check skipped for {domain}: {exc}")
+            return True
+    return False
 
 # ================= CẤU HÌNH PROVIDERS =================
 # Keys KHÔNG bao giờ nằm trong file này — đặt trong backend/<provider>_keys.json
@@ -65,10 +142,10 @@ MODELS = [
     {"id": "claude-sonnet-5.5", "name": "Claude Sonnet 5.5", "provider": "Anthropic", "context": "1M", "speed": 92, "input": 1.8, "output": 9.0, "image": True, "video": False, "category": "chat", "tag": None, "note": "", "upstream_id": "claude-sonnet-5-5-free"},
     {"id": "gpt-6-luna", "name": "GPT-6", "provider": "OpenAI", "context": "900K", "speed": 118, "input": 0.08, "output": 0.4, "image": True, "video": False, "category": "chat", "tag": "New", "note": ""},
     {"id": "gpt-5.6-luna", "name": "GPT-5.6", "provider": "OpenAI", "context": "900K", "speed": 130, "input": 0.0, "output": 0.0, "image": True, "video": False, "category": "chat", "tag": "Free", "note": ""},
-    {"id": "grok-4.6", "name": "Grok 4.6", "provider": "xAI", "context": "500K", "speed": 150, "input": 0.1, "output": 0.3, "image": True, "video": False, "category": "chat", "tag": None, "note": ""},
+    {"id": "grok-4.6", "name": "Grok 4.6", "provider": "xAI", "context": "500K", "speed": 150, "input": 1.7, "output": 5.1, "image": True, "video": False, "category": "chat", "tag": None, "note": ""},
     {"id": "deepseek-v4.1-flash", "name": "DeepSeek V4.1", "provider": "DeepSeek", "context": "1M", "speed": 145, "input": 0.0, "output": 0.0, "image": True, "video": False, "category": "code", "tag": "Free", "note": ""},
     {"id": "deepseek-v4.1-flash-1017", "name": "DeepSeek V4.1 1017", "provider": "DeepSeek", "context": "1M", "speed": 145, "input": 0.005, "output": 0.24, "image": True, "video": False, "category": "code", "tag": None, "note": ""},
-    {"id": "kimi-k3.1-pro", "name": "Kimi k3.1 Pro", "provider": "Moonshot AI", "context": "1M", "speed": 120, "input": 1.0, "output": 1.0, "image": True, "video": True, "category": "chat", "tag": None, "note": "", "upstream_id": "kimi-k3.1-pro-free"},
+    {"id": "kimi-k3.1-pro", "name": "Kimi k3.1 Pro", "provider": "Moonshot AI", "context": "1M", "speed": 120, "input": 1.8, "output": 9.0, "image": True, "video": True, "category": "chat", "tag": None, "note": "", "upstream_id": "kimi-k3.1-pro-free"},
     {"id": "mistral-large-4", "name": "Mistral Large 4", "provider": "Mistral AI", "context": "1M", "speed": 98, "input": 0.0, "output": 0.0, "image": True, "video": False, "category": "chat", "tag": "Free", "note": ""},
     {"id": "mercury-3", "name": "Mercury 3", "provider": "Inception", "context": "1M", "speed": 1000, "input": 0.1, "output": 0.35, "image": False, "video": False, "category": "code", "tag": "Diffusion", "note": ""},
     {"id": "glm-5.3-flash", "name": "GLM 5.3 Flash", "provider": "Z.ai", "context": "1M", "speed": 240, "input": 0.03, "output": 0.07, "image": True, "video": True, "category": "chat", "tag": None, "note": ""},
@@ -176,6 +253,9 @@ def load_users():
             try: data = json.load(fh)
             except json.JSONDecodeError: data = {"users": []}
         if not isinstance(data.get("users"), list): data = {"users": []}
+        for field, default in (("pending", {}), ("ip_signups", {}), ("banned_ips", []),
+                               ("fake_mail", {}), ("failed_logins", {}), ("oauth_sessions", {})):
+            data.setdefault(field, default)
         return data
 
 def save_users(db):
@@ -193,8 +273,214 @@ def find_user_by_email(db, email):
         if user.get("email", "").lower() == email: return user
     return None
 
+def family_taken(db, email):
+    family = email_family(email)
+    return any(email_family(u.get("email", "")) == family for u in db["users"])
+
 def public_key(key):
     return {"id": key["id"], "name": key.get("name", "Key"), "key": key["key"], "created_at": key.get("created_at"), "last_used": key.get("last_used"), "status": key.get("status", "active")}
+
+# ================= AUTH HELPERS (email / anti-abuse / OAuth) =================
+def load_json_cfg(path):
+    try:
+        with open(path, "r", encoding="utf-8") as fh:
+            return json.load(fh)
+    except (OSError, json.JSONDecodeError):
+        return None
+
+def client_ip(handler):
+    fwd = (handler.headers.get("X-Forwarded-For", "") or "").split(",")[0].strip()
+    ip = fwd or (handler.client_address[0] if handler.client_address else "0.0.0.0")
+    if ip in ("::1", "::ffff:127.0.0.1"):
+        return "127.0.0.1"
+    return ip
+
+def send_mail(to, subject, html_body, text_body=""):
+    cfg = load_json_cfg(MAIL_CONFIG_FILE)
+    if not cfg or not cfg.get("enabled"):
+        print(f"[MAIL NOT CONFIGURED] to={to} | {subject} | {text_body or html_body[:100]}")
+        return False
+    msg = MIMEMultipart("alternative")
+    msg["Subject"] = subject
+    msg["From"] = cfg.get("from", cfg["user"])
+    msg["To"] = to
+    msg.attach(MIMEText(text_body or html_body, "plain"))
+    msg.attach(MIMEText(html_body, "html"))
+    port = int(cfg.get("port", 465))
+    try:
+        if port == 465:
+            smtp = smtplib.SMTP_SSL(cfg["host"], port, timeout=20)
+        else:
+            smtp = smtplib.SMTP(cfg["host"], port, timeout=20)
+            smtp.starttls()
+        try:
+            smtp.login(cfg["user"], cfg["pass"])
+            smtp.send_message(msg)
+        finally:
+            smtp.quit()
+        return True
+    except Exception as exc:
+        print(f"[MAIL ERROR] {to}: {exc}")
+        return False
+
+def send_code_email(to, code):
+    html = f"""<div style="background:#04060a;padding:32px;font-family:Segoe UI,Arial,sans-serif">
+      <div style="max-width:460px;margin:0 auto;background:#0c1016;border:1px solid #1f2a36;border-radius:16px;padding:32px;text-align:center">
+        <h2 style="color:#fff;margin:0 0 6px">NovaCompute</h2>
+        <p style="color:#8fa0b0;font-size:13px;margin:0 0 24px">Your verification code (expires in 10 minutes)</p>
+        <div style="font-size:34px;letter-spacing:10px;font-weight:700;color:#a78bfa">{code}</div>
+        <p style="color:#5c6975;font-size:12px;margin-top:24px">If you didn't request this, ignore this email.</p>
+      </div></div>"""
+    return send_mail(to, f"NovaCompute — your verification code: {code}", html,
+                     f"Your NovaCompute verification code: {code} (expires in 10 minutes)")
+
+def dev_mail_allowed(handler):
+    """DEV code is only exposed on a direct loopback connection, never via X-Forwarded-For."""
+    addr = handler.client_address[0] if handler.client_address else ""
+    return addr in ("127.0.0.1", "::1", "::ffff:127.0.0.1") and os.getenv("NOVA_DEV_MAIL", "1") != "0"
+
+def prune_ip(db, ip):
+    hits = [t for t in db["ip_signups"].get(ip, []) if time.time() - t < 86400]
+    db["ip_signups"][ip] = hits
+    return hits
+
+def ip_is_banned(db, ip):
+    for ban in db.get("banned_ips", []):
+        if ban.get("ip") == ip and (not ban.get("until") or time.time() < ban["until"]):
+            return True
+    return False
+
+def fake_mail_blocked(db, ip):
+    st = db.get("fake_mail", {}).get(ip)
+    return bool(st and time.time() < st.get("blocked_until", 0))
+
+def fake_mail_hit(handler):
+    ip = client_ip(handler)
+    with DB_LOCK:
+        db = load_users()
+        st = db["fake_mail"].setdefault(ip, {"count": 0, "blocked_until": 0})
+        st["count"] = int(st.get("count", 0)) + 1
+        if st["count"] >= FAKE_MAIL_LIMIT:
+            penalty = min(FAKE_MAIL_BASE * (2 ** (st["count"] - FAKE_MAIL_LIMIT)), FAKE_MAIL_MAX)
+            st["blocked_until"] = time.time() + penalty
+        save_users(db)
+
+# ================= OAUTH (Google / GitHub) =================
+OAUTH_STATE = {}
+OAUTH_LOCK = threading.Lock()
+
+def oauth_cfg(provider):
+    cfg = load_json_cfg(OAUTH_CONFIG_FILE) or {}
+    c = cfg.get(provider) or {}
+    if not c.get("client_id") or not c.get("client_secret"):
+        return None
+    return c
+
+def oauth_authorize_url(provider):
+    c = oauth_cfg(provider)
+    if not c:
+        return None
+    state = secrets.token_urlsafe(18)
+    with OAUTH_LOCK:
+        OAUTH_STATE[state] = {"provider": provider, "expires": time.time() + 600}
+    redirect_uri = f"{OAUTH_CALLBACK_BASE}/api/auth/oauth/{provider}/callback"
+    if provider == "google":
+        return "https://accounts.google.com/o/oauth2/v2/auth?" + urlencode({
+            "client_id": c["client_id"], "redirect_uri": redirect_uri,
+            "response_type": "code", "scope": "openid email profile",
+            "state": state, "prompt": "select_account",
+        })
+    return "https://github.com/login/oauth/authorize?" + urlencode({
+        "client_id": c["client_id"], "redirect_uri": redirect_uri,
+        "scope": "read:user user:email", "state": state,
+    })
+
+def http_post_json(url, data, headers=None):
+    req = urllib.request.Request(url, data=json.dumps(data).encode("utf-8"),
+        headers={"Content-Type": "application/json", "Accept": "application/json", **(headers or {})})
+    with urllib.request.urlopen(req, timeout=30) as resp:
+        return json.loads(resp.read().decode("utf-8"))
+
+def http_post_form(url, data, headers=None):
+    req = urllib.request.Request(url, data=urlencode(data).encode("utf-8"),
+        headers={"Content-Type": "application/x-www-form-urlencoded", "Accept": "application/json", **(headers or {})})
+    with urllib.request.urlopen(req, timeout=30) as resp:
+        return json.loads(resp.read().decode("utf-8"))
+
+def http_get_json(url, headers=None):
+    req = urllib.request.Request(url, headers={"Accept": "application/json", "User-Agent": "NovaCompute/1.0", **(headers or {})})
+    with urllib.request.urlopen(req, timeout=30) as resp:
+        return json.loads(resp.read().decode("utf-8"))
+
+def oauth_profile(provider, code):
+    c = oauth_cfg(provider)
+    if not c:
+        raise ValueError(f"{provider} OAuth is not configured.")
+    redirect_uri = f"{OAUTH_CALLBACK_BASE}/api/auth/oauth/{provider}/callback"
+    if provider == "google":
+        tok = http_post_form("https://oauth2.googleapis.com/token", {
+            "code": code, "client_id": c["client_id"], "client_secret": c["client_secret"],
+            "redirect_uri": redirect_uri, "grant_type": "authorization_code",
+        })
+        info = http_get_json("https://openidconnect.googleapis.com/v1/userinfo",
+                             {"Authorization": "Bearer " + tok["access_token"]})
+        if not info.get("email_verified", True):
+            raise ValueError("Your Google email is not verified.")
+        return info.get("email"), info.get("name") or info.get("email")
+    tok = http_post_json("https://github.com/login/oauth/access_token", {
+        "code": code, "client_id": c["client_id"], "client_secret": c["client_secret"],
+        "redirect_uri": redirect_uri,
+    })
+    access = tok.get("access_token")
+    if not access:
+        raise ValueError("GitHub did not return an access token.")
+    info = http_get_json("https://api.github.com/user", {"Authorization": "Bearer " + access})
+    emails = http_get_json("https://api.github.com/user/emails", {"Authorization": "Bearer " + access})
+    verified = [e for e in emails if e.get("verified")]
+    primary = next((e for e in verified if e.get("primary")), verified[0] if verified else None)
+    if not primary:
+        raise ValueError("Your GitHub account has no verified email.")
+    return primary["email"], info.get("name") or info.get("login")
+
+def oauth_session_token(provider, query):
+    state = (query.get("state") or [""])[0]
+    with OAUTH_LOCK:
+        entry = OAUTH_STATE.pop(state, None)
+    if not entry or entry.get("provider") != provider or time.time() > entry.get("expires", 0):
+        raise ValueError("OAuth state is invalid or expired. Try again.")
+    code = (query.get("code") or [""])[0]
+    if not code:
+        raise ValueError("OAuth provider returned no code.")
+    email, name = oauth_profile(provider, code)
+    if not email:
+        raise ValueError("Could not read your email from the provider.")
+    email = email.strip().lower()
+    with DB_LOCK:
+        db = load_users()
+        user = find_user_by_email(db, email)
+        if not user:
+            salt, digest = hash_password(secrets.token_urlsafe(24))
+            user = {
+                "id": "usr_" + secrets.token_hex(8), "name": name or email.split("@")[0],
+                "email": email, "company": "", "password_salt": salt, "password_hash": digest,
+                "created_at": iso(now_utc()), "balance": 0.0,
+                "api_keys": [{"id": "key_" + secrets.token_hex(6), "name": "Default",
+                              "key": new_api_key(), "created_at": iso(now_utc()),
+                              "last_used": None, "status": "active"}],
+                "usage": [], "transactions": [], "verified": True, "provider": provider,
+            }
+            db["users"].append(user)
+        else:
+            user["verified"] = True
+            user.setdefault("provider", provider)
+            if not user.get("api_keys"):
+                user["api_keys"] = [{"id": "key_" + secrets.token_hex(6), "name": "Default",
+                                     "key": new_api_key(), "created_at": iso(now_utc()),
+                                     "last_used": None, "status": "active"}]
+        token = secrets.token_urlsafe(32)
+        db["oauth_sessions"][token] = {"user_id": user["id"], "expires": time.time() + 600}
+        save_users(db)
+    return token
 
 def record_usage(user_id, key_id, model_id, prompt_tokens, completion_tokens, latency_ms, status="ok", cost=0.0, client=""):
     with DB_LOCK:
@@ -324,13 +610,20 @@ class NovaHandler(BaseHTTPRequestHandler):
             self.send_json(200, {"object": "list", "data": [{"id": m["id"], "object": "model", "owned_by": m["provider"], "name": m["name"], "context": m["context"], "speed_tps": m["speed"], "pricing": {"input_per_1m": m["input"], "output_per_1m": m["output"]}, "capabilities": {"image": bool(m.get("image")), "video": bool(m.get("video"))}, "category": m.get("category", "chat"), "tag": m.get("tag"), "note": m.get("note", ""), "price_unit": m.get("price_unit")} for m in MODELS]})
             return
         if path == "/api/me": self.handle_me(); return
+        if path.startswith("/api/oauth/") and path.endswith("/start"):
+            self.handle_oauth_start(path.split("/")[3]); return
+        if path.startswith("/api/auth/oauth/") and path.endswith("/callback"):
+            self.handle_oauth_callback(path.split("/")[4]); return
         self.send_error_json(404, "not_found", "not_found", f"No route for GET {path}")
 
     def do_POST(self):
         path = urlparse(self.path).path.rstrip("/") or "/"
         if path == "/v1/chat/completions": self.handle_chat_completions(); return
         if path == "/api/register": self.handle_register(); return
+        if path == "/api/verify": self.handle_verify(); return
+        if path == "/api/resend": self.handle_resend(); return
         if path == "/api/login": self.handle_login(); return
+        if path == "/api/oauth/exchange": self.handle_oauth_exchange(); return
         if path == "/api/keys": self.handle_create_key(); return
         if path == "/api/topup": self.handle_topup(); return
         if path == "/api/profile": self.handle_profile(); return
@@ -342,35 +635,180 @@ class NovaHandler(BaseHTTPRequestHandler):
         if path.startswith("/api/keys/"): self.handle_delete_key(path.rsplit("/", 1)[-1]); return
         self.send_error_json(404, "not_found", "not_found", f"No route for DELETE {path}")
 
+    def handle_oauth_start(self, provider):
+        url = oauth_authorize_url(provider)
+        if not url:
+            return self.send_error_json(503, "configuration_error", "oauth_not_configured", f"{provider.capitalize()} login is not configured yet.")
+        self.send_json(200, {"url": url})
+
+    def handle_oauth_callback(self, provider):
+        try:
+            token = oauth_session_token(provider, parse_qs(urlparse(self.path).query))
+            target = f"{SITE_URL}/login.html?oauth_token={token}"
+        except ValueError as exc:
+            target = f"{SITE_URL}/login.html?oauth_error={urlencode({'m': str(exc)})[2:]}"
+        except Exception as exc:
+            print(f"[oauth] {provider}: {exc}")
+            target = f"{SITE_URL}/login.html?oauth_error={urlencode({'m': 'OAuth sign-in failed. Try again.'})[2:]}"
+        self.send_response(302)
+        self.send_header("Location", target)
+        self.send_header("Content-Length", "0")
+        self.end_headers()
+
+    def handle_oauth_exchange(self):
+        body = self.read_json_body() or {}
+        token = str(body.get("token", "")).strip()
+        if not token: return self.send_error_json(400, "invalid_request_error", "missing_token", "OAuth token is required.")
+        with DB_LOCK:
+            db = load_users()
+            session = db["oauth_sessions"].get(token)
+            if not session or time.time() > session.get("expires", 0):
+                return self.send_error_json(401, "authentication_error", "oauth_expired", "OAuth session expired. Sign in again.")
+            user = next((u for u in db["users"] if u.get("id") == session.get("user_id")), None)
+            if not user: return self.send_error_json(404, "not_found", "user_missing", "Account not found.")
+            db["oauth_sessions"].pop(token, None); save_users(db)
+            active_keys = [k for k in user.get("api_keys", []) if k.get("status", "active") == "active"]
+            if not active_keys: return self.send_error_json(403, "authentication_error", "no_active_key", "This account has no active API keys.")
+        self.send_json(200, {"user": {"name": user["name"], "email": user["email"], "created_at": user.get("created_at")}, "api_key": active_keys[0]["key"], "balance": round(user.get("balance", 0.0), 6)})
+
     def handle_register(self):
         body = self.read_json_body() or {}
         name = str(body.get("name", "")).strip(); email = str(body.get("email", "")).strip().lower(); password = str(body.get("password", ""))
-        if not name: return self.send_error_json(400, "invalid_request_error", "name_required", "Name is required.")
+        company = str(body.get("company", "")).strip()
+        ip = client_ip(self)
+        if not name or len(name) < 2: return self.send_error_json(400, "invalid_request_error", "name_required", "Please enter your full name.")
         if not EMAIL_RE.match(email): return self.send_error_json(400, "invalid_request_error", "invalid_email", "A valid email is required.")
+        if "+" in email.split("@")[0]:
+            return self.send_error_json(400, "invalid_request_error", "alias_not_allowed", "Plus-addressing is not allowed. Use your base email address.")
         if len(password) < 8: return self.send_error_json(400, "invalid_request_error", "weak_password", "Password must be at least 8 characters.")
+
+        db = load_users()
+        if fake_mail_blocked(db, ip):
+            return self.send_error_json(429, "rate_limit_error", "email_blocked", "Too many disposable-email attempts from this network. Try again later.")
+        if ip_is_banned(db, ip):
+            return self.send_error_json(403, "authentication_error", "ip_banned", "This network is temporarily blocked from creating accounts.")
+        hits = prune_ip(db, ip)
+        per_hour = sum(1 for t in hits if time.time() - t < SIGNUP_WINDOW)
+        if per_hour >= SIGNUP_LIMIT:
+            if per_hour >= SIGNUP_DAILY:
+                db["banned_ips"].append({"ip": ip, "until": time.time() + IP_BAN_SECONDS, "reason": "mass signup"})
+                save_users(db)
+                return self.send_error_json(403, "authentication_error", "ip_banned", "Too many accounts from this network. Blocked for 24 hours.")
+            return self.send_error_json(429, "rate_limit_error", "signup_limit", "Too many accounts from this network. Try again later.")
+        if find_user_by_email(db, email):
+            return self.send_error_json(409, "invalid_request_error", "email_taken", "An account with this email already exists.")
+        if family_taken(db, email):
+            return self.send_error_json(409, "invalid_request_error", "email_taken", "An account with this email (or a Gmail variant) already exists.")
+        ok, why = mail_allowed(email)
+        if not ok:
+            fake_mail_hit(self)
+            return self.send_error_json(400, "invalid_request_error", "disposable_email", why)
+        if not domain_has_mx(email.rsplit("@", 1)[-1]):
+            fake_mail_hit(self)
+            return self.send_error_json(400, "invalid_request_error", "no_mail_server", "This email domain cannot receive mail. Use a real mailbox.")
+
+        code = f"{secrets.randbelow(1000000):06d}"
+        sent = send_code_email(email, code)
+        if not sent and not dev_mail_allowed(self):
+            return self.send_error_json(503, "configuration_error", "mail_not_configured", "Email delivery is not configured. Use Google or GitHub sign-in, or contact support.")
+        if not sent:
+            print(f"[MAIL NOT CONFIGURED] verification code for {email}: {code}")
+        now_ts = time.time()
+        salt, digest = hash_password(password)
+        code_salt, code_digest = hash_password(code)
         with DB_LOCK:
             db = load_users()
-            if find_user_by_email(db, email): return self.send_error_json(409, "invalid_request_error", "email_taken", "An account with this email already exists.")
-            salt, digest = hash_password(password); api_key = new_api_key()
-            user = {"id": "usr_" + secrets.token_hex(8), "name": name, "email": email, "company": str(body.get("company", "")).strip(), "password_salt": salt, "password_hash": digest, "created_at": iso(now_utc()), "balance": 0.0, "api_keys": [{"id": "key_" + secrets.token_hex(6), "name": "Default", "key": api_key, "created_at": iso(now_utc()), "last_used": None, "status": "active"}], "usage": [], "transactions": []}
-            db["users"].append(user); save_users(db)
-        self.send_json(201, {"user": {"name": name, "email": email, "created_at": user["created_at"]}, "api_key": api_key, "balance": 0.0})
+            db["pending"][email] = {
+                "code_salt": code_salt, "code_hash": code_digest, "name": name, "company": company,
+                "password_salt": salt, "password_hash": digest, "expires": now_ts + CODE_TTL,
+                "attempts": 0, "ip": ip, "sent": sent, "ts": now_ts, "last_sent": now_ts,
+            }
+            hits = prune_ip(db, ip); hits.append(now_ts); db["ip_signups"][ip] = hits
+            save_users(db)
+        self.send_json(200, {"pending": True, "email": email, "sent": sent, "dev_code": code if not sent else None})
+
+    def handle_verify(self):
+        body = self.read_json_body() or {}
+        email = str(body.get("email", "")).strip().lower(); code = str(body.get("code", "")).strip()
+        if not email or not code: return self.send_error_json(400, "invalid_request_error", "missing_fields", "Email and code are required.")
+        with DB_LOCK:
+            db = load_users()
+            pending = db["pending"].get(email)
+            if not pending: return self.send_error_json(400, "invalid_request_error", "no_pending", "No pending verification for this email. Sign up again.")
+            if time.time() > pending.get("expires", 0):
+                db["pending"].pop(email, None); save_users(db)
+                return self.send_error_json(400, "invalid_request_error", "code_expired", "Code expired. Sign up again to get a new one.")
+            if pending.get("attempts", 0) >= 6:
+                db["pending"].pop(email, None); save_users(db)
+                return self.send_error_json(429, "rate_limit_error", "too_many_attempts", "Too many wrong attempts. Sign up again.")
+            pending["attempts"] = int(pending.get("attempts", 0)) + 1
+            if not verify_password(code, pending["code_salt"], pending["code_hash"]):
+                save_users(db)
+                return self.send_error_json(400, "invalid_request_error", "wrong_code", "Wrong code. Check your email and try again.")
+            if find_user_by_email(db, email):
+                db["pending"].pop(email, None); save_users(db)
+                return self.send_error_json(409, "invalid_request_error", "email_taken", "An account with this email already exists.")
+            api_key = new_api_key()
+            user = {
+                "id": "usr_" + secrets.token_hex(8), "name": pending["name"], "email": email,
+                "company": pending.get("company", ""), "password_salt": pending["password_salt"],
+                "password_hash": pending["password_hash"], "created_at": iso(now_utc()), "balance": 0.0,
+                "api_keys": [{"id": "key_" + secrets.token_hex(6), "name": "Default", "key": api_key,
+                              "created_at": iso(now_utc()), "last_used": None, "status": "active"}],
+                "usage": [], "transactions": [], "verified": True, "provider": "email",
+            }
+            db["users"].append(user)
+            db["pending"].pop(email, None)
+            save_users(db)
+        self.send_json(201, {"user": {"name": user["name"], "email": email, "created_at": user["created_at"]}, "api_key": api_key, "balance": 0.0})
+
+    def handle_resend(self):
+        body = self.read_json_body() or {}
+        email = str(body.get("email", "")).strip().lower()
+        with DB_LOCK:
+            db = load_users()
+            pending = db["pending"].get(email)
+            if not pending: return self.send_error_json(400, "invalid_request_error", "no_pending", "No pending verification for this email.")
+            if time.time() - pending.get("last_sent", 0) < 45:
+                return self.send_error_json(429, "rate_limit_error", "resend_cooldown", "Please wait 45 seconds before requesting another code.")
+            code = f"{secrets.randbelow(1000000):06d}"
+            sent = send_code_email(email, code)
+            if not sent and not dev_mail_allowed(self):
+                return self.send_error_json(503, "configuration_error", "mail_not_configured", "Email delivery is not configured. Use Google or GitHub sign-in, or contact support.")
+            code_salt, code_digest = hash_password(code)
+            pending.update({"code_salt": code_salt, "code_hash": code_digest, "expires": time.time() + CODE_TTL,
+                            "attempts": 0, "sent": sent, "last_sent": time.time()})
+            save_users(db)
+        self.send_json(200, {"sent": sent, "dev_code": code if not sent else None})
 
     def handle_login(self):
         body = self.read_json_body() or {}
         email = str(body.get("email", "")).strip().lower(); password = str(body.get("password", ""))
         if not email or not password: return self.send_error_json(400, "invalid_request_error", "missing_fields", "Email and password are required.")
-        db = load_users(); user = find_user_by_email(db, email)
-        if not user or not verify_password(password, user["password_salt"], user["password_hash"]): return self.send_error_json(401, "authentication_error", "invalid_credentials", "Incorrect email or password.")
-        active_keys = [k for k in user.get("api_keys", []) if k.get("status", "active") == "active"]
-        if not active_keys: return self.send_error_json(403, "authentication_error", "no_active_key", "This account has no active API keys.")
+        with DB_LOCK:
+            db = load_users()
+            fl = db["failed_logins"].get(email, {"count": 0, "lock_until": 0})
+            if time.time() < fl.get("lock_until", 0):
+                return self.send_error_json(429, "rate_limit_error", "login_locked", "Too many failed attempts. Try again in a few minutes.")
+            user = find_user_by_email(db, email)
+            if not user or not verify_password(password, user["password_salt"], user["password_hash"]):
+                fl["count"] = int(fl.get("count", 0)) + 1
+                if fl["count"] >= FAILED_LIMIT:
+                    fl["lock_until"] = time.time() + LOCK_SECONDS; fl["count"] = 0
+                db["failed_logins"][email] = fl; save_users(db)
+                return self.send_error_json(401, "authentication_error", "invalid_credentials", "Incorrect email or password.")
+            if not user.get("verified", True):
+                return self.send_error_json(403, "authentication_error", "email_unverified", "Email not verified. Sign up again to receive a new code.")
+            db["failed_logins"].pop(email, None); save_users(db)
+            active_keys = [k for k in user.get("api_keys", []) if k.get("status", "active") == "active"]
+            if not active_keys: return self.send_error_json(403, "authentication_error", "no_active_key", "This account has no active API keys.")
         self.send_json(200, {"user": {"name": user["name"], "email": user["email"], "created_at": user.get("created_at")}, "api_key": active_keys[0]["key"], "balance": round(user.get("balance", 0.0), 6)})
 
     def handle_me(self):
         _db, user, key = self.authenticate()
         if not user: return self.send_error_json(401, "authentication_error", "invalid_api_key", "Missing or invalid API key. Send Authorization: Bearer nova-sk-…")
         agg = usage_aggregates(user)
-        self.send_json(200, {"user": {"name": user.get("name"), "email": user.get("email"), "company": user.get("company", ""), "created_at": user.get("created_at")}, "balance": round(user.get("balance", 0.0), 6), "api_keys": [public_key(k) for k in user.get("api_keys", []) if k.get("status", "active") == "active"], "request_key_id": key["id"], "stats": agg["stats"], "daily": agg["daily"], "by_model": agg["by_model"], "recent": agg["recent"], "transactions": transactions(user)})
+        self.send_json(200, {"user": {"name": user.get("name"), "email": user.get("email"), "company": user.get("company", ""), "created_at": user.get("created_at"), "verified": user.get("verified", True), "provider": user.get("provider", "email")}, "balance": round(user.get("balance", 0.0), 6), "api_keys": [public_key(k) for k in user.get("api_keys", []) if k.get("status", "active") == "active"], "request_key_id": key["id"], "stats": agg["stats"], "daily": agg["daily"], "by_model": agg["by_model"], "recent": agg["recent"], "transactions": transactions(user)})
 
     def handle_create_key(self):
         _db, user, _key = self.authenticate()
@@ -656,13 +1094,49 @@ class NovaHandler(BaseHTTPRequestHandler):
         cost = (prompt_tokens * price_in + completion_tokens * price_out) / 1_000_000
         record_usage(user["id"], key["id"], model, prompt_tokens, completion_tokens, latency, status="ok", cost=cost, client=client)
 
+class OAuthCallbackHandler(BaseHTTPRequestHandler):
+    """Small listener for the redirect URIs registered with Google/GitHub."""
+    def do_GET(self):
+        path = urlparse(self.path).path.rstrip("/")
+        if path.startswith("/api/auth/oauth/") and path.endswith("/callback"):
+            provider = path.split("/")[4]
+            try:
+                token = oauth_session_token(provider, parse_qs(urlparse(self.path).query))
+                target = f"{SITE_URL}/login.html?oauth_token={token}"
+            except ValueError as exc:
+                target = f"{SITE_URL}/login.html?oauth_error={urlencode({'m': str(exc)})[2:]}"
+            except Exception as exc:
+                print(f"[oauth] {provider}: {exc}")
+                target = f"{SITE_URL}/login.html?oauth_error=OAuth%20sign-in%20failed"
+        else:
+            target = f"{SITE_URL}/login.html?oauth_error=Unknown%20OAuth%20callback"
+        self.send_response(302); self.send_header("Location", target)
+        self.send_header("Content-Length", "0"); self.end_headers()
+
+    def log_message(self, fmt, *args):
+        print(f"[oauth:{self.client_address[0]}] {fmt % args}", flush=True)
+
+def start_oauth_callback_server():
+    if OAUTH_CALLBACK_PORT == PORT: return
+    if not any(oauth_cfg(p) for p in ("google", "github")): return
+    try:
+        server = ThreadingHTTPServer(("127.0.0.1", OAUTH_CALLBACK_PORT), OAuthCallbackHandler)
+    except OSError as exc:
+        print(f"[oauth] callback port {OAUTH_CALLBACK_PORT} unavailable: {exc}")
+        return
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    print(f" OAuth callback : http://127.0.0.1:{OAUTH_CALLBACK_PORT}/api/auth/oauth/<provider>/callback")
+
 def main():
     print("=" * 62)
     print(" NovaCompute backend  ·  http://127.0.0.1:%d" % PORT)
     for p_name, p_info in PROVIDERS.items():
         keys = load_keys_from_file(p_info["keys_file"], p_info.get("fallback_key"))
         print(f" Provider : {p_name} | Keys: {len(keys)}")
+    print(f" OAuth    : google={'yes' if oauth_cfg('google') else 'no'} github={'yes' if oauth_cfg('github') else 'no'}")
+    print(f" SMTP     : {'configured' if (load_json_cfg(MAIL_CONFIG_FILE) or {}).get('enabled') else 'DEV MODE (code printed)'}")
     print("=" * 62)
+    start_oauth_callback_server()
     server = ThreadingHTTPServer(("127.0.0.1", PORT), NovaHandler)
     try: server.serve_forever()
     except KeyboardInterrupt: print("\nStopping NovaCompute backend.")

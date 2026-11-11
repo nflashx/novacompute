@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
 <head>
+  <style>html{background-color:#05070e;color-scheme:dark}body{background-color:#05070e}</style>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Sign In — NovaCompute</title>
@@ -9,9 +10,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="assets/js/tailwind-config.js?v=25"></script>
-  <link rel="stylesheet" href="assets/css/main.css?v=25" />
+  <link rel="stylesheet" href="assets/css/tailwind.css?v=2" />
+  <link rel="stylesheet" href="assets/css/main.css?v=26" />
 </head>
 
 <body class="bg-night font-sans text-slate-200 antialiased overflow-x-hidden">
@@ -77,6 +77,15 @@
         </button>
       </div>
 
+      <div class="mt-6 rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 text-xs">
+        <p class="font-semibold text-slate-300">API base URL</p>
+        <div class="mt-2 flex items-center gap-2">
+          <code data-api-base class="min-w-0 flex-1 truncate font-mono text-[11px] text-cyan-300">http://127.0.0.1:8080/v1</code>
+          <button type="button" data-copy-api-base class="btn-ghost shrink-0 rounded-md px-2.5 py-1 text-[11px] font-medium text-slate-300">Copy</button>
+        </div>
+        <p class="mt-2 leading-relaxed text-slate-500">Use this as <code class="font-mono">base_url</code> in the OpenAI SDK. Your key is created inside the dashboard.</p>
+      </div>
+
       <p class="mt-8 text-center text-sm text-slate-400">
         New to NovaCompute?
         <a href="register.html" class="font-medium text-violet-300 transition-colors hover:text-violet-200">Create an account</a>
@@ -86,9 +95,9 @@
 
   <div id="site-footer"></div>
 
-  <script src="assets/js/layout.js?v=25" defer></script>
-  <script src="assets/js/effects.js?v=25" defer></script>
-  <script src="assets/js/api.js?v=25" defer></script>
-  <script src="assets/js/auth.js?v=25" defer></script>
+  <script src="assets/js/layout.js?v=27" defer></script>
+  <script src="assets/js/effects.js?v=26" defer></script>
+  <script src="assets/js/api.js?v=26" defer></script>
+  <script src="assets/js/auth.js?v=26" defer></script>
 </body>
 </html>

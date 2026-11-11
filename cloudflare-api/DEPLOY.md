@@ -131,5 +131,5 @@ EXOSAI_KEYS=[{"api_key":"..."}]
 
 Edit `cloudflare-api/src/catalog.js` and redeploy (`npx wrangler deploy`).
 The local Admin Console manages the Python backend's `custom_models.json`, not
-the Worker — for now the Worker catalogue is code (14 models), intentionally
+the Worker — for now the Worker catalogue is code (18 models), intentionally
 simple and free.
