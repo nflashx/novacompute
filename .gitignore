@@ -1,0 +1,12 @@
+# Secrets / local state — never commit these
+backend/users_db.json
+backend/upstream_config.json
+
+# Python
+__pycache__/
+*.pyc
+
+# Misc
+*.log
+.DS_Store
+Thumbs.db

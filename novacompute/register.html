@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Create Account — NovaCompute</title>
+  <meta name="theme-color" content="#05070e" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='24' y2='24' gradientUnits='userSpaceOnUse'%3E%3Cstop stop-color='%23a78bfa'/%3E%3Cstop offset='1' stop-color='%2322d3ee'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M12 1.5l2.6 7.9 7.9 2.6-7.9 2.6L12 22.5l-2.6-7.9-7.9-2.6 7.9-2.6L12 1.5z' fill='url(%23g)'/%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="assets/js/tailwind-config.js?v=4"></script>
+  <link rel="stylesheet" href="assets/css/main.css?v=4" />
+</head>
+
+<body class="bg-night font-sans text-slate-200 antialiased overflow-x-hidden">
+  <div id="site-header"></div>
+
+  <main class="relative flex min-h-[76vh] items-center justify-center overflow-hidden px-6 py-20">
+    <canvas id="auth-particles" class="particles-canvas" aria-hidden="true"></canvas>
+    <div class="orb right-[-140px] top-[10%] h-[380px] w-[380px]" style="background:rgba(124,58,237,.18)"></div>
+    <div class="orb left-[-140px] bottom-[10%] h-[340px] w-[340px]" style="background:rgba(34,211,238,.12)"></div>
+
+    <div class="gradient-border relative w-full max-w-md rounded-2xl p-8 shadow-card sm:p-10">
+      <a href="index.html" class="mx-auto flex w-fit items-center gap-2.5" aria-label="NovaCompute — home">
+        <svg viewBox="0 0 24 24" class="h-8 w-8" aria-hidden="true">
+          <defs><linearGradient id="nova-g-auth2" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse"><stop stop-color="#a78bfa"></stop><stop offset="0.55" stop-color="#6366f1"></stop><stop offset="1" stop-color="#22d3ee"></stop></linearGradient></defs>
+          <path d="M12 1.5l2.6 7.9 7.9 2.6-7.9 2.6L12 22.5l-2.6-7.9-7.9-2.6 7.9-2.6L12 1.5z" fill="url(#nova-g-auth2)"></path>
+        </svg>
+        <span class="font-display text-xl font-semibold tracking-tight text-white">Nova<span class="text-gradient">Compute</span></span>
+      </a>
+
+      <h1 class="mt-8 text-center font-display text-2xl font-bold text-white">Create your account</h1>
+      <p class="mt-2 text-center text-sm text-slate-400">Free tier included — no credit card required.</p>
+
+      <form id="register-form" class="mt-8 space-y-5" novalidate>
+        <div>
+          <label for="reg-name" class="mb-1.5 block text-sm font-medium text-slate-300">Full name</label>
+          <input id="reg-name" type="text" required autocomplete="name" placeholder="Ada Lovelace"
+                 class="w-full rounded-lg border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white placeholder-slate-500 outline-none transition focus:border-violet-400/50 focus:ring-2 focus:ring-violet-500/20" />
+        </div>
+        <div>
+          <label for="reg-email" class="mb-1.5 block text-sm font-medium text-slate-300">Work email</label>
+          <input id="reg-email" type="email" required autocomplete="email" placeholder="you@company.com"
+                 class="w-full rounded-lg border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white placeholder-slate-500 outline-none transition focus:border-violet-400/50 focus:ring-2 focus:ring-violet-500/20" />
+        </div>
+        <div>
+          <label for="reg-password" class="mb-1.5 block text-sm font-medium text-slate-300">Password</label>
+          <div class="relative">
+            <input id="reg-password" type="password" required minlength="8" autocomplete="new-password" placeholder="At least 8 characters"
+                   class="w-full rounded-lg border border-white/10 bg-white/[0.04] px-4 py-3 pr-12 text-sm text-white placeholder-slate-500 outline-none transition focus:border-violet-400/50 focus:ring-2 focus:ring-violet-500/20" />
+            <button type="button" data-toggle-password="reg-password" aria-label="Toggle password visibility"
+                    class="absolute right-3 top-1/2 -translate-y-1/2 rounded-md p-1.5 text-slate-500 transition hover:text-slate-300">
+              <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            </button>
+          </div>
+        </div>
+
+        <label class="flex items-start gap-3 text-xs leading-relaxed text-slate-400">
+          <input id="reg-terms" type="checkbox" required class="mt-0.5 h-4 w-4 rounded border-white/20 bg-white/5 accent-violet-500" />
+          <span>I agree to the <a href="#" class="text-violet-300 transition-colors hover:text-violet-200">Terms of Service</a> and <a href="#" class="text-violet-300 transition-colors hover:text-violet-200">Privacy Policy</a>.</span>
+        </label>
+
+        <button type="submit" class="btn-primary flex w-full items-center justify-center gap-2 rounded-xl px-6 py-3.5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-70">
+          Create Account
+        </button>
+      </form>
+
+      <p class="mt-8 text-center text-sm text-slate-400">
+        Already have an account?
+        <a href="login.html" class="font-medium text-violet-300 transition-colors hover:text-violet-200">Sign in</a>
+      </p>
+    </div>
+  </main>
+
+  <div id="site-footer"></div>
+
+  <script src="assets/js/layout.js?v=4" defer></script>
+  <script src="assets/js/effects.js?v=4" defer></script>
+  <script src="assets/js/api.js?v=4" defer></script>
+  <script src="assets/js/auth.js?v=4" defer></script>
+</body>
+</html>

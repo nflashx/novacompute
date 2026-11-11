@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>API Documentation — NovaCompute</title>
+  <meta name="theme-color" content="#05070e" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='24' y2='24' gradientUnits='userSpaceOnUse'%3E%3Cstop stop-color='%23a78bfa'/%3E%3Cstop offset='1' stop-color='%2322d3ee'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M12 1.5l2.6 7.9 7.9 2.6-7.9 2.6L12 22.5l-2.6-7.9-7.9-2.6 7.9-2.6L12 1.5z' fill='url(%23g)'/%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="assets/js/tailwind-config.js?v=4"></script>
+  <link rel="stylesheet" href="assets/css/main.css?v=4" />
+</head>
+
+<body class="bg-night font-sans text-slate-200 antialiased overflow-x-hidden">
+  <div id="site-header"></div>
+
+  <main class="relative mx-auto max-w-7xl px-6 pb-20 pt-10">
+    <div class="orb right-[-180px] top-[60px] h-[360px] w-[360px]" style="background:rgba(124,58,237,.10)"></div>
+
+    <!-- Page title -->
+    <div class="reveal relative">
+      <h1 class="font-display text-3xl font-bold tracking-tight text-white">API Documentation</h1>
+      <p class="mt-2 max-w-2xl text-sm text-slate-400">
+        NovaCompute is OpenAI-compatible — if you have used the OpenAI API before, change the
+        <code class="rounded bg-white/[0.06] px-1.5 py-0.5 font-mono text-xs text-violet-300">base_url</code> and everything else stays the same.
+      </p>
+    </div>
+
+    <div class="relative mt-10 grid gap-10 lg:grid-cols-[230px_minmax(0,1fr)_200px]">
+
+      <!-- ============ Left: categories ============ -->
+      <aside class="hidden lg:block">
+        <nav id="docs-nav" class="sticky top-24 space-y-6 text-sm" aria-label="Documentation">
+          <div>
+            <p class="text-[11px] font-semibold uppercase tracking-widest text-slate-500">Getting started</p>
+            <ul class="mt-3 space-y-1.5">
+              <li><a href="#introduction" class="docs-link block rounded-md px-3 py-1.5 text-slate-400 transition-colors hover:text-white">Introduction</a></li>
+              <li><a href="#quick-start" class="docs-link block rounded-md px-3 py-1.5 text-slate-400 transition-colors hover:text-white">Quick Start</a></li>
+              <li><a href="#authentication" class="docs-link block rounded-md px-3 py-1.5 text-slate-400 transition-colors hover:text-white">Authentication</a></li>
+            </ul>
+          </div>
+          <div>
+            <p class="text-[11px] font-semibold uppercase tracking-widest text-slate-500">API reference</p>
+            <ul class="mt-3 space-y-1.5">
+              <li><a href="#chat-completions" class="docs-link block rounded-md px-3 py-1.5 text-slate-400 transition-colors hover:text-white">Chat Completions</a></li>
+              <li><a href="#streaming" class="docs-link block rounded-md px-3 py-1.5 text-slate-400 transition-colors hover:text-white">Streaming</a></li>
+              <li><a href="#models-list" class="docs-link block rounded-md px-3 py-1.5 text-slate-400 transition-colors hover:text-white">Models</a></li>
+            </ul>
+          </div>
+          <div>
+            <p class="text-[11px] font-semibold uppercase tracking-widest text-slate-500">Resources</p>
+            <ul class="mt-3 space-y-1.5">
+              <li><a href="#errors" class="docs-link block rounded-md px-3 py-1.5 text-slate-400 transition-colors hover:text-white">Errors</a></li>
+              <li><a href="#rate-limits" class="docs-link block rounded-md px-3 py-1.5 text-slate-400 transition-colors hover:text-white">Rate Limits</a></li>
+            </ul>
+          </div>
+        </nav>
+      </aside>
+
+      <!-- ============ Middle: content ============ -->
+      <article class="min-w-0 space-y-14">
+
+        <!-- Introduction -->
+        <section id="introduction" data-docs-section class="scroll-mt-24">
+          <h2 class="font-display text-2xl font-bold text-white">Introduction</h2>
+          <p class="mt-3 leading-relaxed text-slate-400">
+            The NovaCompute API gives you a single endpoint for 12+ frontier models — Claude, GPT,
+            DeepSeek, Kimi, Mistral, Mercury, GLM and Qwen. Requests are auto-routed to the fastest
+            healthy provider, and billing is per token.
+          </p>
+          <div class="mt-5 rounded-xl border border-violet-400/20 bg-violet-500/[0.08] p-4 text-sm leading-relaxed text-violet-200/90">
+            <strong class="font-semibold">Base URL:</strong>
+            <code class="ml-1 font-mono text-xs">https://api.novacompute.io/v1</code>
+          </div>
+        </section>
+
+        <!-- Quick Start -->
+        <section id="quick-start" data-docs-section class="scroll-mt-24">
+          <h2 class="font-display text-2xl font-bold text-white">Quick Start</h2>
+          <ol class="mt-4 list-decimal space-y-1.5 pl-5 text-slate-400">
+            <li>Create an API key in the <a href="dashboard.html" class="text-violet-300 transition-colors hover:text-violet-200">Dashboard → API Keys</a>.</li>
+            <li>Export it as an environment variable: <code class="rounded bg-white/[0.06] px-1.5 py-0.5 font-mono text-xs text-cyan-300">NOVA_API_KEY</code></li>
+            <li>Make your first request with cURL or Python below.</li>
+          </ol>
+
+          <div class="relative mt-6">
+            <button type="button" data-copy="docs-curl" class="btn-ghost absolute right-3 top-3 z-10 rounded-md px-2.5 py-1 text-xs font-medium text-slate-300">Copy</button>
+            <pre class="scroll-thin overflow-x-auto rounded-xl border border-white/[0.06] bg-[#0b1120] p-5 font-mono text-[13px] leading-6 text-slate-300"><code id="docs-curl"><span class="tok-cmd">curl</span> <span class="tok-url">https://api.novacompute.io/v1/chat/completions</span> \
+  <span class="tok-flag">-H</span> <span class="tok-str">"Authorization: Bearer $NOVA_API_KEY"</span> \
+  <span class="tok-flag">-H</span> <span class="tok-str">"Content-Type: application/json"</span> \
+  <span class="tok-flag">-d</span> <span class="tok-str">'{
+  <span class="tok-key">"model"</span>: <span class="tok-str">"glm-5.3-flash"</span>,
+  <span class="tok-key">"messages"</span>: [{ <span class="tok-key">"role"</span>: <span class="tok-str">"user"</span>, <span class="tok-key">"content"</span>: <span class="tok-str">"Hello, Nova!"</span> }]
+}'</span></code></pre>
+          </div>
+
+          <div class="relative mt-5">
+            <button type="button" data-copy="docs-python" class="btn-ghost absolute right-3 top-3 z-10 rounded-md px-2.5 py-1 text-xs font-medium text-slate-300">Copy</button>
+            <pre class="scroll-thin overflow-x-auto rounded-xl border border-white/[0.06] bg-[#0b1120] p-5 font-mono text-[13px] leading-6 text-slate-300"><code id="docs-python"><span class="tok-kw">from</span> openai <span class="tok-kw">import</span> OpenAI
+<span class="tok-kw">import</span> os
+
+client = <span class="tok-fn">OpenAI</span>(
+    <span class="tok-key">base_url</span>=<span class="tok-str">"https://api.novacompute.io/v1"</span>,
+    <span class="tok-key">api_key</span>=os.environ[<span class="tok-str">"NOVA_API_KEY"</span>],
+)
+
+response = client.chat.completions.<span class="tok-fn">create</span>(
+    <span class="tok-key">model</span>=<span class="tok-str">"glm-5.3-flash"</span>,
+    <span class="tok-key">messages</span>=[{<span class="tok-str">"role"</span>: <span class="tok-str">"user"</span>, <span class="tok-str">"content"</span>: <span class="tok-str">"Hello, Nova!"</span>}],
+)
+
+<span class="tok-fn">print</span>(response.choices[<span class="tok-cmd">0</span>].message.content)</code></pre>
+          </div>
+        </section>
+
+        <!-- Authentication -->
+        <section id="authentication" data-docs-section class="scroll-mt-24">
+          <h2 class="font-display text-2xl font-bold text-white">Authentication</h2>
+          <p class="mt-3 leading-relaxed text-slate-400">
+            All API requests are authenticated with a Bearer token in the
+            <code class="rounded bg-white/[0.06] px-1.5 py-0.5 font-mono text-xs text-violet-300">Authorization</code> header.
+            Create and manage keys in the dashboard.
+          </p>
+          <div class="relative mt-5">
+            <button type="button" data-copy="docs-auth" class="btn-ghost absolute right-3 top-3 z-10 rounded-md px-2.5 py-1 text-xs font-medium text-slate-300">Copy</button>
+            <pre class="scroll-thin overflow-x-auto rounded-xl border border-white/[0.06] bg-[#0b1120] p-5 font-mono text-[13px] leading-6 text-slate-300"><code id="docs-auth"><span class="tok-flag">Authorization:</span> <span class="tok-str">Bearer $NOVA_API_KEY</span></code></pre>
+          </div>
+          <div class="mt-4 flex items-start gap-3 rounded-xl border border-amber-400/25 bg-amber-400/[0.07] p-4 text-xs leading-relaxed text-amber-200/80">
+            <svg class="mt-0.5 h-4 w-4 shrink-0 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 9v4m0 4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"></path></svg>
+            <span>Never expose API keys in client-side code, browsers, or public repositories. If a key leaks, delete it in the dashboard and create a new one.</span>
+          </div>
+        </section>
+
+        <!-- Chat Completions -->
+        <section id="chat-completions" data-docs-section class="scroll-mt-24">
+          <h2 class="font-display text-2xl font-bold text-white">Create chat completion</h2>
+
+          <div class="mt-4 flex items-center gap-3 rounded-xl border border-white/[0.08] bg-[#0b1120] px-5 py-4">
+            <span class="rounded-md bg-violet-500/20 px-2.5 py-1 font-mono text-xs font-semibold text-violet-300">POST</span>
+            <code class="min-w-0 flex-1 truncate font-mono text-sm text-slate-200">https://api.novacompute.io/v1/chat/completions</code>
+            <button type="button" data-copy-text="https://api.novacompute.io/v1/chat/completions" class="btn-ghost shrink-0 rounded-md px-2.5 py-1 text-xs font-medium text-slate-300">Copy</button>
+          </div>
+
+          <h3 class="mt-6 text-sm font-semibold uppercase tracking-wider text-slate-400">Request body</h3>
+          <div class="mt-3 overflow-x-auto rounded-xl border border-white/[0.06]">
+            <table class="w-full min-w-[560px] text-left text-sm">
+              <thead>
+                <tr class="border-b border-white/[0.06] bg-white/[0.02] text-[11px] uppercase tracking-wider text-slate-500">
+                  <th class="px-5 py-3 font-medium">Parameter</th>
+                  <th class="px-4 py-3 font-medium">Type</th>
+                  <th class="px-4 py-3 font-medium">Required</th>
+                  <th class="px-5 py-3 font-medium">Description</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-white/[0.04]">
+                <tr><td class="px-5 py-3 font-mono text-xs text-violet-300">model</td><td class="px-4 py-3 text-slate-400">string</td><td class="px-4 py-3"><span class="text-emerald-400">Yes</span></td><td class="px-5 py-3 text-slate-400">Model ID, e.g. <code class="font-mono text-xs text-slate-300">glm-5.3-flash</code>. See the <a href="#models-list" class="text-violet-300 hover:text-violet-200">Models</a> list.</td></tr>
+                <tr><td class="px-5 py-3 font-mono text-xs text-violet-300">messages</td><td class="px-4 py-3 text-slate-400">array</td><td class="px-4 py-3"><span class="text-emerald-400">Yes</span></td><td class="px-5 py-3 text-slate-400">Conversation so far — objects with <code class="font-mono text-xs text-slate-300">role</code> (<span class="font-mono text-xs">system</span> / <span class="font-mono text-xs">user</span> / <span class="font-mono text-xs">assistant</span>) and <code class="font-mono text-xs text-slate-300">content</code>.</td></tr>
+                <tr><td class="px-5 py-3 font-mono text-xs text-violet-300">temperature</td><td class="px-4 py-3 text-slate-400">number</td><td class="px-4 py-3 text-slate-500">No</td><td class="px-5 py-3 text-slate-400">Sampling temperature 0–2. Higher is more creative. Default <span class="font-mono text-xs">1</span>.</td></tr>
+                <tr><td class="px-5 py-3 font-mono text-xs text-violet-300">max_tokens</td><td class="px-4 py-3 text-slate-400">integer</td><td class="px-4 py-3 text-slate-500">No</td><td class="px-5 py-3 text-slate-400">Upper bound on generated tokens for this completion.</td></tr>
+                <tr><td class="px-5 py-3 font-mono text-xs text-violet-300">stream</td><td class="px-4 py-3 text-slate-400">boolean</td><td class="px-4 py-3 text-slate-500">No</td><td class="px-5 py-3 text-slate-400">If <span class="font-mono text-xs">true</span>, tokens are sent as server-sent events. Default <span class="font-mono text-xs">false</span>. See <a href="#streaming" class="text-violet-300 hover:text-violet-200">Streaming</a>.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3 class="mt-8 text-sm font-semibold uppercase tracking-wider text-slate-400">Response</h3>
+          <div class="relative mt-3">
+            <button type="button" data-copy="docs-response" class="btn-ghost absolute right-3 top-3 z-10 rounded-md px-2.5 py-1 text-xs font-medium text-slate-300">Copy</button>
+            <pre class="scroll-thin overflow-x-auto rounded-xl border border-white/[0.06] bg-[#0b1120] p-5 font-mono text-[13px] leading-6 text-slate-300"><code id="docs-response">{
+  <span class="tok-key">"id"</span>: <span class="tok-str">"chatcmpl-9f2c84ab"</span>,
+  <span class="tok-key">"object"</span>: <span class="tok-str">"chat.completion"</span>,
+  <span class="tok-key">"created"</span>: <span class="tok-cmd">1762830000</span>,
+  <span class="tok-key">"model"</span>: <span class="tok-str">"glm-5.3-flash"</span>,
+  <span class="tok-key">"choices"</span>: [
+    {
+      <span class="tok-key">"index"</span>: <span class="tok-cmd">0</span>,
+      <span class="tok-key">"message"</span>: { <span class="tok-key">"role"</span>: <span class="tok-str">"assistant"</span>, <span class="tok-key">"content"</span>: <span class="tok-str">"Hello! How can I help you today?"</span> },
+      <span class="tok-key">"finish_reason"</span>: <span class="tok-str">"stop"</span>
+    }
+  ],
+  <span class="tok-key">"usage"</span>: {
+    <span class="tok-key">"prompt_tokens"</span>: <span class="tok-cmd">12</span>,
+    <span class="tok-key">"completion_tokens"</span>: <span class="tok-cmd">9</span>,
+    <span class="tok-key">"total_tokens"</span>: <span class="tok-cmd">21</span>
+  }
+}</code></pre>
+          </div>
+        </section>
+
+        <!-- Streaming -->
+        <section id="streaming" data-docs-section class="scroll-mt-24">
+          <h2 class="font-display text-2xl font-bold text-white">Streaming</h2>
+          <p class="mt-3 leading-relaxed text-slate-400">
+            Set <code class="rounded bg-white/[0.06] px-1.5 py-0.5 font-mono text-xs text-violet-300">"stream": true</code>
+            to receive tokens as server-sent events as they are generated. The stream terminates with a
+            <code class="rounded bg-white/[0.06] px-1.5 py-0.5 font-mono text-xs text-cyan-300">data: [DONE]</code> line.
+          </p>
+          <div class="relative mt-5">
+            <button type="button" data-copy="docs-stream" class="btn-ghost absolute right-3 top-3 z-10 rounded-md px-2.5 py-1 text-xs font-medium text-slate-300">Copy</button>
+            <pre class="scroll-thin overflow-x-auto rounded-xl border border-white/[0.06] bg-[#0b1120] p-5 font-mono text-[13px] leading-6 text-slate-300"><code id="docs-stream"><span class="tok-dim">data:</span> {<span class="tok-key">"id"</span>: <span class="tok-str">"chatcmpl-9f2c84ab"</span>, <span class="tok-key">"choices"</span>: [{<span class="tok-key">"delta"</span>: {<span class="tok-key">"content"</span>: <span class="tok-str">"Hel"</span>}}]}
+
+<span class="tok-dim">data:</span> {<span class="tok-key">"id"</span>: <span class="tok-str">"chatcmpl-9f2c84ab"</span>, <span class="tok-key">"choices"</span>: [{<span class="tok-key">"delta"</span>: {<span class="tok-key">"content"</span>: <span class="tok-str">"lo!"</span>}}]}
+
+<span class="tok-dim">data:</span> <span class="tok-cmd">[DONE]</span></code></pre>
+          </div>
+        </section>
+
+        <!-- Models -->
+        <section id="models-list" data-docs-section class="scroll-mt-24">
+          <h2 class="font-display text-2xl font-bold text-white">Models</h2>
+          <p class="mt-3 leading-relaxed text-slate-400">Pass any of these IDs in the <code class="rounded bg-white/[0.06] px-1.5 py-0.5 font-mono text-xs text-violet-300">model</code> field.</p>
+          <div class="mt-5 grid gap-3 sm:grid-cols-2" id="docs-model-grid"></div>
+        </section>
+
+        <!-- Errors -->
+        <section id="errors" data-docs-section class="scroll-mt-24">
+          <h2 class="font-display text-2xl font-bold text-white">Errors</h2>
+          <p class="mt-3 leading-relaxed text-slate-400">Errors return a consistent JSON shape:</p>
+          <div class="relative mt-4">
+            <button type="button" data-copy="docs-error" class="btn-ghost absolute right-3 top-3 z-10 rounded-md px-2.5 py-1 text-xs font-medium text-slate-300">Copy</button>
+            <pre class="scroll-thin overflow-x-auto rounded-xl border border-white/[0.06] bg-[#0b1120] p-5 font-mono text-[13px] leading-6 text-slate-300"><code id="docs-error">{
+  <span class="tok-key">"error"</span>: {
+    <span class="tok-key">"type"</span>: <span class="tok-str">"rate_limit_error"</span>,
+    <span class="tok-key">"code"</span>: <span class="tok-str">"rate_limit_exceeded"</span>,
+    <span class="tok-key">"message"</span>: <span class="tok-str">"Rate limit reached: 600 requests per minute."</span>
+  }
+}</code></pre>
+          </div>
+          <div class="mt-5 overflow-x-auto rounded-xl border border-white/[0.06]">
+            <table class="w-full min-w-[520px] text-left text-sm">
+              <thead>
+                <tr class="border-b border-white/[0.06] bg-white/[0.02] text-[11px] uppercase tracking-wider text-slate-500">
+                  <th class="px-5 py-3 font-medium">Status</th>
+                  <th class="px-4 py-3 font-medium">Type</th>
+                  <th class="px-5 py-3 font-medium">Meaning</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-white/[0.04] text-slate-400">
+                <tr><td class="px-5 py-3 font-mono text-xs text-red-300">400</td><td class="px-4 py-3 font-mono text-xs">invalid_request_error</td><td class="px-5 py-3">Malformed body or missing required parameter.</td></tr>
+                <tr><td class="px-5 py-3 font-mono text-xs text-red-300">401</td><td class="px-4 py-3 font-mono text-xs">authentication_error</td><td class="px-5 py-3">Missing or invalid API key.</td></tr>
+                <tr><td class="px-5 py-3 font-mono text-xs text-red-300">402</td><td class="px-4 py-3 font-mono text-xs">insufficient_balance</td><td class="px-5 py-3">Balance exhausted — top up in the dashboard.</td></tr>
+                <tr><td class="px-5 py-3 font-mono text-xs text-red-300">429</td><td class="px-4 py-3 font-mono text-xs">rate_limit_error</td><td class="px-5 py-3">Requests-per-minute cap hit. Retry with backoff.</td></tr>
+                <tr><td class="px-5 py-3 font-mono text-xs text-red-300">500 / 503</td><td class="px-4 py-3 font-mono text-xs">server_error</td><td class="px-5 py-3">Upstream issue — not billed. Auto-Routing usually retries for you.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Rate limits -->
+        <section id="rate-limits" data-docs-section class="scroll-mt-24">
+          <h2 class="font-display text-2xl font-bold text-white">Rate limits</h2>
+          <div class="mt-5 overflow-x-auto rounded-xl border border-white/[0.06]">
+            <table class="w-full min-w-[480px] text-left text-sm">
+              <thead>
+                <tr class="border-b border-white/[0.06] bg-white/[0.02] text-[11px] uppercase tracking-wider text-slate-500">
+                  <th class="px-5 py-3 font-medium">Tier</th>
+                  <th class="px-4 py-3 font-medium">Requests / min</th>
+                  <th class="px-5 py-3 font-medium">Tokens / min</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-white/[0.04] text-slate-400">
+                <tr><td class="px-5 py-3 font-medium text-white">Free</td><td class="px-4 py-3 font-mono text-xs">60</td><td class="px-5 py-3 font-mono text-xs">120K</td></tr>
+                <tr><td class="px-5 py-3 font-medium text-white">Standard</td><td class="px-4 py-3 font-mono text-xs">600</td><td class="px-5 py-3 font-mono text-xs">2M</td></tr>
+                <tr><td class="px-5 py-3 font-medium text-white">Enterprise</td><td class="px-4 py-3 font-mono text-xs">Custom</td><td class="px-5 py-3 font-mono text-xs">Custom</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="mt-4 text-xs text-slate-500">Limits are per API key. Need more? Contact sales for a committed-use tier.</p>
+        </section>
+
+      </article>
+
+      <!-- ============ Right: TOC ============ -->
+      <aside class="hidden lg:block">
+        <nav id="docs-toc" class="sticky top-24 border-l border-white/[0.06] pl-4 text-xs" aria-label="On this page">
+          <p class="mb-3 font-semibold uppercase tracking-widest text-slate-500">On this page</p>
+          <ul class="space-y-2" id="toc-list"></ul>
+        </nav>
+      </aside>
+
+    </div>
+  </main>
+
+  <div id="site-footer"></div>
+
+  <script src="assets/js/layout.js?v=4" defer></script>
+  <script src="assets/js/effects.js?v=4" defer></script>
+  <script src="assets/js/models-data.js?v=4" defer></script>
+  <script src="assets/js/docs.js?v=4" defer></script>
+</body>
+</html>

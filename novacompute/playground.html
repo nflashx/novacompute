@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Playground — NovaCompute</title>
+  <meta name="theme-color" content="#05070e" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='24' y2='24' gradientUnits='userSpaceOnUse'%3E%3Cstop stop-color='%23a78bfa'/%3E%3Cstop offset='1' stop-color='%2322d3ee'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M12 1.5l2.6 7.9 7.9 2.6-7.9 2.6L12 22.5l-2.6-7.9-7.9-2.6 7.9-2.6L12 1.5z' fill='url(%23g)'/%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="assets/js/tailwind-config.js?v=4"></script>
+  <link rel="stylesheet" href="assets/css/main.css?v=4" />
+</head>
+
+<body class="bg-night font-sans text-slate-200 antialiased overflow-x-hidden">
+  <div id="site-header"></div>
+
+  <main class="relative mx-auto max-w-7xl px-6 pb-16 pt-10">
+    <div class="orb left-[-160px] top-[40px] h-[360px] w-[360px]" style="background:rgba(124,58,237,.14)"></div>
+    <div class="orb right-[-160px] top-[300px] h-[320px] w-[320px]" style="background:rgba(34,211,238,.10)"></div>
+
+    <!-- Page header -->
+    <div class="reveal relative flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+      <div>
+        <h1 class="font-display text-3xl font-bold tracking-tight text-white">Playground</h1>
+        <p class="mt-2 text-sm text-slate-400">Test models with the exact same parameters the API accepts — sign in to hit the live API, otherwise responses are mocked.</p>
+      </div>
+      <span id="pg-mode-badge" class="inline-flex w-fit items-center gap-2 rounded-full border border-amber-400/20 bg-amber-400/[0.07] px-3.5 py-1.5 text-xs font-medium text-amber-300">
+        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 9v4m0 4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"></path></svg>
+        Demo mode — no tokens billed
+      </span>
+    </div>
+
+    <div class="relative mt-8 grid gap-6 lg:grid-cols-[330px_minmax(0,1fr)]">
+
+      <!-- ============ Left: parameters ============ -->
+      <aside class="reveal glass h-fit rounded-2xl p-6">
+        <h2 class="text-sm font-semibold text-white">Parameters</h2>
+
+        <!-- Model -->
+        <div class="mt-5">
+          <label for="pg-model" class="mb-1.5 block text-xs font-medium uppercase tracking-wider text-slate-500">Model</label>
+          <div class="relative">
+            <select id="pg-model"
+                    class="w-full appearance-none rounded-lg border border-white/10 bg-white/[0.04] px-4 py-3 pr-10 text-sm text-white outline-none transition focus:border-violet-400/50 focus:ring-2 focus:ring-violet-500/20">
+            </select>
+            <svg class="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
+          </div>
+        </div>
+
+        <!-- Selected model info -->
+        <div id="pg-model-info" class="mt-3 rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 text-xs">
+          <div class="flex items-center justify-between">
+            <span class="font-mono text-slate-300" data-info="id"></span>
+            <span data-info="badge" class="hidden rounded-full border px-2 py-0.5 text-[10px] font-semibold"></span>
+          </div>
+          <dl class="mt-3 grid grid-cols-2 gap-2 text-slate-400">
+            <div><dt class="text-[10px] uppercase tracking-wider text-slate-500">Context</dt><dd class="mt-0.5 font-mono text-slate-200" data-info="context"></dd></div>
+            <div><dt class="text-[10px] uppercase tracking-wider text-slate-500">Speed</dt><dd class="mt-0.5 font-mono text-slate-200" data-info="speed"></dd></div>
+            <div><dt class="text-[10px] uppercase tracking-wider text-slate-500">Input / 1M</dt><dd class="mt-0.5 font-mono" data-info="input"></dd></div>
+            <div><dt class="text-[10px] uppercase tracking-wider text-slate-500">Output / 1M</dt><dd class="mt-0.5 font-mono" data-info="output"></dd></div>
+          </dl>
+        </div>
+
+        <!-- Temperature -->
+        <div class="mt-6">
+          <div class="mb-2 flex items-center justify-between">
+            <label for="pg-temp" class="text-xs font-medium uppercase tracking-wider text-slate-500">Temperature</label>
+            <span id="pg-temp-val" class="rounded-md border border-white/10 bg-white/[0.04] px-2 py-0.5 font-mono text-xs text-violet-300">0.7</span>
+          </div>
+          <input id="pg-temp" type="range" min="0" max="2" step="0.1" value="0.7" />
+          <div class="mt-1.5 flex justify-between text-[10px] text-slate-600"><span>Precise</span><span>Creative</span></div>
+        </div>
+
+        <!-- Max tokens -->
+        <div class="mt-6">
+          <div class="mb-2 flex items-center justify-between">
+            <label for="pg-maxtok" class="text-xs font-medium uppercase tracking-wider text-slate-500">Max tokens</label>
+            <span id="pg-maxtok-val" class="rounded-md border border-white/10 bg-white/[0.04] px-2 py-0.5 font-mono text-xs text-cyan-300">1024</span>
+          </div>
+          <input id="pg-maxtok" type="range" min="64" max="4096" step="64" value="1024" />
+        </div>
+
+        <!-- System prompt -->
+        <div class="mt-6">
+          <label for="pg-system" class="mb-1.5 block text-xs font-medium uppercase tracking-wider text-slate-500">System prompt</label>
+          <textarea id="pg-system" rows="3" placeholder="You are a helpful assistant…"
+                    class="w-full resize-none rounded-lg border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white placeholder-slate-500 outline-none transition focus:border-violet-400/50 focus:ring-2 focus:ring-violet-500/20"></textarea>
+        </div>
+
+        <button type="button" id="pg-clear" class="btn-ghost mt-6 w-full rounded-lg px-4 py-2.5 text-sm font-medium text-slate-200">
+          Clear conversation
+        </button>
+      </aside>
+
+      <!-- ============ Right: chat ============ -->
+      <section class="reveal reveal-d1 glass flex h-[620px] flex-col overflow-hidden rounded-2xl">
+        <div class="flex items-center justify-between border-b border-white/[0.06] bg-white/[0.02] px-6 py-3.5">
+          <div class="flex items-center gap-2.5">
+            <span class="pulse-dot h-2 w-2 rounded-full bg-emerald-400"></span>
+            <h2 class="text-sm font-semibold text-white">Chat</h2>
+          </div>
+          <span id="pg-chat-model" class="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 font-mono text-xs text-slate-300"></span>
+        </div>
+
+        <!-- Messages -->
+        <div id="pg-messages" class="scroll-thin flex-1 space-y-5 overflow-y-auto p-6"></div>
+
+        <!-- Empty state -->
+        <div id="pg-empty" class="pointer-events-none hidden flex-1 flex-col items-center justify-center text-center">
+          <div class="flex h-12 w-12 items-center justify-center rounded-xl border border-white/10 bg-gradient-to-br from-violet-500/25 to-cyan-400/10">
+            <svg viewBox="0 0 24 24" class="h-7 w-7" aria-hidden="true"><defs><linearGradient id="nova-g-pg" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse"><stop stop-color="#a78bfa"></stop><stop offset="1" stop-color="#22d3ee"></stop></linearGradient></defs><path d="M12 1.5l2.6 7.9 7.9 2.6-7.9 2.6L12 22.5l-2.6-7.9-7.9-2.6 7.9-2.6L12 1.5z" fill="url(#nova-g-pg)"></path></svg>
+          </div>
+          <p class="mt-4 text-sm font-medium text-slate-300">Send a message to test the model</p>
+          <p class="mt-1 text-xs text-slate-500">Responses are generated locally — nothing leaves your browser.</p>
+        </div>
+
+        <!-- Composer -->
+        <div class="border-t border-white/[0.06] bg-white/[0.02] p-4">
+          <div class="flex items-end gap-3">
+            <textarea id="pg-input" rows="1" placeholder="Message the model…  (Enter to send, Shift+Enter for a new line)"
+                      class="scroll-thin max-h-32 flex-1 resize-none rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white placeholder-slate-500 outline-none transition focus:border-violet-400/50 focus:ring-2 focus:ring-violet-500/20"></textarea>
+            <button type="button" id="pg-send" class="btn-primary inline-flex h-[46px] shrink-0 items-center gap-2 rounded-xl px-5 text-sm font-semibold text-white">
+              Send
+              <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4z"></path><path d="M22 2 11 13"></path></svg>
+            </button>
+          </div>
+          <p class="mt-2 text-right font-mono text-[10px] text-slate-600">POST /v1/chat/completions · mocked</p>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <div id="site-footer"></div>
+
+  <script src="assets/js/layout.js?v=4" defer></script>
+  <script src="assets/js/effects.js?v=4" defer></script>
+  <script src="assets/js/models-data.js?v=4" defer></script>
+  <script src="assets/js/api.js?v=4" defer></script>
+  <script src="assets/js/playground.js?v=4" defer></script>
+</body>
+</html>

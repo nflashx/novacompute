@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign In — NovaCompute</title>
+  <meta name="theme-color" content="#05070e" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='24' y2='24' gradientUnits='userSpaceOnUse'%3E%3Cstop stop-color='%23a78bfa'/%3E%3Cstop offset='1' stop-color='%2322d3ee'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M12 1.5l2.6 7.9 7.9 2.6-7.9 2.6L12 22.5l-2.6-7.9-7.9-2.6 7.9-2.6L12 1.5z' fill='url(%23g)'/%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="assets/js/tailwind-config.js?v=4"></script>
+  <link rel="stylesheet" href="assets/css/main.css?v=4" />
+</head>
+
+<body class="bg-night font-sans text-slate-200 antialiased overflow-x-hidden">
+  <div id="site-header"></div>
+
+  <main class="relative flex min-h-[76vh] items-center justify-center overflow-hidden px-6 py-20">
+    <canvas id="auth-particles" class="particles-canvas" aria-hidden="true"></canvas>
+    <div class="orb left-[-140px] top-[10%] h-[380px] w-[380px]" style="background:rgba(124,58,237,.18)"></div>
+    <div class="orb right-[-140px] bottom-[10%] h-[340px] w-[340px]" style="background:rgba(34,211,238,.12)"></div>
+
+    <div class="gradient-border relative w-full max-w-md rounded-2xl p-8 shadow-card sm:p-10">
+      <a href="index.html" class="mx-auto flex w-fit items-center gap-2.5" aria-label="NovaCompute — home">
+        <svg viewBox="0 0 24 24" class="h-8 w-8" aria-hidden="true">
+          <defs><linearGradient id="nova-g-auth" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse"><stop stop-color="#a78bfa"></stop><stop offset="0.55" stop-color="#6366f1"></stop><stop offset="1" stop-color="#22d3ee"></stop></linearGradient></defs>
+          <path d="M12 1.5l2.6 7.9 7.9 2.6-7.9 2.6L12 22.5l-2.6-7.9-7.9-2.6 7.9-2.6L12 1.5z" fill="url(#nova-g-auth)"></path>
+        </svg>
+        <span class="font-display text-xl font-semibold tracking-tight text-white">Nova<span class="text-gradient">Compute</span></span>
+      </a>
+
+      <h1 class="mt-8 text-center font-display text-2xl font-bold text-white">Welcome back</h1>
+      <p class="mt-2 text-center text-sm text-slate-400">Sign in to manage your API keys and usage.</p>
+
+      <form id="login-form" class="mt-8 space-y-5" novalidate>
+        <div>
+          <label for="login-email" class="mb-1.5 block text-sm font-medium text-slate-300">Email</label>
+          <input id="login-email" type="email" required autocomplete="email" placeholder="you@company.com"
+                 class="w-full rounded-lg border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white placeholder-slate-500 outline-none transition focus:border-violet-400/50 focus:ring-2 focus:ring-violet-500/20" />
+        </div>
+        <div>
+          <div class="mb-1.5 flex items-center justify-between">
+            <label for="login-password" class="block text-sm font-medium text-slate-300">Password</label>
+            <a href="#" class="text-xs font-medium text-violet-300 transition-colors hover:text-violet-200">Forgot password?</a>
+          </div>
+          <div class="relative">
+            <input id="login-password" type="password" required autocomplete="current-password" placeholder="••••••••"
+                   class="w-full rounded-lg border border-white/10 bg-white/[0.04] px-4 py-3 pr-12 text-sm text-white placeholder-slate-500 outline-none transition focus:border-violet-400/50 focus:ring-2 focus:ring-violet-500/20" />
+            <button type="button" data-toggle-password="login-password" aria-label="Toggle password visibility"
+                    class="absolute right-3 top-1/2 -translate-y-1/2 rounded-md p-1.5 text-slate-500 transition hover:text-slate-300">
+              <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-primary flex w-full items-center justify-center gap-2 rounded-xl px-6 py-3.5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-70">
+          Sign In
+        </button>
+      </form>
+
+      <div class="my-7 flex items-center gap-4">
+        <div class="h-px flex-1 bg-white/[0.08]"></div>
+        <span class="text-xs text-slate-500">or continue with</span>
+        <div class="h-px flex-1 bg-white/[0.08]"></div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <button type="button" data-sso="GitHub" class="btn-ghost flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-slate-200">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.56 0-.28-.01-1.02-.02-2-3.2.7-3.88-1.54-3.88-1.54-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.71.08-.71 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.23-1.28-5.23-5.68 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11.1 11.1 0 0 1 2.9-.39c.98 0 1.97.13 2.9.39 2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.41-2.69 5.38-5.25 5.67.41.35.78 1.05.78 2.12 0 1.53-.01 2.76-.01 3.14 0 .31.21.67.8.56A11.52 11.52 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5z"></path></svg>
+          GitHub
+        </button>
+        <button type="button" data-sso="Google" class="btn-ghost flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-slate-200">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.27-4.74 3.27-8.1zM12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0 0 12 23zm5.84-8.24c-.22-.74-.57-1.42-1.04-2.02v-2.3h-3.4v.7A6.07 6.07 0 0 0 12 10.9c-2.86 0-5.29 1.93-6.16 4.53h-.01L2.18 17.6A11 11 0 0 0 12 23c2.4 0 4.6-.81 6.34-2.17l-.5-2.07zM2.18 12c0 .48.05.95.13 1.4l3.53-2.6A6.05 6.05 0 0 1 12 6.9c1.48 0 2.73.4 3.71 1.06l3.57-2.77A11 11 0 0 0 2.18 12z"></path></svg>
+          Google
+        </button>
+      </div>
+
+      <p class="mt-8 text-center text-sm text-slate-400">
+        New to NovaCompute?
+        <a href="register.html" class="font-medium text-violet-300 transition-colors hover:text-violet-200">Create an account</a>
+      </p>
+    </div>
+  </main>
+
+  <div id="site-footer"></div>
+
+  <script src="assets/js/layout.js?v=4" defer></script>
+  <script src="assets/js/effects.js?v=4" defer></script>
+  <script src="assets/js/api.js?v=4" defer></script>
+  <script src="assets/js/auth.js?v=4" defer></script>
+</body>
+</html>

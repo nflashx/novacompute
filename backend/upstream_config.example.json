@@ -1,0 +1,5 @@
+{
+  "_note": "Copy to upstream_config.json and put in ONE upstream provider key you are authorised to use. Do not use keys obtained through automated account creation — NovaCompute does not rotate keys to bypass provider rate limits or bans.",
+  "chat_completions_url": "https://api.nightrouter.ai/v1/chat/completions",
+  "api_key": "sk-REPLACE-WITH-YOUR-AUTHORISED-KEY"
+}

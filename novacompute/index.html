@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NovaCompute — One API for the World's Best AI Models</title>
+  <meta name="description" content="NovaCompute — one OpenAI-compatible API for 50+ frontier AI models. Auto-routing failover, 99.9% uptime, pay-as-you-go billing." />
+  <meta name="theme-color" content="#05070e" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='24' y2='24' gradientUnits='userSpaceOnUse'%3E%3Cstop stop-color='%23a78bfa'/%3E%3Cstop offset='1' stop-color='%2322d3ee'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M12 1.5l2.6 7.9 7.9 2.6-7.9 2.6L12 22.5l-2.6-7.9-7.9-2.6 7.9-2.6L12 1.5z' fill='url(%23g)'/%3E%3C/svg%3E" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind (Play CDN) + shared theme -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="assets/js/tailwind-config.js?v=4"></script>
+  <link rel="stylesheet" href="assets/css/main.css?v=4" />
+</head>
+
+<body class="bg-night font-sans text-slate-200 antialiased overflow-x-hidden">
+
+  <div id="site-header"></div>
+
+  <main>
+
+    <!-- ============ HERO ============ -->
+    <section id="top" class="relative overflow-hidden">
+      <canvas id="hero-particles" class="particles-canvas" aria-hidden="true"></canvas>
+      <div class="bg-grid absolute inset-0"></div>
+      <div class="orb left-[-140px] top-[-100px] h-[440px] w-[440px]" style="background:rgba(124,58,237,.26)"></div>
+      <div class="orb right-[-120px] top-[140px] h-[400px] w-[400px]" style="background:rgba(34,211,238,.14)"></div>
+      <div class="orb left-1/2 top-[520px] h-[320px] w-[520px] -translate-x-1/2" style="background:rgba(99,102,241,.10)"></div>
+
+      <div class="relative mx-auto grid max-w-7xl items-center gap-14 px-6 pb-16 pt-16 lg:grid-cols-[1.02fr_.98fr] lg:gap-12 lg:pb-24 lg:pt-24">
+
+        <!-- Copy -->
+        <div class="min-w-0">
+          <a href="#models" class="reveal glass inline-flex items-center gap-2.5 rounded-full px-4 py-1.5 text-xs font-medium text-slate-300 transition-colors hover:border-violet-400/40 hover:text-white">
+            <span class="relative flex h-2 w-2">
+              <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60"></span>
+              <span class="relative inline-flex h-2 w-2 rounded-full bg-emerald-400"></span>
+            </span>
+            Qwen 3.7 is now free — no credit card required
+            <svg class="h-3 w-3 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"></path></svg>
+          </a>
+
+          <h1 class="mt-6 min-h-[2.2em] font-display text-4xl font-bold leading-[1.1] tracking-tight text-white sm:text-5xl lg:text-[3.6rem]" aria-label="Build faster with the world's best AI models">
+            <span id="hero-type-main"></span><span id="hero-type-gradient" class="text-gradient"></span><span id="hero-type-caret" class="type-caret" aria-hidden="true"></span>
+          </h1>
+
+          <p class="reveal reveal-d2 mt-6 max-w-xl text-base leading-relaxed text-slate-400 sm:text-lg">
+            One OpenAI-compatible endpoint for 50+ frontier models. Auto-routing failover,
+            sub-100ms first tokens and per-token billing — so you ship AI features,
+            not infrastructure.
+          </p>
+
+          <div class="reveal reveal-d3 mt-9 flex flex-wrap items-center gap-4">
+            <a href="dashboard.html" class="btn-primary inline-flex items-center gap-2 rounded-xl px-6 py-3.5 text-sm font-semibold text-white">
+              Start Building
+              <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
+            </a>
+            <a href="#models" class="btn-ghost inline-flex items-center gap-2 rounded-xl px-6 py-3.5 text-sm font-semibold text-slate-200">
+              View Models
+              <svg class="h-4 w-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
+            </a>
+          </div>
+
+          <!-- Stats -->
+          <dl class="reveal reveal-d3 mt-14 grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-4">
+            <div class="border-l border-white/10 pl-4">
+              <dd class="font-display text-2xl font-bold text-white"><span class="stat-value" data-target="99.99" data-decimals="2" data-suffix="%">0</span></dd>
+              <dt class="mt-1 text-xs text-slate-500">Uptime SLA</dt>
+            </div>
+            <div class="border-l border-white/10 pl-4">
+              <dd class="font-display text-2xl font-bold text-white"><span class="stat-value" data-target="1.2" data-decimals="1" data-suffix="B">0</span></dd>
+              <dt class="mt-1 text-xs text-slate-500">Tokens served daily</dt>
+            </div>
+            <div class="border-l border-white/10 pl-4">
+              <dd class="font-display text-2xl font-bold text-white"><span class="stat-value" data-target="85" data-prefix="&lt;" data-suffix="ms">0</span></dd>
+              <dt class="mt-1 text-xs text-slate-500">Median TTFB</dt>
+            </div>
+            <div class="border-l border-white/10 pl-4">
+              <dd class="font-display text-2xl font-bold text-white"><span class="stat-value" data-target="50" data-suffix="+">0</span></dd>
+              <dt class="mt-1 text-xs text-slate-500">Frontier models</dt>
+            </div>
+          </dl>
+        </div>
+
+        <!-- Code window -->
+        <div class="reveal reveal-d2 relative min-w-0">
+          <div class="gradient-border overflow-hidden rounded-2xl shadow-card">
+            <!-- Window chrome -->
+            <div class="flex items-center gap-2 border-b border-white/[0.06] bg-white/[0.02] px-4 py-3">
+              <span class="h-3 w-3 rounded-full bg-[#ff5f57]"></span>
+              <span class="h-3 w-3 rounded-full bg-[#febc2e]"></span>
+              <span class="h-3 w-3 rounded-full bg-[#28c840]"></span>
+              <div class="ml-3 flex gap-1" role="tablist" aria-label="Code language">
+                <button type="button" class="code-tab is-active" data-lang="curl" role="tab" aria-selected="true">cURL</button>
+                <button type="button" class="code-tab" data-lang="python" role="tab" aria-selected="false">Python</button>
+                <button type="button" class="code-tab" data-lang="js" role="tab" aria-selected="false">JavaScript</button>
+              </div>
+              <span class="ml-auto hidden font-mono text-xs text-slate-500 sm:block">POST /v1/chat/completions</span>
+            </div>
+
+            <!-- Panes -->
+            <pre data-lang="curl" id="code-curl" class="code-pane h-[400px] overflow-auto bg-[#0b1120] p-5 font-mono text-[13px] leading-6 text-slate-300"><code><span class="tok-cmd">curl</span> <span class="tok-url">https://api.novacompute.io/v1/chat/completions</span> \
+  <span class="tok-flag">-H</span> <span class="tok-str">"Authorization: Bearer $NOVA_API_KEY"</span> \
+  <span class="tok-flag">-H</span> <span class="tok-str">"Content-Type: application/json"</span> \
+  <span class="tok-flag">-d</span> <span class="tok-str">'{
+  <span class="tok-key">"model"</span>: <span class="tok-str">"glm-5.3-flash"</span>,
+  <span class="tok-key">"messages"</span>: [{ <span class="tok-key">"role"</span>: <span class="tok-str">"user"</span>, <span class="tok-key">"content"</span>: <span class="tok-str">"Hello, Nova!"</span> }]
+}'</span></code></pre>
+
+            <pre data-lang="python" class="code-pane hidden h-[400px] overflow-auto bg-[#0b1120] p-5 font-mono text-[13px] leading-6 text-slate-300"><code><span class="tok-kw">from</span> openai <span class="tok-kw">import</span> OpenAI
+
+client = <span class="tok-fn">OpenAI</span>(
+    <span class="tok-key">base_url</span>=<span class="tok-str">"https://api.novacompute.io/v1"</span>,
+    <span class="tok-key">api_key</span>=os.environ[<span class="tok-str">"NOVA_API_KEY"</span>],
+)
+
+stream = client.chat.completions.<span class="tok-fn">create</span>(
+    <span class="tok-key">model</span>=<span class="tok-str">"glm-5.3-flash"</span>,
+    <span class="tok-key">messages</span>=[{<span class="tok-str">"role"</span>: <span class="tok-str">"user"</span>, <span class="tok-str">"content"</span>: <span class="tok-str">"Hello, Nova!"</span>}],
+    <span class="tok-key">stream</span>=<span class="tok-kw">True</span>,
+)
+
+<span class="tok-kw">for</span> chunk <span class="tok-kw">in</span> stream:
+    <span class="tok-fn">print</span>(chunk.choices[<span class="tok-cmd">0</span>].delta.content <span class="tok-kw">or</span> <span class="tok-str">""</span>, end=<span class="tok-str">""</span>)</code></pre>
+
+            <pre data-lang="js" class="code-pane hidden h-[400px] overflow-auto bg-[#0b1120] p-5 font-mono text-[13px] leading-6 text-slate-300"><code><span class="tok-kw">import</span> OpenAI <span class="tok-kw">from</span> <span class="tok-str">"openai"</span>;
+
+<span class="tok-kw">const</span> client = <span class="tok-kw">new</span> <span class="tok-fn">OpenAI</span>({
+  <span class="tok-key">baseURL</span>: <span class="tok-str">"https://api.novacompute.io/v1"</span>,
+  <span class="tok-key">apiKey</span>: process.env.<span class="tok-cmd">NOVA_API_KEY</span>,
+});
+
+<span class="tok-kw">const</span> stream = <span class="tok-kw">await</span> client.chat.completions.<span class="tok-fn">create</span>({
+  <span class="tok-key">model</span>: <span class="tok-str">"glm-5.3-flash"</span>,
+  <span class="tok-key">messages</span>: [{ <span class="tok-key">role</span>: <span class="tok-str">"user"</span>, <span class="tok-key">content</span>: <span class="tok-str">"Hello, Nova!"</span> }],
+  <span class="tok-key">stream</span>: <span class="tok-kw">true</span>,
+});</code></pre>
+
+            <!-- Status bar -->
+            <div class="flex items-center gap-2.5 border-t border-white/[0.06] bg-white/[0.02] px-4 py-2.5 font-mono text-xs text-slate-500">
+              <span class="pulse-dot h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+              <span class="text-emerald-400">200 OK</span>
+              <span class="text-slate-700">·</span> TTFB 84ms
+              <span class="text-slate-700">·</span> 1,024 tokens streamed
+              <span class="ml-auto text-slate-600">us-east-1</span>
+            </div>
+          </div>
+
+          <!-- Floating badges -->
+          <div class="float-slow absolute -right-2 -top-7 z-10 hidden items-center gap-2.5 rounded-xl border border-white/10 bg-night-800/90 px-4 py-2.5 text-xs font-medium shadow-card backdrop-blur-md lg:flex">
+            <span class="pulse-dot h-2 w-2 rounded-full bg-emerald-400"></span>
+            <span class="text-emerald-300">200 OK</span>
+            <span class="text-slate-600">·</span>
+            <span class="font-mono text-slate-300">84 ms</span>
+          </div>
+          <div class="float-slow absolute -bottom-7 -left-3 z-10 hidden items-center gap-2 rounded-xl border border-white/10 bg-night-800/90 px-4 py-2.5 text-xs font-medium shadow-card backdrop-blur-md lg:flex" style="animation-delay:-3s">
+            <svg class="h-4 w-4 text-cyan-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"></path></svg>
+            <span class="font-mono text-cyan-300">240 tok/s</span>
+            <span class="text-slate-500">streaming</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ TRUSTED BY ============ -->
+    <section class="relative border-y border-white/[0.06] bg-white/[0.015]">
+      <div class="mx-auto max-w-7xl px-6 py-8">
+        <p class="text-center text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-600">Trusted by engineering teams at</p>
+        <div class="mt-6 flex flex-wrap items-center justify-center gap-x-10 gap-y-4">
+          <span class="font-display text-lg font-semibold text-slate-500 transition-colors duration-200 hover:text-slate-300">Vertexa</span>
+          <span class="font-display text-lg font-semibold text-slate-500 transition-colors duration-200 hover:text-slate-300">Datawheel</span>
+          <span class="font-display text-lg font-semibold text-slate-500 transition-colors duration-200 hover:text-slate-300">Cortexa</span>
+          <span class="font-display text-lg font-semibold text-slate-500 transition-colors duration-200 hover:text-slate-300">NimbusAI</span>
+          <span class="font-display text-lg font-semibold text-slate-500 transition-colors duration-200 hover:text-slate-300">Quantify</span>
+          <span class="font-display text-lg font-semibold text-slate-500 transition-colors duration-200 hover:text-slate-300">Helios Labs</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ FEATURES ============ -->
+    <section id="features" class="relative scroll-mt-24 overflow-hidden py-24">
+      <div class="orb right-[-160px] top-[80px] h-[360px] w-[360px]" style="background:rgba(124,58,237,.10)"></div>
+
+      <div class="relative mx-auto max-w-7xl px-6">
+        <div class="mx-auto max-w-2xl text-center">
+          <span class="reveal inline-flex items-center rounded-full border border-violet-400/20 bg-violet-500/10 px-3.5 py-1.5 text-xs font-semibold tracking-widest text-violet-300">WHY NOVACOMPUTE</span>
+          <h2 class="reveal reveal-d1 mt-5 font-display text-3xl font-bold tracking-tight text-white sm:text-4xl">
+            Infrastructure that gets <span class="text-gradient">out of your way</span>
+          </h2>
+          <p class="reveal reveal-d2 mt-4 leading-relaxed text-slate-400">
+            We handle the provider mess — capacity, outages, rate limits — behind one stable
+            endpoint, so your product never waits on a model vendor.
+          </p>
+        </div>
+
+        <div class="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          <!-- High Uptime -->
+          <article class="reveal card-hover glass rounded-2xl p-7">
+            <div class="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-gradient-to-br from-violet-500/25 to-cyan-400/10 text-violet-300">
+              <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
+            </div>
+            <h3 class="mt-5 font-display text-lg font-semibold text-white">99.9% High Uptime</h3>
+            <p class="mt-2.5 text-sm leading-relaxed text-slate-400">
+              Multi-region failover with a public status page. We get paged at 3 a.m.
+              so your on-call doesn't have to.
+            </p>
+          </article>
+
+          <!-- Auto-Routing -->
+          <article class="reveal reveal-d1 card-hover glass rounded-2xl p-7">
+            <div class="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-gradient-to-br from-violet-500/25 to-cyan-400/10 text-violet-300">
+              <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 18h1.4c1.3 0 2.5-.6 3.3-1.7l6.1-8.6c.8-1.1 2-1.7 3.3-1.7H22"></path><path d="m18 2 4 4-4 4"></path><path d="M2 6h1.9c1.5 0 2.9.9 3.6 2.2"></path><path d="M22 18h-5.9c-1.3 0-2.6-.7-3.3-1.8l-.5-.8"></path><path d="m18 14 4 4-4 4"></path></svg>
+            </div>
+            <h3 class="mt-5 font-display text-lg font-semibold text-white">Auto-Routing Fallback</h3>
+            <p class="mt-2.5 text-sm leading-relaxed text-slate-400">
+              Requests automatically reroute to the next-best healthy provider mid-outage.
+              Zero code changes, zero dropped requests.
+            </p>
+          </article>
+
+          <!-- Pay-as-you-go -->
+          <article class="reveal reveal-d2 card-hover glass rounded-2xl p-7">
+            <div class="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-gradient-to-br from-violet-500/25 to-cyan-400/10 text-violet-300">
+              <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6"></circle><path d="M18.09 10.37A6 6 0 1 1 10.34 18"></path><path d="M7 6h1v4"></path><path d="m16.71 13.88.7.71-2.82 2.82"></path></svg>
+            </div>
+            <h3 class="mt-5 font-display text-lg font-semibold text-white">Pay-as-you-go Billing</h3>
+            <p class="mt-2.5 text-sm leading-relaxed text-slate-400">
+              Per-token pricing with no minimums and no seats. Volume discounts kick in
+              automatically as you scale.
+            </p>
+          </article>
+
+          <!-- OpenAI-Compatible -->
+          <article class="reveal reveal-d3 card-hover glass rounded-2xl p-7">
+            <div class="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-gradient-to-br from-violet-500/25 to-cyan-400/10 text-violet-300">
+              <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H7a2 2 0 0 0-2 2v5a2 2 0 0 1-2 2 2 2 0 0 1 2 2v5c0 1.1.9 2 2 2h1"></path><path d="M16 21h1a2 2 0 0 0 2-2v-5c0-1.1.9-2 2-2a2 2 0 0 1-2-2V5a2 2 0 0 0-2-2h-1"></path></svg>
+            </div>
+            <h3 class="mt-5 font-display text-lg font-semibold text-white">OpenAI-Compatible</h3>
+            <p class="mt-2.5 text-sm leading-relaxed text-slate-400">
+              Drop-in compatible with the OpenAI SDK. Change one base URL and keep every
+              line of your existing code.
+            </p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ MODEL SHOWCASE ============ -->
+    <section id="models" class="relative scroll-mt-24 overflow-hidden py-24">
+      <div class="orb left-[-160px] bottom-[40px] h-[360px] w-[360px]" style="background:rgba(34,211,238,.08)"></div>
+
+      <div class="relative mx-auto max-w-7xl px-6">
+        <div class="reveal flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <span class="inline-flex items-center rounded-full border border-cyan-400/20 bg-cyan-500/10 px-3.5 py-1.5 text-xs font-semibold tracking-widest text-cyan-300">MODEL CATALOGUE</span>
+            <h2 class="mt-5 font-display text-3xl font-bold tracking-tight text-white sm:text-4xl">
+              Every frontier model, <span class="text-gradient">one endpoint</span>
+            </h2>
+            <p class="mt-3 max-w-xl leading-relaxed text-slate-400">
+              Live throughput and per-token pricing measured across our network. Pick a model
+              manually, or let auto-routing choose the fastest healthy provider.
+            </p>
+          </div>
+          <a href="pricing.html" class="btn-ghost shrink-0 rounded-lg px-4 py-2.5 text-sm font-medium text-slate-200">Full pricing →</a>
+        </div>
+
+        <!-- Filters -->
+        <div id="model-filters" class="reveal mt-9 flex flex-wrap gap-2" role="group" aria-label="Filter models">
+          <button type="button" class="filter-tab is-active" data-filter="all" aria-pressed="true">All models</button>
+          <button type="button" class="filter-tab" data-filter="chat" aria-pressed="false">Chat</button>
+          <button type="button" class="filter-tab" data-filter="code" aria-pressed="false">Code</button>
+          <button type="button" class="filter-tab" data-filter="free" aria-pressed="false">Free</button>
+        </div>
+
+        <!-- Table -->
+        <div class="reveal glass mt-5 overflow-hidden rounded-2xl shadow-card">
+          <div class="overflow-x-auto">
+            <table class="w-full min-w-[760px] text-left text-sm">
+              <thead>
+                <tr class="border-b border-white/[0.06] bg-white/[0.02] text-[11px] uppercase tracking-wider text-slate-500">
+                  <th scope="col" class="px-6 py-4 font-medium">Model</th>
+                  <th scope="col" class="px-4 py-4 font-medium">Context</th>
+                  <th scope="col" class="px-4 py-4 font-medium">Output speed</th>
+                  <th scope="col" class="px-4 py-4 text-right font-medium">Input / 1M</th>
+                  <th scope="col" class="px-4 py-4 text-right font-medium">Output / 1M</th>
+                  <th scope="col" class="px-6 py-4"><span class="sr-only">Actions</span></th>
+                </tr>
+              </thead>
+              <tbody id="models-tbody" class="divide-y divide-white/[0.04]"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <p class="reveal mt-4 text-xs text-slate-500">
+          Prices are per 1M tokens on standard tier. Latency measured from us-east-1 over the last 24h.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============ CTA ============ -->
+    <section class="relative overflow-hidden py-24">
+      <div class="mx-auto max-w-5xl px-6">
+        <div class="gradient-border relative overflow-hidden rounded-3xl px-8 py-14 text-center shadow-card sm:px-14">
+          <div class="orb left-[-60px] top-[-80px] h-[260px] w-[260px]" style="background:rgba(124,58,237,.25)"></div>
+          <div class="orb bottom-[-100px] right-[-60px] h-[240px] w-[240px]" style="background:rgba(34,211,238,.18)"></div>
+
+          <div class="relative">
+            <h2 class="font-display text-3xl font-bold tracking-tight text-white sm:text-4xl">
+              Start building <span class="text-gradient">in minutes</span>
+            </h2>
+            <p class="mx-auto mt-4 max-w-xl leading-relaxed text-slate-400">
+              Grab an API key, send your first request and stream tokens from 50+ models.
+              Free tier included — no credit card required.
+            </p>
+            <div class="mt-9 flex flex-wrap items-center justify-center gap-4">
+              <a href="dashboard.html" class="btn-primary inline-flex items-center gap-2 rounded-xl px-6 py-3.5 text-sm font-semibold text-white">
+                Get your API key
+                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
+              </a>
+              <a href="docs.html" class="btn-ghost inline-flex items-center gap-2 rounded-xl px-6 py-3.5 text-sm font-semibold text-slate-200">Read the docs</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <div id="site-footer"></div>
+
+  <script src="assets/js/layout.js?v=4" defer></script>
+  <script src="assets/js/effects.js?v=4" defer></script>
+  <script src="assets/js/models-data.js?v=4" defer></script>
+  <script src="assets/js/landing.js?v=4" defer></script>
+</body>
+</html>

@@ -1,0 +1,335 @@
+/* ============================================================
+   NovaCompute — global custom styles (layered on Tailwind CDN)
+   Tailwind handles utilities; this file holds the design system
+   pieces that utility classes alone can't express cleanly:
+   gradients, glass, glow orbs, scroll-reveal, code tokens.
+   ============================================================ */
+
+:root {
+  --c-bg: #05070e;
+  --c-surface: rgba(13, 18, 32, 0.6);
+  --c-line: rgba(255, 255, 255, 0.08);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background-color: var(--c-bg);
+  text-rendering: optimizeLegibility;
+}
+
+::selection { background: rgba(139, 92, 246, 0.35); color: #fff; }
+
+/* ---------- Scrollbar ---------- */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: #05070e; }
+::-webkit-scrollbar-thumb { background: #1d2740; border-radius: 8px; border: 2px solid #05070e; }
+::-webkit-scrollbar-thumb:hover { background: #2b3854; }
+
+/* ---------- Gradient text ---------- */
+.text-gradient {
+  background: linear-gradient(100deg, #c4b5fd 0%, #818cf8 45%, #22d3ee 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ---------- Glass surface ---------- */
+.glass {
+  background: var(--c-surface);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--c-line);
+}
+
+/* ---------- Decorative grid backdrop (hero) ---------- */
+.bg-grid {
+  background-image:
+    linear-gradient(rgba(148, 163, 184, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.06) 1px, transparent 1px);
+  background-size: 54px 54px;
+  -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 55%, transparent 100%);
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 55%, transparent 100%);
+}
+
+/* ---------- Blurred glow orbs ---------- */
+.orb {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(110px);
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ---------- Gradient border (double-background trick) ---------- */
+.gradient-border {
+  border: 1px solid transparent;
+  background:
+    linear-gradient(#0b1120, #0b1120) padding-box,
+    linear-gradient(135deg, rgba(139, 92, 246, 0.55), rgba(99, 102, 241, 0.25) 45%, rgba(34, 211, 238, 0.45)) border-box;
+}
+
+/* ---------- Buttons ---------- */
+.btn-primary {
+  background-image: linear-gradient(135deg, #7c3aed 0%, #6366f1 55%, #0891b2 120%);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s ease;
+}
+.btn-primary:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.12);
+  box-shadow: 0 14px 34px -10px rgba(124, 58, 237, 0.55);
+}
+.btn-primary:active { transform: translateY(0); }
+
+.btn-ghost {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.03);
+  transition: transform 0.25s ease, background 0.25s ease, border-color 0.25s ease;
+}
+.btn-ghost:hover {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+/* ---------- Cards ---------- */
+.card-hover {
+  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+}
+.card-hover:hover {
+  transform: translateY(-4px);
+  border-color: rgba(139, 92, 246, 0.38);
+  box-shadow: 0 24px 60px -22px rgba(124, 58, 237, 0.35);
+}
+
+/* ---------- Scroll reveal ---------- */
+.reveal {
+  opacity: 0;
+  transform: translateY(26px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+  will-change: opacity, transform;
+}
+.reveal.is-visible { opacity: 1; transform: none; }
+.reveal-d1 { transition-delay: 0.08s; }
+.reveal-d2 { transition-delay: 0.16s; }
+.reveal-d3 { transition-delay: 0.24s; }
+
+/* ---------- Header scrolled state ---------- */
+#site-header .nav-shell {
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+#site-header .nav-shell.is-scrolled {
+  background-color: rgba(5, 7, 14, 0.88);
+  box-shadow: 0 12px 34px -14px rgba(2, 6, 17, 0.9);
+}
+
+/* ---------- Model filter tabs ---------- */
+.filter-tab {
+  padding: 0.45rem 1rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  border-radius: 9999px;
+  color: #94a3b8;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
+  transition: color 0.25s ease, background 0.25s ease, border-color 0.25s ease;
+}
+.filter-tab:hover { color: #e2e8f0; background: rgba(255, 255, 255, 0.06); }
+.filter-tab.is-active {
+  color: #fff;
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.28), rgba(6, 182, 212, 0.18));
+  border-color: rgba(139, 92, 246, 0.45);
+}
+
+/* ---------- Code window ---------- */
+.code-tab {
+  padding: 0.3rem 0.75rem;
+  font-size: 0.72rem;
+  font-weight: 500;
+  border-radius: 9999px;
+  color: #8494ad;
+  transition: color 0.2s ease, background 0.2s ease;
+}
+.code-tab:hover { color: #e2e8f0; }
+.code-tab.is-active { background: rgba(139, 92, 246, 0.18); color: #c4b5fd; }
+
+.code-pane { margin: 0; }
+.tok-cmd  { color: #c4b5fd; }
+.tok-kw   { color: #f472b6; }
+.tok-url  { color: #67e8f9; }
+.tok-key  { color: #7dd3fc; }
+.tok-str  { color: #6ee7b7; }
+.tok-flag { color: #94a3b8; }
+.tok-fn   { color: #fbbf24; }
+
+/* ---------- Live status dot ---------- */
+.pulse-dot { position: relative; }
+.pulse-dot::after {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: 9999px;
+  border: 1px solid rgba(52, 211, 153, 0.6);
+  animation: nova-ping 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+@keyframes nova-ping {
+  0% { transform: scale(0.7); opacity: 1; }
+  80%, 100% { transform: scale(1.9); opacity: 0; }
+}
+
+/* ---------- Slow float for hero badges ---------- */
+@keyframes nova-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+.float-slow { animation: nova-float 6s ease-in-out infinite; }
+
+/* ---------- Reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
+  .float-slow, .pulse-dot::after { animation: none !important; }
+}
+
+/* ============================================================
+   VFX LAYER — ripple, typing caret, particles, model glow,
+   sliders, toasts, chat, dashboard components (v2)
+   ============================================================ */
+
+/* ---------- Button ripple ---------- */
+.btn-primary, .btn-ghost { position: relative; overflow: hidden; }
+.ripple {
+  position: absolute;
+  border-radius: 9999px;
+  pointer-events: none;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0.12) 45%, transparent 70%);
+  transform: scale(0);
+  opacity: 0.8;
+  animation: nova-ripple 0.65s ease-out forwards;
+}
+@keyframes nova-ripple {
+  to { transform: scale(2.6); opacity: 0; }
+}
+
+/* ---------- Typing carets ---------- */
+.type-caret {
+  display: inline-block;
+  width: 3px;
+  height: 0.92em;
+  margin-left: 5px;
+  background: linear-gradient(180deg, #a78bfa, #22d3ee);
+  vertical-align: -0.08em;
+  animation: caret-blink 1s step-end infinite;
+}
+.code-caret {
+  display: inline-block;
+  width: 8px;
+  height: 14px;
+  margin-left: 3px;
+  background: #a78bfa;
+  vertical-align: -2px;
+  animation: caret-blink 1s step-end infinite;
+}
+@keyframes caret-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* ---------- Hero particles canvas ---------- */
+.particles-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* ---------- Model table rows: glow by provider color ---------- */
+tr.model-row { transition: background-color 0.25s ease, box-shadow 0.25s ease; }
+tr.model-row:hover {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--m) 10%, transparent) 0%, transparent 68%);
+  box-shadow:
+    inset 3px 0 0 0 var(--m),
+    inset 0 1px 0 0 color-mix(in srgb, var(--m) 28%, transparent),
+    inset 0 -1px 0 0 color-mix(in srgb, var(--m) 28%, transparent);
+}
+tr.model-row .model-avatar { transition: transform 0.25s ease, box-shadow 0.25s ease; }
+tr.model-row:hover .model-avatar {
+  transform: translateY(-2px);
+  box-shadow: 0 0 20px -2px var(--m);
+}
+
+/* ---------- Range sliders (playground) ---------- */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, #7c3aed var(--val, 50%), rgba(255, 255, 255, 0.08) var(--val, 50%));
+  outline: none;
+  cursor: pointer;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 9999px;
+  background: #fff;
+  border: 3px solid #7c3aed;
+  box-shadow: 0 0 14px rgba(124, 58, 237, 0.55);
+  transition: transform 0.15s ease;
+}
+input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.15); }
+
+/* ---------- Chat (playground) ---------- */
+.msg-enter { animation: msg-in 0.25s ease both; }
+@keyframes msg-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+.typing-dots span {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: #8b5cf6;
+  margin-right: 4px;
+  animation: dot-bounce 1.2s ease-in-out infinite;
+}
+.typing-dots span:nth-child(2) { animation-delay: 0.15s; }
+.typing-dots span:nth-child(3) { animation-delay: 0.3s; }
+@keyframes dot-bounce {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.45; }
+  30% { transform: translateY(-5px); opacity: 1; }
+}
+
+/* ---------- Dashboard sidebar active glow ---------- */
+.side-link { transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease; }
+.side-link.is-active {
+  background: linear-gradient(90deg, rgba(124, 58, 237, 0.18), rgba(124, 58, 237, 0.04));
+  color: #fff;
+  box-shadow: inset 2px 0 0 0 #8b5cf6;
+}
+
+/* ---------- Toast stack ---------- */
+.toast { animation: msg-in 0.25s ease both; }
+
+/* ---------- Modal ---------- */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  background: rgba(2, 6, 17, 0.7);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: msg-in 0.2s ease both;
+}
+
+/* ---------- Scrollbar thin (chat, panels) ---------- */
+.scroll-thin::-webkit-scrollbar { width: 6px; height: 6px; }
+.scroll-thin::-webkit-scrollbar-thumb { background: #1d2740; border: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ripple, .type-caret, .code-caret, .typing-dots span, .msg-enter, .toast { animation: none !important; }
+}
