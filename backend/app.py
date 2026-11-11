@@ -957,6 +957,8 @@ class NovaHandler(BaseHTTPRequestHandler):
         if not token: return None, None, None
         db = load_users()
         user, key = find_user_by_api_key(db, token)
+        if user and user.get("banned"):
+            return db, None, None
         return db, user, key
 
     def do_OPTIONS(self):
@@ -998,6 +1000,7 @@ class NovaHandler(BaseHTTPRequestHandler):
         if path == "/api/paypal/capture-order": self.handle_paypal_capture(); return
         if path == "/api/payments/bank-webhook": self.handle_bank_webhook(); return
         if path == "/api/admin/user": self.handle_admin_user_update(); return
+        if path == "/api/admin/user/delete": self.handle_admin_user_delete(); return
         if path == "/api/keys": self.handle_create_key(); return
         if path == "/api/topup":
             self.send_error_json(410, "invalid_request_error", "use_checkout", "Top-up requires a verified payment. Use PayPal or a bank transfer.")
@@ -1272,6 +1275,8 @@ class NovaHandler(BaseHTTPRequestHandler):
                     fl["lock_until"] = time.time() + LOCK_SECONDS; fl["count"] = 0
                 db["failed_logins"][email] = fl; save_users(db)
                 return self.send_error_json(401, "authentication_error", "invalid_credentials", "Incorrect email or password.")
+            if user.get("banned"):
+                return self.send_error_json(403, "authentication_error", "account_banned", "This account has been banned.")
             if not user.get("verified", True):
                 return self.send_error_json(403, "authentication_error", "email_unverified", "Email not verified. Sign up again to receive a new code.")
             db["failed_logins"].pop(email, None); save_users(db)
@@ -1344,6 +1349,7 @@ class NovaHandler(BaseHTTPRequestHandler):
                 "tokens": tokens,
                 "last_used": last,
                 "is_admin": bool(user.get("is_admin")),
+                "banned": bool(user.get("banned")),
                 "created_at": user.get("created_at"),
             })
         rows.sort(key=lambda r: r.get("created_at") or "", reverse=True)
@@ -1396,8 +1402,28 @@ class NovaHandler(BaseHTTPRequestHandler):
                     target["transactions"] = target["transactions"][-200:]
             if "is_admin" in body:
                 target["is_admin"] = bool(body.get("is_admin"))
+            if "banned" in body:
+                target["banned"] = bool(body.get("banned"))
             save_users(db)
         self.send_json(200, {"ok": True, "email": email, "plan": target.get("plan", "free"), "balance": round(float(target.get("balance", 0)), 2), "is_admin": bool(target.get("is_admin"))})
+
+    def handle_admin_user_delete(self):
+        admin = self.require_admin()
+        if not admin: return
+        body = self.read_json_body() or {}
+        email = str(body.get("email", "")).strip().lower()
+        if not email: return self.send_error_json(400, "invalid_request_error", "missing_email", "Email is required.")
+        if email == str(admin.get("email", "")).lower():
+            return self.send_error_json(400, "invalid_request_error", "cannot_delete_self", "You cannot delete the admin account you are signed in with.")
+        with DB_LOCK:
+            db = load_users()
+            target = find_user_by_email(db, email)
+            if not target: return self.send_error_json(404, "not_found", "user_missing", "Account not found.")
+            if target.get("is_admin") and sum(1 for u in db["users"] if u.get("is_admin")) <= 1:
+                return self.send_error_json(400, "invalid_request_error", "last_admin", "Cannot delete the last admin account.")
+            db["users"] = [u for u in db["users"] if str(u.get("email", "")).lower() != email]
+            save_users(db)
+        self.send_json(200, {"ok": True, "deleted": email})
 
     def handle_create_key(self):
         _db, user, _key = self.authenticate()

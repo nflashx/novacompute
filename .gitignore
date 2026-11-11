@@ -36,3 +36,7 @@ backend/mail_config.json
 novacompute/node_modules/
 backend/paypal_config.json
 backend/payment_config.json
+
+# Rust console build
+rust-console/target/
+rust-console/console_config.json

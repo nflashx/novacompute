@@ -1,0 +1,18 @@
+[package]
+name = "novacompute-console"
+version = "0.1.0"
+edition = "2021"
+description = "Native NovaCompute admin console"
+
+[dependencies]
+eframe = "0.31"
+egui = "0.31"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+ureq = { version = "2", features = ["json"] }
+chrono = "0.4"
+
+[profile.release]
+opt-level = 2
+lto = "thin"
+strip = true
