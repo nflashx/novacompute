@@ -874,8 +874,9 @@ class NovaHandler(BaseHTTPRequestHandler):
 
     def end_headers(self):
         self.send_header("Access-Control-Allow-Origin", "*")
-        self.send_header("Access-Control-Allow-Headers", "Authorization, Content-Type")
+        self.send_header("Access-Control-Allow-Headers", "Authorization, Content-Type, X-Nova-Client, X-Nova-Device, Accept")
         self.send_header("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS")
+        self.send_header("Access-Control-Max-Age", "86400")
         for name, value in getattr(self, "_rate_headers", {}).items():
             self.send_header(name, value)
         super().end_headers()
