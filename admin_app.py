@@ -2,8 +2,8 @@
 """NovaCompute — Admin Console (tkinter, no web).
 
 Three tabs:
-    API Keys  — manage NightRouter / ExosAI key files (add / delete / status)
-    Models    — catalogue + add custom models (written to custom_models.json)
+    API Keys  — manage NightRouter / ExosAI key files (add / edit / delete / status)
+    Models    — catalogue + add / edit custom models (written to custom_models.json)
     Settings  — file paths, backend health check, hot-reload notes
 
 Run:  python admin_app.py
@@ -12,8 +12,11 @@ Notes
     * Keys are stored exactly in the files the backend reads
       (backend/nightrouter_keys.json, backend/exosai_keys.json).
       The backend reads them on every request, so key changes are live.
-    * Models are stored in backend/custom_models.json; the backend reloads
-      that file when its mtime changes (refresh_models), so no restart.
+    * Models are stored in backend/custom_models.json; the backend's
+      refresh_models() reloads that file when its mtime changes, so edits
+      (including overriding a built-in model with the same ID) apply
+      without restarting app.py.
+    * The Model ID is immutable in Edit mode, on purpose.
     * The app never sends keys anywhere; the only network call is the
       optional localhost health check on :8080.
 """
@@ -165,12 +168,36 @@ def set_key_status(path, api_key, status):
     return changed
 
 
+def update_key_meta(path, api_key, label, status):
+    """Edit the label and active/dead status of a key (value itself immutable)."""
+    entries = load_key_entries(path)
+    status = (status or "active").lower()
+    if status not in ("active", "dead"):
+        raise ValueError("Status must be active or dead.")
+    label = (label or "").strip()
+
+    for idx, entry in enumerate(entries):
+        if key_value(entry) != api_key:
+            continue
+        if not isinstance(entry, dict):
+            entry = {"api_key": key_value(entry)}
+            entries[idx] = entry
+        entry["status"] = status
+        if label:
+            entry["label"] = label
+        else:
+            entry.pop("label", None)
+        _write_json(path, entries)
+        return True
+    return False
+
+
 def load_custom_models(path=CUSTOM_MODELS_FILE):
     data = _read_json(path, [])
     return [m for m in data if isinstance(m, dict) and m.get("id")] if isinstance(data, list) else []
 
 
-def add_custom_model(path, model):
+def _validate_model_fields(model, path):
     model_id = str(model.get("id", "")).strip()
     if not MODEL_ID_RE.match(model_id):
         raise ValueError("Model ID may only contain letters, digits and . _ : / @ -")
@@ -183,24 +210,56 @@ def add_custom_model(path, model):
         raise ValueError("Prices must be numbers.")
     if price_in < 0 or price_out < 0:
         raise ValueError("Prices cannot be negative.")
+    return model_id, price_in, price_out
 
-    models = load_custom_models(path)
-    if any(m["id"] == model_id for m in models):
-        raise ValueError("A custom model with this ID already exists.")
-    if any(m["id"] == model_id for m in get_builtin_models()):
-        raise ValueError("This ID already exists in the built-in catalogue.")
 
+def _model_entry(model, price_in, price_out):
     entry = {
-        "id": model_id,
+        "id": str(model["id"]).strip(),
         "name": str(model["name"]).strip(),
         "provider": str(model.get("provider", "")).strip() or "Custom",
         "context": str(model.get("context", "")).strip() or "128K",
-        "speed": int(model.get("speed", 100) or 100),
+        "speed": int(float(model.get("speed", 100) or 100)),
         "input": round(price_in, 4),
         "output": round(price_out, 4),
         "upstream": str(model.get("upstream", "")).strip() or "nightrouter",
     }
+    return entry
+
+
+def add_custom_model(path, model):
+    """Add a brand-new custom model. Built-in IDs are rejected here."""
+    model_id, price_in, price_out = _validate_model_fields(model, path)
+    models = load_custom_models(path)
+    if any(m["id"] == model_id for m in models):
+        raise ValueError("A custom model with this ID already exists.")
+    if any(m["id"] == model_id for m in get_builtin_models()):
+        raise ValueError("This ID already exists in the built-in catalogue — use Edit instead.")
+    entry = _model_entry(model, price_in, price_out)
     models.append(entry)
+    _write_json(path, models)
+    return entry
+
+
+def update_custom_model(path, model):
+    """Edit an existing model. ID is immutable.
+
+    If the ID belongs to a built-in model (e.g. grok-4.6), an override entry
+    with the same ID is written to custom_models.json — the backend merges
+    custom entries over built-ins.
+    """
+    model_id, price_in, price_out = _validate_model_fields(model, path)
+    models = load_custom_models(path)
+    entry = _model_entry(model, price_in, price_out)
+
+    replaced = False
+    for idx, existing in enumerate(models):
+        if existing["id"] == model_id:
+            models[idx] = entry
+            replaced = True
+            break
+    if not replaced:
+        models.append(entry)
     _write_json(path, models)
     return entry
 
@@ -225,6 +284,17 @@ def get_builtin_models():
         return []
 
 
+def get_builtin_routing():
+    """Routing info for the built-in catalogue: (MODEL_PROVIDER_MAP, DEFAULT_PROVIDER)."""
+    try:
+        if BACKEND_DIR not in sys.path:
+            sys.path.insert(0, BACKEND_DIR)
+        import app as backend_app
+        return dict(getattr(backend_app, "MODEL_PROVIDER_MAP", {})), str(getattr(backend_app, "DEFAULT_PROVIDER", "nightrouter"))
+    except Exception:
+        return {}, "nightrouter"
+
+
 # ---------------------------------------------------------------------------
 # GUI
 # ---------------------------------------------------------------------------
@@ -244,7 +314,7 @@ def _dark_button(parent, text, command, primary=False, small=False):
 
 
 class AdminConsole(tk.Tk):
-    def __init__(self):
+    def __init__(self, initial_tab=""):
         super().__init__()
         self.title("NovaCompute — Admin Console")
         self.configure(bg=BG)
@@ -262,6 +332,9 @@ class AdminConsole(tk.Tk):
 
         self.bind("<F5>", lambda _e: self.refresh_all())
         self.refresh_all()
+        tabs = {"keys": 0, "models": 1, "settings": 2}
+        if initial_tab in tabs:
+            self.notebook.select(tabs[initial_tab])
 
     def _centered(self, width, height):
         screen_w = self.winfo_screenwidth()
@@ -346,7 +419,8 @@ class AdminConsole(tk.Tk):
 
             toolbar = tk.Frame(frame, bg=BG, padx=8, pady=6)
             toolbar.pack(fill="x")
-            _dark_button(toolbar, "+  Add Key", lambda p=provider: self.add_key_dialog(p), primary=True, small=True).pack(side="left", padx=(0, 6))
+            _dark_button(toolbar, "+  Add Key", lambda p=provider: self._key_dialog(p), primary=True, small=True).pack(side="left", padx=(0, 6))
+            _dark_button(toolbar, "✎  Edit Selected", lambda p=provider: self.edit_selected_key(p), small=True).pack(side="left", padx=(0, 6))
             _dark_button(toolbar, "Delete Selected", lambda p=provider: self.delete_selected_key(p), small=True).pack(side="left", padx=(0, 6))
             _dark_button(toolbar, "Mark Active", lambda p=provider: self.mark_selected_key(p, "active"), small=True).pack(side="left", padx=(0, 6))
             _dark_button(toolbar, "Mark Dead", lambda p=provider: self.mark_selected_key(p, "dead"), small=True).pack(side="left")
@@ -358,7 +432,7 @@ class AdminConsole(tk.Tk):
             tree.heading("key", text="API Key")
             tree.heading("status", text="Status")
             tree.heading("label", text="Label / Account")
-            tree.column("key", width=380, anchor="w")
+            tree.column("key", width=360, anchor="w")
             tree.column("status", width=90, anchor="center", stretch=False)
             tree.column("label", width=220, anchor="w")
             tree.tag_configure("active", foreground=OK)
@@ -394,26 +468,52 @@ class AdminConsole(tk.Tk):
         iid = selection[0]
         return iid, self.key_rows.get(provider, {}).get(iid)
 
-    def add_key_dialog(self, provider):
+    # ---- Add / Edit key dialog (shared) ----
+    def _key_dialog(self, provider, entry=None):
+        editing = entry is not None
         dialog = tk.Toplevel(self)
-        dialog.title(f"Add {provider.title()} key")
+        dialog.title(f"{'Edit' if editing else 'Add'} {provider.title()} key")
         dialog.configure(bg=BG)
-        dialog.geometry(self._centered(460, 250))
+        dialog.geometry(self._centered(480, 330 if editing else 250))
         dialog.transient(self)
         dialog.grab_set()
 
-        tk.Label(dialog, text=f"Add key to {provider}_keys.json", bg=BG, fg=TEXT, font=FONT_BOLD).pack(anchor="w", padx=18, pady=(16, 2))
-        tk.Label(dialog, text="The key is written to the file immediately — the backend reads it on the next request.",
-                 bg=BG, fg=MUTED, font=("Segoe UI", 9), wraplength=410, justify="left").pack(anchor="w", padx=18)
+        tk.Label(dialog, text=f"{'Edit' if editing else 'Add'} key — {provider}_keys.json",
+                 bg=BG, fg=TEXT, font=FONT_BOLD).pack(anchor="w", padx=18, pady=(16, 2))
+        tk.Label(dialog,
+                 text=("The key value itself cannot be changed. Update the label or the Active/Dead status."
+                       if editing else
+                       "The key is written to the file immediately — the backend reads it on the next request."),
+                 bg=BG, fg=MUTED, font=("Segoe UI", 9), wraplength=430, justify="left").pack(anchor="w", padx=18)
 
         form = tk.Frame(dialog, bg=BG)
         form.pack(fill="x", padx=18, pady=12)
-        tk.Label(form, text="API key *", bg=BG, fg=MUTED, font=("Segoe UI", 9)).grid(row=0, column=0, sticky="w")
-        key_entry = ttk.Entry(form, width=46, show="•")
-        key_entry.grid(row=1, column=0, sticky="we", pady=(2, 0))
-        tk.Label(form, text="Label / account (optional)", bg=BG, fg=MUTED, font=("Segoe UI", 9)).grid(row=2, column=0, sticky="w", pady=(10, 0))
-        label_entry = ttk.Entry(form, width=46)
-        label_entry.grid(row=3, column=0, sticky="we", pady=(2, 0))
+        row = 0
+
+        if editing:
+            tk.Label(form, text="API key (read-only)", bg=BG, fg=MUTED, font=("Segoe UI", 9)).grid(row=row, column=0, sticky="w")
+            key_box = ttk.Entry(form, width=48)
+            key_box.insert(0, key_value(entry))
+            key_box.state(["readonly"])
+            key_box.grid(row=row + 1, column=0, sticky="we", pady=(2, 0))
+            row += 2
+        else:
+            tk.Label(form, text="API key *", bg=BG, fg=MUTED, font=("Segoe UI", 9)).grid(row=row, column=0, sticky="w")
+            key_entry = ttk.Entry(form, width=48, show="•")
+            key_entry.grid(row=row + 1, column=0, sticky="we", pady=(2, 0))
+            row += 2
+
+        tk.Label(form, text="Label / account (optional)", bg=BG, fg=MUTED, font=("Segoe UI", 9)).grid(row=row, column=0, sticky="w", pady=(10, 0))
+        label_entry = ttk.Entry(form, width=48)
+        if editing:
+            label_entry.insert(0, str(entry.get("label", "")) if isinstance(entry, dict) else "")
+        label_entry.grid(row=row + 1, column=0, sticky="we", pady=(2, 0))
+        row += 2
+
+        tk.Label(form, text="Status", bg=BG, fg=MUTED, font=("Segoe UI", 9)).grid(row=row, column=0, sticky="w", pady=(10, 0))
+        status_box = ttk.Combobox(form, values=["Active", "Dead"], state="readonly")
+        status_box.set("Dead" if editing and key_status(entry) == "dead" else "Active")
+        status_box.grid(row=row + 1, column=0, sticky="we", pady=(2, 0))
         form.columnconfigure(0, weight=1)
 
         error_label = tk.Label(dialog, text="", bg=BG, fg=ERR, font=("Segoe UI", 9))
@@ -421,21 +521,34 @@ class AdminConsole(tk.Tk):
 
         def save():
             try:
-                add_key_entry(KEY_FILES[provider], key_entry.get(), label_entry.get())
+                if editing:
+                    update_key_meta(
+                        KEY_FILES[provider], key_value(entry),
+                        label_entry.get(), status_box.get().lower(),
+                    )
+                else:
+                    add_key_entry(KEY_FILES[provider], key_entry.get(), label_entry.get())
             except ValueError as exc:
                 error_label.configure(text=str(exc))
                 return
             dialog.destroy()
             self.refresh_all()
-            self.set_status(f"Key added to {provider}_keys.json — live on the next request.")
+            self.set_status(f"Key {'updated' if editing else 'added'} in {provider}_keys.json — live on the next request.")
 
         buttons = tk.Frame(dialog, bg=BG)
         buttons.pack(fill="x", padx=18, pady=12)
         _dark_button(buttons, "Cancel", dialog.destroy).pack(side="right")
-        _dark_button(buttons, "Add Key", save, primary=True).pack(side="right", padx=(0, 8))
+        _dark_button(buttons, "Save" if editing else "Add Key", save, primary=True).pack(side="right", padx=(0, 8))
         dialog.bind("<Return>", lambda _e: save())
         dialog.bind("<Escape>", lambda _e: dialog.destroy())
-        key_entry.focus_set()
+        (label_entry if editing else key_entry).focus_set()
+
+    def edit_selected_key(self, provider):
+        _iid, entry = self._selected_entry(provider)
+        if entry is None:
+            self.set_status("Select a key first.", warn=True)
+            return
+        self._key_dialog(provider, entry)
 
     def delete_selected_key(self, provider):
         _iid, entry = self._selected_entry(provider)
@@ -462,12 +575,13 @@ class AdminConsole(tk.Tk):
     def _build_models_tab(self):
         top = tk.Frame(self.tab_models, bg=BG)
         top.pack(fill="x", pady=(6, 4))
-        tk.Label(top, text="Built-in catalogue + models from custom_models.json (hot-reloaded by the backend).",
+        tk.Label(top, text="Built-in catalogue + custom_models.json overrides — hot-reloaded by the backend.",
                  bg=BG, fg=MUTED, font=("Segoe UI", 9)).pack(side="left")
 
         toolbar = tk.Frame(self.tab_models, bg=BG)
         toolbar.pack(fill="x", pady=(4, 8))
-        _dark_button(toolbar, "+  Add Model", self.add_model_dialog, primary=True, small=True).pack(side="left", padx=(0, 6))
+        _dark_button(toolbar, "+  Add Model", lambda: self._model_dialog("add"), primary=True, small=True).pack(side="left", padx=(0, 6))
+        _dark_button(toolbar, "✎  Edit Selected", self.edit_selected_model, small=True).pack(side="left", padx=(0, 6))
         _dark_button(toolbar, "Delete Custom Model", self.delete_selected_model, small=True).pack(side="left")
         self.models_count = tk.Label(toolbar, text="", bg=BG, fg=MUTED, font=("Segoe UI", 9))
         self.models_count.pack(side="right")
@@ -477,9 +591,9 @@ class AdminConsole(tk.Tk):
         columns = ("id", "name", "provider", "input", "output", "context", "upstream", "source")
         tree = ttk.Treeview(frame, columns=columns, show="headings", selectmode="browse")
         headings = {
-            "id": ("Model ID", 240), "name": ("Name", 170), "provider": ("Provider", 110),
+            "id": ("Model ID", 235), "name": ("Name", 165), "provider": ("Provider", 105),
             "input": ("Input $/1M", 90), "output": ("Output $/1M", 95),
-            "context": ("Context", 80), "upstream": ("Upstream", 100), "source": ("Source", 90),
+            "context": ("Context", 75), "upstream": ("Upstream", 95), "source": ("Source", 85),
         }
         for key, (label, width) in headings.items():
             tree.heading(key, text=label)
@@ -500,11 +614,7 @@ class AdminConsole(tk.Tk):
         builtin = get_builtin_models()
         custom = load_custom_models(CUSTOM_MODELS_FILE)
         custom_ids = {m["id"] for m in custom}
-        rows = []
-        for model in builtin:
-            rows.append((model, "builtin"))
-        for model in custom:
-            rows.append((model, "custom"))
+        rows = [(model, "builtin") for model in builtin] + [(model, "custom") for model in custom]
         for model, source in rows:
             if source == "builtin" and model["id"] in custom_ids:
                 continue
@@ -517,68 +627,114 @@ class AdminConsole(tk.Tk):
             self.model_rows[iid] = (model, source)
         self.models_count.configure(text=f"{len(rows)} models · {len(custom)} custom")
 
-    def add_model_dialog(self):
+    # ---- Add / Edit model dialog (shared) ----
+    def _model_dialog(self, mode, model=None, source=None):
+        editing = mode == "edit"
         dialog = tk.Toplevel(self)
-        dialog.title("Add model")
+        dialog.title("Edit model" if editing else "Add model")
         dialog.configure(bg=BG)
-        dialog.geometry(self._centered(520, 470))
+        dialog.geometry(self._centered(540, 560))
         dialog.transient(self)
         dialog.grab_set()
 
-        tk.Label(dialog, text="Add a model to custom_models.json", bg=BG, fg=TEXT, font=FONT_BOLD).pack(anchor="w", padx=20, pady=(16, 2))
-        tk.Label(dialog, text="The backend hot-reloads this file when it changes — no restart.",
-                 bg=BG, fg=MUTED, font=("Segoe UI", 9)).pack(anchor="w", padx=20)
+        tk.Label(dialog, text=("Edit model — " + model["id"]) if editing else "Add a model to custom_models.json",
+                 bg=BG, fg=TEXT, font=FONT_BOLD).pack(anchor="w", padx=20, pady=(16, 2))
+        subtitle = ("Saving writes an override entry with the same ID (works for built-in models too)."
+                    if editing else
+                    "The backend hot-reloads this file when it changes — no restart.")
+        tk.Label(dialog, text=subtitle, bg=BG, fg=MUTED, font=("Segoe UI", 9),
+                 wraplength=480, justify="left").pack(anchor="w", padx=20)
 
         form = tk.Frame(dialog, bg=BG)
-        form.pack(fill="both", expand=True, padx=20, pady=12)
-        fields = [
-            ("id", "Model ID *", "e.g. grok-5-mini"),
-            ("name", "Display name *", "e.g. Grok 5 Mini"),
-            ("provider", "Provider (vendor)", "e.g. xAI / OpenAI / Anthropic"),
-            ("input", "Input price $/1M *", "0.50"),
-            ("output", "Output price $/1M *", "1.50"),
-            ("context", "Context window", "128K"),
-            ("speed", "Speed tok/s", "150"),
-        ]
-        entries = {}
-        for row, (key, label, hint) in enumerate(fields):
-            tk.Label(form, text=label, bg=BG, fg=MUTED, font=("Segoe UI", 9)).grid(row=row * 2, column=0, sticky="w", pady=(6, 0))
-            entry = ttk.Entry(form, width=44)
-            entry.grid(row=row * 2 + 1, column=0, sticky="we", pady=(2, 0))
-            entries[key] = entry
-        tk.Label(form, text="Upstream provider (routing)", bg=BG, fg=MUTED, font=("Segoe UI", 9)).grid(row=len(fields) * 2, column=0, sticky="w", pady=(8, 0))
-        upstream = ttk.Combobox(form, values=["nightrouter", "exosai"], state="readonly")
-        upstream.set("nightrouter")
-        upstream.grid(row=len(fields) * 2 + 1, column=0, sticky="we", pady=(2, 0))
-        form.columnconfigure(0, weight=1)
-        entries["id"].insert(0, "")
-        entries["provider"].insert(0, "Custom")
-        entries["input"].insert(0, "0.00")
-        entries["output"].insert(0, "0.00")
-        entries["context"].insert(0, "128K")
-        entries["speed"].insert(0, "100")
+        form.pack(fill="both", expand=True, padx=20, pady=10)
 
-        error_label = tk.Label(dialog, text="", bg=BG, fg=ERR, font=("Segoe UI", 9), wraplength=460, justify="left")
+        def add_field(row, label, hint="", readonly_value=None):
+            tk.Label(form, text=label, bg=BG, fg=MUTED, font=("Segoe UI", 9)).grid(row=row * 2, column=0, sticky="w", pady=(6, 0))
+            entry = ttk.Entry(form, width=46)
+            if readonly_value is not None:
+                entry.insert(0, readonly_value)
+                entry.state(["readonly"])
+            entry.grid(row=row * 2 + 1, column=0, sticky="we", pady=(2, 0))
+            return entry
+
+        routing_map, default_provider = get_builtin_routing()
+
+        if editing:
+            id_entry = add_field(0, "Model ID (read-only — cannot change)", readonly_value=model["id"])
+        else:
+            id_entry = add_field(0, "Model ID *")
+        name_entry = add_field(1, "Display name *")
+        provider_entry = add_field(2, "Provider (vendor)")
+        input_entry = add_field(3, "Input price $/1M *")
+        output_entry = add_field(4, "Output price $/1M *")
+        context_entry = add_field(5, "Context window")
+        speed_entry = add_field(6, "Speed tok/s (kept from the source model)"
+                                if editing else "Speed tok/s")
+
+        tk.Label(form, text="Upstream provider (routing)", bg=BG, fg=MUTED, font=("Segoe UI", 9)).grid(row=14, column=0, sticky="w", pady=(8, 0))
+        upstream = ttk.Combobox(form, values=["nightrouter", "exosai"], state="readonly")
+        upstream.grid(row=15, column=0, sticky="we", pady=(2, 0))
+        form.columnconfigure(0, weight=1)
+
+        if editing:
+            name_entry.insert(0, str(model.get("name", "")))
+            provider_entry.insert(0, str(model.get("provider", "")))
+            input_entry.insert(0, f"{float(model.get('input', 0)):.2f}")
+            output_entry.insert(0, f"{float(model.get('output', 0)):.2f}")
+            context_entry.insert(0, str(model.get("context", "")))
+            speed_entry.insert(0, str(model.get("speed", 100)))
+            current_upstream = model.get("upstream") if source == "custom" else routing_map.get(model["id"], default_provider)
+            upstream.set(current_upstream if current_upstream in ("nightrouter", "exosai") else "nightrouter")
+        else:
+            provider_entry.insert(0, "Custom")
+            input_entry.insert(0, "0.00")
+            output_entry.insert(0, "0.00")
+            context_entry.insert(0, "128K")
+            speed_entry.insert(0, "100")
+            upstream.set("nightrouter")
+
+        error_label = tk.Label(dialog, text="", bg=BG, fg=ERR, font=("Segoe UI", 9), wraplength=480, justify="left")
         error_label.pack(anchor="w", padx=20)
 
         def save():
-            model = {key: entry.get() for key, entry in entries.items()}
-            model["upstream"] = upstream.get()
+            payload = {
+                "id": str(model["id"]) if editing else id_entry.get(),
+                "name": name_entry.get(),
+                "provider": provider_entry.get(),
+                "input": input_entry.get(),
+                "output": output_entry.get(),
+                "context": context_entry.get(),
+                "speed": speed_entry.get(),
+                "upstream": upstream.get(),
+            }
             try:
-                add_custom_model(CUSTOM_MODELS_FILE, model)
+                if editing:
+                    update_custom_model(CUSTOM_MODELS_FILE, payload)
+                else:
+                    add_custom_model(CUSTOM_MODELS_FILE, payload)
             except ValueError as exc:
                 error_label.configure(text=str(exc))
                 return
             dialog.destroy()
             self.refresh_all()
-            self.set_status(f"Model '{model['id']}' saved — backend will serve it on the next request.")
+            self.set_status(f"Model '{payload['id']}' {'updated' if editing else 'saved'} — backend serves it on the next request.")
 
         buttons = tk.Frame(dialog, bg=BG)
         buttons.pack(fill="x", padx=20, pady=12)
         _dark_button(buttons, "Cancel", dialog.destroy).pack(side="right")
-        _dark_button(buttons, "Save Model", save, primary=True).pack(side="right", padx=(0, 8))
+        _dark_button(buttons, "Save" if editing else "Save Model", save, primary=True).pack(side="right", padx=(0, 8))
         dialog.bind("<Escape>", lambda _e: dialog.destroy())
-        entries["id"].focus_set()
+        (name_entry if editing else id_entry).focus_set()
+
+    def edit_selected_model(self):
+        selection = self.models_tree.selection()
+        if not selection:
+            self.set_status("Select a model first.", warn=True)
+            return
+        model, source = self.model_rows.get(selection[0], (None, None))
+        if not model:
+            return
+        self._model_dialog("edit", model, source)
 
     def delete_selected_model(self):
         selection = self.models_tree.selection()
@@ -587,7 +743,7 @@ class AdminConsole(tk.Tk):
             return
         model, source = self.model_rows.get(selection[0], ({}, "builtin"))
         if source != "custom":
-            self.set_status("Built-in models cannot be deleted here.", warn=True)
+            self.set_status("Built-in models cannot be deleted here — edit them instead (override).", warn=True)
             return
         if not messagebox.askyesno("Delete model", f"Delete '{model['id']}' from custom_models.json?", parent=self):
             return
@@ -625,9 +781,10 @@ class AdminConsole(tk.Tk):
         notes.pack(fill="x")
         text = (
             "Keys  — backend/app.py reads nightrouter_keys.json and exosai_keys.json on every request, "
-            "so adding or deleting a key here is effective immediately.\n"
+            "so adding, editing or deleting a key here is effective immediately.\n"
             "Models — backend/app.py calls refresh_models(): whenever custom_models.json changes (mtime), "
-            "it rebuilds the catalogue and pricing, including the /v1/models response and chat validation.\n\n"
+            "it rebuilds the catalogue and pricing. A custom entry overrides the built-in model with the "
+            "same ID, so editing a built-in (e.g. grok-4.6) works without touching app.py.\n\n"
             "Key status (Active/Dead) is stored in the JSON for management purposes; the current backend "
             "retries every key in the pool on 401/403/429 regardless of this field."
         )
@@ -664,7 +821,13 @@ class AdminConsole(tk.Tk):
 
 
 def main():
-    app = AdminConsole()
+    initial_tab = ""
+    if "--tab" in sys.argv:
+        try:
+            initial_tab = sys.argv[sys.argv.index("--tab") + 1].lower()
+        except IndexError:
+            initial_tab = ""
+    app = AdminConsole(initial_tab=initial_tab)
     app.mainloop()
 
 
