@@ -19,7 +19,7 @@ Copy it together with `console_config.json` (created on first run) to any folder
   "project_root": "C:\\path\\to\\NovaCompute",
   "backend_url": "http://127.0.0.1:8080",
   "admin_email": "admin@novacompute.io",
-  "admin_password": "NovaAdmin!2026"
+  "admin_password": "change-me"
 }
 ```
 
@@ -41,7 +41,7 @@ The same account opens the web console at `/admin.html`:
 
 ```
 admin@novacompute.io
-NovaAdmin!2026
+(password in console_config.json)
 ```
 
 The credentials are shown in the sidebar and on Dashboard/Settings, with Copy buttons.

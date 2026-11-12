@@ -70,7 +70,7 @@ impl Default for Config {
             }),
             backend_url: "http://127.0.0.1:8080".to_string(),
             admin_email: "admin@novacompute.io".to_string(),
-            admin_password: "NovaAdmin!2026".to_string(),
+            admin_password: "change-me".to_string(),
         }
     }
 }
