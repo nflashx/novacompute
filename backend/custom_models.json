@@ -102,23 +102,6 @@
     "upstream_id": "deepseek-v4.1-flash-1017-free"
   },
   {
-    "id": "glyph-cluster-free",
-    "name": "Glyph Cluster",
-    "provider": "Stealth",
-    "context": "256K",
-    "speed": 0,
-    "input": 0.0,
-    "output": 0.0,
-    "category": "chat",
-    "tag": "Free",
-    "note": "Free tier \u00b7 rate limited",
-    "price_unit": "",
-    "image": false,
-    "video": false,
-    "upstream": "bazaarlink",
-    "upstream_id": "glyph-cluster"
-  },
-  {
     "id": "ernie-5.5-flash",
     "name": "ERNIE-5.5-Flash",
     "provider": "Baidu",
@@ -134,40 +117,6 @@
     "video": false,
     "upstream": "nagaai",
     "upstream_id": "baidu/ernie-5.5-flash-preview:free"
-  },
-  {
-    "id": "lfm3-1.7b-free",
-    "name": "LFM3 1.7B",
-    "provider": "Liquid AI",
-    "context": "256K",
-    "speed": 0,
-    "input": 0.0,
-    "output": 0.0,
-    "category": "chat",
-    "tag": "Free",
-    "note": "Free tier \u00b7 rate limited",
-    "price_unit": "",
-    "image": false,
-    "video": false,
-    "upstream": "nagaai",
-    "upstream_id": "liquid/lfm-3-1.7b:free"
-  },
-  {
-    "id": "flint-free",
-    "name": "Flint",
-    "provider": "Recursive",
-    "context": "256K",
-    "speed": 0,
-    "input": 0.0,
-    "output": 0.0,
-    "category": "code",
-    "tag": "Free",
-    "note": "Free tier \u00b7 rate limited",
-    "price_unit": "",
-    "image": false,
-    "video": false,
-    "upstream": "nagaai",
-    "upstream_id": "recursive/flint-v1.0:free"
   },
   {
     "id": "nemotron-3.5-super-vl-free",
@@ -204,23 +153,6 @@
     "upstream_id": "dots-studio/dots-3-note-preview:free"
   },
   {
-    "id": "lfm2.5-2.6b-free",
-    "name": "LFM2.5 2.6B",
-    "provider": "Liquid AI",
-    "context": "64K",
-    "speed": 0,
-    "input": 0.0,
-    "output": 0.0,
-    "category": "chat",
-    "tag": "Free",
-    "note": "Free tier \u00b7 rate limited",
-    "price_unit": "",
-    "image": false,
-    "video": false,
-    "upstream": "nagaai",
-    "upstream_id": "liquid/lfm-2.5-2.6b:free"
-  },
-  {
     "id": "nemotron-3.5-lightning-free",
     "name": "Nemotron 3.5 Lightning",
     "provider": "NVIDIA",
@@ -238,23 +170,6 @@
     "upstream_id": "nvidia/nemotron-3.5-lightning:free"
   },
   {
-    "id": "north-mini-code-free",
-    "name": "North Mini Code",
-    "provider": "Cohere",
-    "context": "256K",
-    "speed": 0,
-    "input": 0.0,
-    "output": 0.0,
-    "category": "code",
-    "tag": "Free",
-    "note": "Free tier \u00b7 rate limited",
-    "price_unit": "",
-    "image": false,
-    "video": false,
-    "upstream": "nagaai",
-    "upstream_id": "cohere/north-mini-code:free"
-  },
-  {
     "id": "nemotron-3-ultra-free",
     "name": "Nemotron 3 Ultra",
     "provider": "NVIDIA",
@@ -270,40 +185,6 @@
     "video": false,
     "upstream": "nagaai",
     "upstream_id": "nvidia/nemotron-3-ultra-550b-a55b:free"
-  },
-  {
-    "id": "nemotron-3-nano-omni-free",
-    "name": "Nemotron 3 Nano Omni",
-    "provider": "NVIDIA",
-    "context": "256K",
-    "speed": 0,
-    "input": 0.0,
-    "output": 0.0,
-    "category": "chat",
-    "tag": "Free",
-    "note": "Free tier \u00b7 rate limited",
-    "price_unit": "",
-    "image": true,
-    "video": false,
-    "upstream": "nagaai",
-    "upstream_id": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free"
-  },
-  {
-    "id": "gemma-4-26b-free",
-    "name": "Gemma 4 26B A4B",
-    "provider": "Google",
-    "context": "256K",
-    "speed": 0,
-    "input": 0.0,
-    "output": 0.0,
-    "category": "chat",
-    "tag": "Free",
-    "note": "Free tier \u00b7 rate limited",
-    "price_unit": "",
-    "image": true,
-    "video": false,
-    "upstream": "nagaai",
-    "upstream_id": "google/gemma-4-26b-a4b-it:free"
   },
   {
     "id": "omni-moderation",
@@ -341,5 +222,43 @@
   {
     "id": "glm-5.3-flash",
     "hidden": true
+  },
+  {
+    "id": "gemma-4-31b",
+    "hidden": true
+  },
+  {
+    "id": "kimi-3.0-code",
+    "name": "Kimi 3.0 Code",
+    "provider": "Moonshot AI",
+    "context": "\u2014",
+    "speed": 0,
+    "input": 0.76,
+    "output": 3.2,
+    "category": "code",
+    "tag": "New",
+    "note": "Coding model \u00b7 4K output",
+    "price_unit": "",
+    "image": false,
+    "video": false,
+    "upstream": "airforce",
+    "upstream_id": "kimi-k2.7-code"
+  },
+  {
+    "id": "llama-instant",
+    "name": "Meta Llama Instant",
+    "provider": "Meta",
+    "context": "4K",
+    "speed": 0,
+    "input": 0.0,
+    "output": 0.0,
+    "category": "chat",
+    "tag": "Free",
+    "note": "Fast free Llama \u00b7 4K output",
+    "price_unit": "",
+    "image": false,
+    "video": false,
+    "upstream": "airforce",
+    "upstream_id": "llama-instant"
   }
 ]

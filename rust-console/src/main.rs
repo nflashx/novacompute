@@ -21,7 +21,7 @@ const GREEN: egui::Color32 = egui::Color32::from_rgb(52, 211, 153);
 const AMBER: egui::Color32 = egui::Color32::from_rgb(251, 191, 36);
 const RED: egui::Color32 = egui::Color32::from_rgb(251, 113, 133);
 
-const PROVIDERS: [(&str, &str); 7] = [
+const PROVIDERS: [(&str, &str); 8] = [
     ("nightrouter", "NightRouter"),
     ("exosai", "ExosAI"),
     ("mistral", "Mistral"),
@@ -29,6 +29,7 @@ const PROVIDERS: [(&str, &str); 7] = [
     ("furry", "Furry"),
     ("bazaarlink", "BazaarLink"),
     ("nagaai", "NagaAI"),
+    ("airforce", "ApiAirforce"),
 ];
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -578,7 +579,7 @@ impl App {
         ui.add_space(12.0);
         ui.columns(4, |cols| {
             let keys: usize = self.provider_keys.values().map(Vec::len).sum();
-            stat_card(&mut cols[0], "PROVIDER KEYS", &keys.to_string(), "across 7 upstreams", ACCENT);
+            stat_card(&mut cols[0], "PROVIDER KEYS", &keys.to_string(), "across 8 upstreams", ACCENT);
             stat_card(&mut cols[1], "MODELS", &self.models.len().to_string(), "live catalogue", CYAN);
             stat_card(&mut cols[2], "FREE SEATS", &format!("{}/{}", claimed, limit), &format!("{} remaining", remaining), GREEN);
             stat_card(&mut cols[3], "BALANCES", &money(num(&self.overview, "total_balance")), "customer balances", AMBER);

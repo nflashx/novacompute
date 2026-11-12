@@ -10,7 +10,7 @@
 
 **Dashboard:** [https://novarouter.cc.cd/dashboard.html](https://novarouter.cc.cd/dashboard.html)
 
-NovaCompute gives you one OpenAI-compatible endpoint for 30 models — 25 of them free. Create an account, get an API key, and send your first request in under a minute. The first **50 customer accounts** get the founding free plan; after that, access is pay-as-you-go or subscription.
+NovaCompute gives you one OpenAI-compatible endpoint for 24 models — 18 of them free. Create an account, get an API key, and send your first request in under a minute. The first **50 customer accounts** get the founding free plan; after that, access is pay-as-you-go or subscription.
 
 No credit card is required to claim a founding free seat.
 
@@ -43,9 +43,9 @@ After the 50 seats are claimed, new accounts are **pay-as-you-go**: add credit o
 
 ## Models and pricing
 
-The live catalogue currently has **30 models: 25 free, 15 with image input and 1 with video input**. Prices are per **1M tokens** unless marked per 1,000 characters.
+The live catalogue currently has **24 models: 18 free, 12 with image input and 1 with video input**. Prices are per **1M tokens** unless marked per 1,000 characters.
 
-**Free ($0.00):** GPT-5.6, DeepSeek V4.1, DeepSeek V4.1 1017, DeepSeek V4 Flash, DeepSeek V4 Flash 0731, DeepSeek V4 Flash Vision, DeepSeek V4 Pro, DeepSeek V4 Pro 0813, Mistral Large 4, Gemma 4 31B, Gemma 4 26B A4B, Qwen 3.7, Gemini 2.5 Flash, Glyph Cluster, ERNIE-5.5-Flash, LFM3 1.7B, Flint, Nemotron 3.5 Super VL, Nemotron 3.5 Lightning, Nemotron 3 Ultra, Nemotron 3 Nano Omni, Dots3 Note Preview, LFM2.5 2.6B, North Mini Code.
+**Free ($0.00):** GPT-5.6, DeepSeek V4.1, DeepSeek V4.1 1017, DeepSeek V4 Flash, DeepSeek V4 Flash 0731, DeepSeek V4 Flash Vision, DeepSeek V4 Pro, DeepSeek V4 Pro 0813, Mistral Large 4, Qwen 3.7, Gemini 2.5 Flash, ERNIE-5.5-Flash, Nemotron 3.5 Super VL, Nemotron 3.5 Lightning, Nemotron 3 Ultra, Dots3 Note Preview, Meta Llama Instant.
 
 **Moderation:** Omni Moderation is free through `POST /v1/moderations` (not chat completions).
 
@@ -56,6 +56,7 @@ The live catalogue currently has **30 models: 25 free, 15 with image input and 1
 | GPT-6 | $0.08 | $0.40 |
 | Grok 4.6 | $1.70 | $5.10 |
 | Mercury 3 | $0.10 | $0.35 |
+| Kimi 3.0 Code | $0.76 | $3.20 |
 
 **Text-to-speech:** Gemini 3.8 Flash-Lite TTS at $0.0055 / 1k chars and Gemini 3.8 Flash TTS at $0.0080 / 1k chars via `POST /v1/audio/speech`.
 

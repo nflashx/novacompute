@@ -287,6 +287,10 @@ PROVIDERS = {
         "url": "https://api.naga.ac/v1/chat/completions",
         "keys_file": os.path.join(BASE_DIR, "nagaai_keys.json"),
     },
+    "airforce": {
+        "url": "https://api.airforce/v1/chat/completions",
+        "keys_file": os.path.join(BASE_DIR, "airforce_keys.json"),
+    },
 }
 
 # ================= DANH SÁCH MODEL & GIÁ =================
