@@ -22,7 +22,7 @@
   const FALLBACK_MODELS = [
     { id: "gpt-5.6-luna", name: "GPT-5.6", provider: "OpenAI", color: "#10a37f", context: "900K", speed: 8.03, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: true, video: false, note: "", quota_multiplier: 1 },
     { id: "grok-4.6", name: "Grok 4.6", provider: "xAI", color: "#f43f5e", context: "500K", speed: 0.68, input: 1.7, output: 5.1, tag: null, category: "chat", image: true, video: false, note: "", quota_multiplier: 100 },
-    { id: "deepseek-v4.1-flash", name: "DeepSeek V4.1", provider: "DeepSeek", color: "#4d6bfe", context: "1M", speed: 58.08, input: 0.0, output: 0.0, tag: "Free", category: "code", image: false, video: false, note: "", quota_multiplier: 1 },
+    { id: "deepseek-v4.1-flash", name: "DeepSeek V4.1", provider: "DeepSeek", color: "#4d6bfe", context: "1M", speed: 58.08, input: 0.0, output: 0.0, tag: "Free", category: "code", image: false, video: false, note: "Free · live on NightRouter", quota_multiplier: 1 },
     { id: "mistral-large-4", name: "Mistral Large 4", provider: "Mistral AI", color: "#ff7000", context: "1M", speed: 76.47, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: true, video: false, note: "", quota_multiplier: 1 },
     { id: "qwen/qwen3.7-flash:free", name: "Qwen 3.7", provider: "Alibaba", color: "#6366f1", context: "1M", speed: 41.42, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: true, video: false, note: "Free · image input", quota_multiplier: 1 },
     { id: "gemini-3.8-flash-lite-tts", name: "Gemini 3.8 Flash-Lite TTS", provider: "Google", color: "#4285f4", context: "—", speed: 0, input: 0.0, output: 0.0055, tag: "Sub", category: "tts", image: false, video: false, note: "Free with subscription · up to 100 req/day", price_unit: "1k_chars", quota_multiplier: 1 },
@@ -39,16 +39,16 @@
     { id: "nemotron-3.5-lightning-free", name: "Nemotron 3.5 Lightning", provider: "NVIDIA", color: "#76b900", context: "1M", speed: 48.91, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: false, video: false, note: "Free tier · rate limited", quota_multiplier: 1 },
     { id: "nemotron-3-ultra", name: "Nemotron 3 Ultra", provider: "NVIDIA", color: "#76b900", context: "1M", speed: 14.39, input: 0.03, output: 0.12, tag: "New", category: "chat", image: false, video: false, note: "Paid · text only", quota_multiplier: 1 },
     { id: "omni-moderation", name: "Omni Moderation", provider: "OpenAI", color: "#10a37f", context: "—", speed: 0, input: 0.0, output: 0.0, tag: "Free", category: "moderation", image: false, video: false, note: "Free moderation API", quota_multiplier: 1 },
-    { id: "claude-opus-5.5", name: "Claude Opus 5.5", provider: "Anthropic", color: "#8b5cf6", context: "—", speed: 26.27, input: 3.2, output: 16.0, tag: "New", category: "chat", image: true, video: false, note: "Paid · vision", quota_multiplier: 320 },
-    { id: "claude-sonnet-5.5", name: "Claude Sonnet 5.5", provider: "Anthropic", color: "#8b5cf6", context: "—", speed: 32.07, input: 1.8, output: 9.0, tag: "New", category: "chat", image: true, video: false, note: "Paid · vision", quota_multiplier: 180 },
-    { id: "gemini-4-argon", name: "Gemini 4 Argon", provider: "Google", color: "#4285f4", context: "—", speed: 5.5, input: 0.4, output: 1.2, tag: "New", category: "chat", image: true, video: false, note: "Paid · vision", quota_multiplier: 25 },
-    { id: "glm-5.3-flash", name: "GLM 5.3 FLASHX", provider: "Zhipu", color: "#0ea5e9", context: "—", speed: 25.06, input: 0.1, output: 0.4, tag: "New", category: "chat", image: false, video: false, note: "Paid · text only", quota_multiplier: 2 },
+    { id: "claude-opus-5.5", name: "Claude Opus 5.5", provider: "Anthropic", color: "#8b5cf6", context: "1M", speed: 26.27, input: 3.2, output: 16.0, tag: "New", category: "chat", image: true, video: false, note: "Paid · vision", quota_multiplier: 320 },
+    { id: "claude-sonnet-5.5", name: "Claude Sonnet 5.5", provider: "Anthropic", color: "#8b5cf6", context: "1M", speed: 32.07, input: 1.8, output: 9.0, tag: "New", category: "chat", image: true, video: false, note: "Paid · vision", quota_multiplier: 180 },
+    { id: "gemini-4-argon", name: "Gemini 4 Argon", provider: "Google", color: "#4285f4", context: "1M", speed: 5.5, input: 0.4, output: 1.2, tag: "New", category: "chat", image: true, video: false, note: "Paid · vision", quota_multiplier: 25 },
+    { id: "glm-5.3-flash", name: "GLM 5.3 FLASHX", provider: "Zhipu", color: "#0ea5e9", context: "1M", speed: 25.06, input: 0.1, output: 0.4, tag: "New", category: "chat", image: false, video: false, note: "Paid · text only", quota_multiplier: 2 },
     { id: "gemini-3.8-flash", name: "Gemini 3.8 Flash", provider: "Google", color: "#4285f4", context: "1M", speed: 86.33, input: 0.05, output: 0.2, tag: "New", category: "chat", image: false, video: false, note: "Paid · text only", quota_multiplier: 1 },
-    { id: "gemini-3.1-flash-lite", name: "Gemini 3.1 Flash Lite", provider: "Google", color: "#4285f4", context: "—", speed: 28.47, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: true, video: false, note: "Free · vision-capable", quota_multiplier: 1 },
-    { id: "qwen-3.8-max-free", name: "Qwen 3.8 Max", provider: "Alibaba", color: "#6366f1", context: "—", speed: 100.99, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: false, video: false, note: "Free tier · rate limited", quota_multiplier: 1 },
-    { id: "kimi-k3", name: "Kimi K3", provider: "Moonshot AI", color: "#8b5cf6", context: "1M", speed: 42.11, input: 0.0, output: 0.0, price_per_request: 0.05, tag: "New", category: "code", image: true, video: true, note: "Per request · vision & video", price_unit: "request", quota_multiplier: 1 },
-    { id: "glm-4-plus", name: "GLM-4 Plus", provider: "Zhipu", color: "#0ea5e9", context: "—", speed: 62.12, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: false, video: false, note: "Free · basic coding", quota_multiplier: 1 },
-    { id: "glm-4-air", name: "GLM-4 Air", provider: "Zhipu", color: "#0ea5e9", context: "—", speed: 60.11, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: false, video: false, note: "Free · basic coding", quota_multiplier: 1 },
+    { id: "gemini-3.1-flash-lite", name: "Gemini 3.1 Flash Lite", provider: "Google", color: "#4285f4", context: "Not published", speed: 28.47, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: true, video: false, note: "Free · vision-capable", quota_multiplier: 1 },
+    { id: "qwen-3.8-max-free", name: "Qwen 3.8 Max", provider: "Alibaba", color: "#6366f1", context: "Not published", speed: 100.99, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: false, video: false, note: "Free tier · rate limited", quota_multiplier: 1 },
+    { id: "kimi-k3", name: "Kimi K3", provider: "Moonshot AI", color: "#8b5cf6", context: "1M", speed: 42.11, input: 0.0, output: 0.0, price_per_request: 0.05, tag: "New", category: "code", image: true, video: true, note: "Vision & video", price_unit: "request", quota_multiplier: 1 },
+    { id: "glm-4-plus", name: "GLM-4 Plus", provider: "Zhipu", color: "#0ea5e9", context: "Not published", speed: 62.12, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: false, video: false, note: "Free · basic coding", quota_multiplier: 1 },
+    { id: "glm-4-air", name: "GLM-4 Air", provider: "Zhipu", color: "#0ea5e9", context: "Not published", speed: 60.11, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: false, video: false, note: "Free · basic coding", quota_multiplier: 1 },
     { id: "minimax-m3.1-flash", name: "MiniMax M3.1 Flash", provider: "MiniMax", color: "#f59e0b", context: "4K", speed: 12.75, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: false, video: false, note: "Free · 4K · BlazeAPI", quota_multiplier: 1 },
     { id: "raon-1-mini", name: "Raon-1 Mini", provider: "Krafton AI", color: "#22d3ee", context: "262K", speed: 117.12, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: false, video: false, note: "Free tier · text only", quota_multiplier: 1 },
     { id: "openjev-0.1", name: "OpenJev Decision", provider: "Codiv", color: "#a78bfa", context: "65K", speed: 0, input: 0.0, output: 0.0, price_per_request: 0.002, tag: "New", category: "decision", image: true, video: false, note: "Paid per request · typed decision", price_unit: "request", quota_multiplier: 1 },
@@ -57,15 +57,15 @@
     { id: "jevk5-0.3", name: "JevK5 Fast", provider: "Codiv", color: "#a78bfa", context: "16K", speed: 0, input: 0.0, output: 0.0, price_per_request: 0.001, tag: "New", category: "decision", image: false, video: false, note: "Paid per request · typed decision", price_unit: "request", quota_multiplier: 1 },
     { id: "s5", name: "S5 PRO", provider: "Maritaca AI", color: "#16a34a", context: "1M", speed: 10.53, input: 0.1, output: 0.4, tag: "New", category: "chat", image: false, video: false, note: "PRO · text only", quota_multiplier: 1 },
     { id: "k-exaone-2.5", name: "K-EXAONE 2.5", provider: "LG AI Research", color: "#c026d3", context: "512K", speed: 8.16, input: 0.2, output: 0.8, tag: "New", category: "chat", image: false, video: false, note: "Paid preview · 512K", quota_multiplier: 1 },
-    { id: "gpt-5.6-sol", name: "GPT-5.6 Sol", provider: "OpenAI", color: "#10a37f", context: "—", speed: 21.87, input: 0.04, output: 0.16, tag: "New", category: "chat", image: false, video: false, note: "Paid · fast route", quota_multiplier: 1 },
-    { id: "gpt-6-luna", name: "GPT-6 Luna", provider: "OpenAI", color: "#10a37f", context: "—", speed: 5.8, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: true, video: false, note: "Free · NightRouter free tier", quota_multiplier: 8 },
+    { id: "gpt-5.6-sol", name: "GPT-5.6 Sol", provider: "OpenAI", color: "#10a37f", context: "900K", speed: 21.87, input: 0.04, output: 0.16, tag: "New", category: "chat", image: true, video: true, note: "Paid · vision & video", quota_multiplier: 1 },
+    { id: "gpt-6-luna", name: "GPT-6 Luna", provider: "OpenAI", color: "#10a37f", context: "900K", speed: 5.8, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: true, video: true, note: "Free · vision & video", quota_multiplier: 8 },
     { id: "mercury-3", name: "Mercury 3", provider: "Inception", color: "#d946ef", context: "1M", speed: 210.83, input: 0.0, output: 0.0, tag: "Free", category: "code", image: false, video: false, note: "Free · diffusion", quota_multiplier: 7 },
-    { id: "claude-haiku-5.5", name: "Claude Haiku 5.5", provider: "Anthropic", color: "#8b5cf6", context: "—", speed: 19.48, input: 0.1, output: 0.5, tag: "New", category: "chat", image: true, video: false, note: "Paid · vision", quota_multiplier: 1 },
-    { id: "grok-4.7", name: "Grok 4.7", provider: "xAI", color: "#f43f5e", context: "—", speed: 7.78, input: 2.0, output: 6.0, tag: "New", category: "chat", image: true, video: false, note: "Paid · vision", quota_multiplier: 1 },
-    { id: "gpt-6-astra", name: "GPT-6 Astra", provider: "OpenAI", color: "#10a37f", context: "—", speed: 4.17, input: 0.1, output: 0.5, tag: "New", category: "chat", image: true, video: false, note: "Paid · vision", quota_multiplier: 1 },
-    { id: "gpt-6.1-sol", name: "GPT-6.1 Sol", provider: "OpenAI", color: "#10a37f", context: "—", speed: 5.02, input: 0.12, output: 0.6, tag: "New", category: "chat", image: true, video: false, note: "Paid · vision", quota_multiplier: 1 },
-    { id: "glm-5.3", name: "GLM 5.3", provider: "Zhipu", color: "#0ea5e9", context: "—", speed: 19.42, input: 0.15, output: 0.6, tag: "New", category: "chat", image: false, video: false, note: "Paid · text only", quota_multiplier: 1 },
-    { id: "kimi-2.7", name: "Kimi 2.7", provider: "Moonshot AI", color: "#8b5cf6", context: "—", speed: 6.01, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: true, video: false, note: "Free · NightRouter free tier", quota_multiplier: 1 },
+    { id: "claude-haiku-5.5", name: "Claude Haiku 5.5", provider: "Anthropic", color: "#8b5cf6", context: "Not published", speed: 19.48, input: 0.1, output: 0.5, tag: "New", category: "chat", image: true, video: false, note: "Paid · vision", quota_multiplier: 1 },
+    { id: "grok-4.7", name: "Grok 4.7", provider: "xAI", color: "#f43f5e", context: "500K", speed: 7.78, input: 2.0, output: 6.0, tag: "New", category: "chat", image: true, video: false, note: "Paid · vision", quota_multiplier: 1 },
+    { id: "gpt-6-astra", name: "GPT-6 Astra", provider: "OpenAI", color: "#10a37f", context: "Not published", speed: 4.17, input: 0.1, output: 0.5, tag: "New", category: "chat", image: true, video: true, note: "Paid · vision & video", quota_multiplier: 1 },
+    { id: "gpt-6.1-sol", name: "GPT-6.1 Sol", provider: "OpenAI", color: "#10a37f", context: "Not published", speed: 5.02, input: 0.12, output: 0.6, tag: "New", category: "chat", image: true, video: true, note: "Paid · vision & video", quota_multiplier: 1 },
+    { id: "glm-5.3", name: "GLM 5.3", provider: "Zhipu", color: "#0ea5e9", context: "Not published", speed: 19.42, input: 0.15, output: 0.6, tag: "New", category: "chat", image: false, video: false, note: "Paid · text only", quota_multiplier: 1 },
+    { id: "kimi-2.7", name: "Kimi 2.7", provider: "Moonshot AI", color: "#8b5cf6", context: "Not published", speed: 6.01, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: true, video: false, note: "Free · NightRouter free tier", quota_multiplier: 1 },
   ];
 
   const FALLBACK_BY_ID = {};
@@ -267,14 +267,37 @@
   }
 
   /** Render rows split into a Free table section and a Paid section. */
+  function familyRank(m) {
+    if (m.category === 'tts') return 99;
+    const s = `${m.name || ''} ${m.id || ''}`.toLowerCase();
+    if (/\bclaude\b|anthropic/.test(s)) return 0;
+    if (/\bgrok\b|xai/.test(s)) return 1;
+    if (/\bgpt|openai/.test(s)) return 2;
+    if (/gemini|google/.test(s)) return 3;
+    if (/deepseek/.test(s)) return 4;
+    if (/\bglm|zhipu/.test(s)) return 5;
+    if (/kimi|moonshot/.test(s)) return 6;
+    if (/qwen|alibaba/.test(s)) return 7;
+    if (/mistral/.test(s)) return 8;
+    if (/minimax/.test(s)) return 9;
+    if (/nemotron|nvidia/.test(s)) return 10;
+    if (/maritaca|\bs5\b/.test(s)) return 11;
+    if (/exaone|lg ai/.test(s)) return 12;
+    if (/raon|krafton/.test(s)) return 13;
+    if (/mercury|inception/.test(s)) return 14;
+    if (/dots/.test(s)) return 15;
+    if (/ernie|baidu/.test(s)) return 16;
+    return 20;
+  }
+
   window.renderModelRowsGrouped = function renderModelRowsGrouped(list) {
     const isFree = (m) => m.input === 0 && m.output === 0 && Number(m.price_per_request || 0) === 0;
     const chat = list.filter((m) => m.category !== 'decision');
     const bySpeed = (a, b) => (Number(b.speed) || 0) - (Number(a.speed) || 0) || String(a.name).localeCompare(String(b.name));
     const paidPrice = (m) => Math.max(Number(m.input || 0), Number(m.output || 0), Number(m.price_per_request || 0));
     const byPrice = (a, b) => paidPrice(b) - paidPrice(a) || bySpeed(a, b);
-    const free = chat.filter(isFree).sort(bySpeed);
-    const paid = chat.filter((m) => !isFree(m)).sort(byPrice);
+    const free = chat.filter(isFree).sort((a, b) => familyRank(a) - familyRank(b) || bySpeed(a, b));
+    const paid = chat.filter((m) => !isFree(m)).sort((a, b) => familyRank(a) - familyRank(b) || byPrice(a, b));
     let html = '';
     if (free.length) {
       html += groupHeader('Free models · $0.00', 'free');

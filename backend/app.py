@@ -2223,7 +2223,7 @@ class NovaHandler(BaseHTTPRequestHandler):
         if not text:
             return self.send_error_json(400, "invalid_request_error", "invalid_input", "'input' text is required.")
         client = self.headers.get("X-Nova-Client", "").strip().lower()
-        if client == "playground":
+        if client == "playground" and not user.get("is_admin"):
             limit = int(os.getenv("NOVA_PLAYGROUND_LIMIT", "5"))
             if self.playground_limit_reached(user, limit):
                 return self.send_error_json(429, "rate_limit_error", "try_limit_reached",
@@ -2388,7 +2388,7 @@ class NovaHandler(BaseHTTPRequestHandler):
         if body is None: return self.send_error_json(400, "invalid_request_error", "invalid_json", "Request body must be valid JSON.")
         
         client = self.headers.get("X-Nova-Client", "").strip().lower()
-        if client == "playground":
+        if client == "playground" and not user.get("is_admin"):
             limit = int(os.getenv("NOVA_PLAYGROUND_LIMIT", "5"))
             if self.playground_limit_reached(user, limit):
                 return self.send_error_json(429, "rate_limit_error", "try_limit_reached",

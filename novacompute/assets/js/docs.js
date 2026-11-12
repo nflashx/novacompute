@@ -60,8 +60,30 @@
 
   function renderModelTable(models) {
     if (!modelRows) return;
+    const rank = (m) => {
+      if (m.category === 'tts') return 99;
+      const s = `${m.name || ''} ${m.id || ''}`.toLowerCase();
+      if (/\bclaude\b|anthropic/.test(s)) return 0;
+      if (/\bgrok\b|xai/.test(s)) return 1;
+      if (/\bgpt|openai/.test(s)) return 2;
+      if (/gemini|google/.test(s)) return 3;
+      if (/deepseek/.test(s)) return 4;
+      if (/\bglm|zhipu/.test(s)) return 5;
+      if (/kimi|moonshot/.test(s)) return 6;
+      if (/qwen|alibaba/.test(s)) return 7;
+      if (/mistral/.test(s)) return 8;
+      if (/minimax/.test(s)) return 9;
+      if (/nemotron|nvidia/.test(s)) return 10;
+      if (/maritaca|\bs5\b/.test(s)) return 11;
+      if (/exaone|lg ai/.test(s)) return 12;
+      if (/raon|krafton/.test(s)) return 13;
+      if (/mercury|inception/.test(s)) return 14;
+      if (/dots/.test(s)) return 15;
+      if (/ernie|baidu/.test(s)) return 16;
+      return 20;
+    };
     const bySpeed = (a, b) => (Number(b.speed) || 0) - (Number(a.speed) || 0) || String(a.name).localeCompare(String(b.name));
-    modelRows.innerHTML = models.slice().sort(bySpeed).map((m) => {
+    modelRows.innerHTML = models.slice().sort((a, b) => rank(a) - rank(b) || bySpeed(a, b)).map((m) => {
       const isFree = m.input === 0 && m.output === 0 && Number(m.price_per_request || 0) === 0;
       const isTts = m.category === 'tts';
       const isRequest = m.price_unit === 'request';
