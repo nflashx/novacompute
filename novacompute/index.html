@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>NovaCompute — One API for the World's Best AI Models</title>
-  <meta name="description" content="NovaCompute — one OpenAI-compatible API for frontier AI models. Provider failover, streaming responses, pay-as-you-go billing." />
+  <meta name="description" content="NovaCompute — one OpenAI-compatible API for frontier AI models. Automatic retries, streaming responses, per-token and per-request billing." />
   <meta name="theme-color" content="#05070e" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='24' y2='24' gradientUnits='userSpaceOnUse'%3E%3Cstop stop-color='%23a78bfa'/%3E%3Cstop offset='1' stop-color='%2322d3ee'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M12 1.5l2.6 7.9 7.9 2.6-7.9 2.6L12 22.5l-2.6-7.9-7.9-2.6 7.9-2.6L12 1.5z' fill='url(%23g)'/%3E%3C/svg%3E" />
 
@@ -15,7 +15,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
 
   <!-- Compiled Tailwind + shared CSS -->
-  <link rel="stylesheet" href="assets/css/tailwind.css?v=6" />
+  <link rel="stylesheet" href="assets/css/tailwind.css?v=8" />
   <link rel="stylesheet" href="assets/css/main.css?v=27" />
 </head>
 
@@ -51,7 +51,7 @@
           </h1>
 
           <p class="reveal reveal-d2 mt-6 max-w-xl text-base leading-relaxed text-slate-400 sm:text-lg">
-            One OpenAI-compatible endpoint for frontier AI models. Provider failover, streaming
+            One OpenAI-compatible endpoint for frontier AI models. Automatic retries, streaming
             responses and per-token billing — so you ship AI features,
             not infrastructure.
           </p>
@@ -70,11 +70,11 @@
           <!-- Stats -->
           <dl class="reveal reveal-d3 mt-14 grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-4">
             <div class="border-l border-white/10 pl-4">
-              <dd class="font-display text-2xl font-bold text-white"><span class="stat-value" data-target="35" data-stat="models">0</span></dd>
+              <dd class="font-display text-2xl font-bold text-white"><span class="stat-value" data-target="36" data-stat="models">0</span></dd>
               <dt class="mt-1 text-xs text-slate-500">Models available</dt>
             </div>
             <div class="border-l border-white/10 pl-4">
-              <dd class="font-display text-2xl font-bold text-white"><span class="stat-value" data-target="29" data-stat="free">0</span></dd>
+              <dd class="font-display text-2xl font-bold text-white"><span class="stat-value" data-target="30" data-stat="free">0</span></dd>
               <dt class="mt-1 text-xs text-slate-500">Free models</dt>
             </div>
             <div class="border-l border-white/10 pl-4">
@@ -146,39 +146,39 @@ stream = client.chat.completions.<span class="tok-fn">create</span>(
             <div class="flex items-center gap-2.5 border-t border-white/[0.06] bg-white/[0.02] px-4 py-2.5 font-mono text-xs text-slate-500">
               <span class="pulse-dot h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
               <span class="text-emerald-400">200 OK</span>
-              <span class="text-slate-700">·</span> TTFB 84ms
-              <span class="text-slate-700">·</span> 1,024 tokens streamed
-              <span class="ml-auto text-slate-600">us-east-1</span>
+              <span class="text-slate-700">·</span> streamed
+              <span class="text-slate-700">·</span> OpenAI-compatible
+              <span class="ml-auto text-slate-600">SSE</span>
             </div>
           </div>
 
           <!-- Floating badges -->
           <div class="float-slow absolute -right-2 -top-7 z-10 hidden items-center gap-2.5 rounded-xl border border-white/10 bg-night-800/90 px-4 py-2.5 text-xs font-medium shadow-card backdrop-blur-md lg:flex">
             <span class="pulse-dot h-2 w-2 rounded-full bg-emerald-400"></span>
-            <span class="text-emerald-300">200 OK</span>
+            <span class="text-emerald-300">OpenAI-compatible</span>
             <span class="text-slate-600">·</span>
-            <span class="font-mono text-slate-300">84 ms</span>
+            <span class="font-mono text-slate-300">one key</span>
           </div>
           <div class="float-slow absolute -bottom-7 -left-3 z-10 hidden items-center gap-2 rounded-xl border border-white/10 bg-night-800/90 px-4 py-2.5 text-xs font-medium shadow-card backdrop-blur-md lg:flex" style="animation-delay:-3s">
             <svg class="h-4 w-4 text-cyan-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"></path></svg>
-            <span class="font-mono text-cyan-300">240 tok/s</span>
-            <span class="text-slate-500">streaming</span>
+            <span class="font-mono text-cyan-300">36 models</span>
+            <span class="text-slate-500">one endpoint</span>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- ============ TRUSTED BY ============ -->
+    <!-- ============ MODEL VENDORS ============ -->
     <section class="relative border-y border-white/[0.06] bg-white/[0.015]">
       <div class="mx-auto max-w-7xl px-6 py-8">
-        <p class="text-center text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-600">Trusted by engineering teams at</p>
+        <p class="text-center text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-600">Models from the labs you already use</p>
         <div class="mt-6 flex flex-wrap items-center justify-center gap-x-10 gap-y-4">
-          <span class="font-display text-lg font-semibold text-slate-500 transition-colors duration-200 hover:text-slate-300">Vertexa</span>
-          <span class="font-display text-lg font-semibold text-slate-500 transition-colors duration-200 hover:text-slate-300">Datawheel</span>
-          <span class="font-display text-lg font-semibold text-slate-500 transition-colors duration-200 hover:text-slate-300">Cortexa</span>
-          <span class="font-display text-lg font-semibold text-slate-500 transition-colors duration-200 hover:text-slate-300">NimbusAI</span>
-          <span class="font-display text-lg font-semibold text-slate-500 transition-colors duration-200 hover:text-slate-300">Quantify</span>
-          <span class="font-display text-lg font-semibold text-slate-500 transition-colors duration-200 hover:text-slate-300">Helios Labs</span>
+          <span class="font-display text-lg font-semibold text-slate-500 transition-colors duration-200 hover:text-slate-300">OpenAI</span>
+          <span class="font-display text-lg font-semibold text-slate-500 transition-colors duration-200 hover:text-slate-300">Anthropic</span>
+          <span class="font-display text-lg font-semibold text-slate-500 transition-colors duration-200 hover:text-slate-300">Google</span>
+          <span class="font-display text-lg font-semibold text-slate-500 transition-colors duration-200 hover:text-slate-300">DeepSeek</span>
+          <span class="font-display text-lg font-semibold text-slate-500 transition-colors duration-200 hover:text-slate-300">Alibaba</span>
+          <span class="font-display text-lg font-semibold text-slate-500 transition-colors duration-200 hover:text-slate-300">Mistral</span>
         </div>
       </div>
     </section>
@@ -194,33 +194,33 @@ stream = client.chat.completions.<span class="tok-fn">create</span>(
             Infrastructure that gets <span class="text-gradient">out of your way</span>
           </h2>
           <p class="reveal reveal-d2 mt-4 leading-relaxed text-slate-400">
-            We handle the provider mess — capacity, outages, rate limits — behind one stable
-            endpoint, so your product never waits on a model vendor.
+            One stable endpoint for chat, vision, speech and decision models. Transient rate
+            limits and 5xx responses retry automatically instead of failing your request.
           </p>
         </div>
 
         <div class="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          <!-- Provider failover -->
+          <!-- Automatic retries -->
           <article class="reveal card-hover glass rounded-2xl p-7">
             <div class="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-gradient-to-br from-violet-500/25 to-cyan-400/10 text-violet-300">
               <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
             </div>
-            <h3 class="mt-5 font-display text-lg font-semibold text-white">Provider failover</h3>
+            <h3 class="mt-5 font-display text-lg font-semibold text-white">Automatic retries</h3>
             <p class="mt-2.5 text-sm leading-relaxed text-slate-400">
-              Requests retry across healthy upstream providers and keys. If one channel fails,
-              the next one takes over automatically — no code changes on your side.
+              A 429 or upstream 5xx gets up to five attempts with backoff and key rotation
+              before it reaches your app.
             </p>
           </article>
 
-          <!-- Auto-Routing -->
+          <!-- Decision API -->
           <article class="reveal reveal-d1 card-hover glass rounded-2xl p-7">
             <div class="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-gradient-to-br from-violet-500/25 to-cyan-400/10 text-violet-300">
               <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 18h1.4c1.3 0 2.5-.6 3.3-1.7l6.1-8.6c.8-1.1 2-1.7 3.3-1.7H22"></path><path d="m18 2 4 4-4 4"></path><path d="M2 6h1.9c1.5 0 2.9.9 3.6 2.2"></path><path d="M22 18h-5.9c-1.3 0-2.6-.7-3.3-1.8l-.5-.8"></path><path d="m18 14 4 4-4 4"></path></svg>
             </div>
-            <h3 class="mt-5 font-display text-lg font-semibold text-white">Auto-Routing Fallback</h3>
+            <h3 class="mt-5 font-display text-lg font-semibold text-white">Decision API</h3>
             <p class="mt-2.5 text-sm leading-relaxed text-slate-400">
-              Requests automatically reroute to the next-best healthy provider mid-outage.
-              Zero code changes, zero dropped requests.
+              Typed classifiers for routing, triage and scoring on a separate endpoint.
+              No free-form prompt parsing.
             </p>
           </article>
 
@@ -231,8 +231,8 @@ stream = client.chat.completions.<span class="tok-fn">create</span>(
             </div>
             <h3 class="mt-5 font-display text-lg font-semibold text-white">Pay-as-you-go Billing</h3>
             <p class="mt-2.5 text-sm leading-relaxed text-slate-400">
-              Per-token pricing with no minimums and no seats. Volume discounts kick in
-              automatically as you scale.
+              Per-token or per-request pricing with no minimums. Top up once and use the same
+              balance across every model.
             </p>
           </article>
 
@@ -263,8 +263,8 @@ stream = client.chat.completions.<span class="tok-fn">create</span>(
               Every frontier model, <span class="text-gradient">one endpoint</span>
             </h2>
             <p class="mt-3 max-w-xl leading-relaxed text-slate-400">
-              Live throughput and per-token pricing measured across our network. Pick a model
-              manually, or let auto-routing choose the fastest healthy provider.
+              One endpoint for chat, vision, TTS and typed decision models. Pricing comes from the live
+              catalogue; availability depends on upstream capacity.
             </p>
           </div>
           <a href="pricing.html" class="btn-ghost shrink-0 rounded-lg px-4 py-2.5 text-sm font-medium text-slate-200">Full pricing →</a>
@@ -299,8 +299,25 @@ stream = client.chat.completions.<span class="tok-fn">create</span>(
         </div>
 
         <p id="models-note" class="reveal mt-4 text-xs text-slate-500">
-          Prices are per 1M tokens on standard tier. Latency measured from us-east-1 over the last 24h.
+          Prices are per 1M tokens unless marked per request or per 1,000 characters. Failed 429/5xx
+          requests retry automatically with key rotation; availability still depends on upstream capacity.
         </p>
+
+        <a href="decision.html" class="reveal group mt-6 flex flex-col gap-4 rounded-2xl border border-white/10 bg-white/[0.02] p-5 transition-colors hover:border-violet-400/30 hover:bg-violet-500/[0.04] sm:flex-row sm:items-center sm:justify-between">
+          <div class="flex items-start gap-3">
+            <span class="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-violet-400/25 bg-violet-500/10 text-violet-300">
+              <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h10M4 18h6"></path><path d="m16 16 2 2 3-4"></path></svg>
+            </span>
+            <div>
+              <p class="text-sm font-semibold text-white">Need typed decisions, not chat?</p>
+              <p class="mt-1 text-xs leading-relaxed text-slate-400">Four free classifiers for routing, triage and scoring on a separate endpoint.</p>
+            </div>
+          </div>
+          <span class="inline-flex shrink-0 items-center gap-1.5 text-xs font-medium text-violet-300 transition-colors group-hover:text-violet-200">
+            Explore decision models
+            <svg class="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
+          </span>
+        </a>
       </div>
     </section>
 
@@ -339,7 +356,7 @@ stream = client.chat.completions.<span class="tok-fn">create</span>(
   <script src="assets/js/effects.js?v=26" defer></script>
   <script src="assets/js/config.js?v=1" defer></script>
   <script src="assets/js/api.js?v=27" defer></script>
-  <script src="assets/js/models-data.js?v=36" defer></script>
-  <script src="assets/js/landing.js?v=31" defer></script>
+  <script src="assets/js/models-data.js?v=38" defer></script>
+  <script src="assets/js/landing.js?v=32" defer></script>
 </body>
 </html>

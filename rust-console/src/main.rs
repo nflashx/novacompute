@@ -40,6 +40,29 @@ const PROVIDERS: [(&str, &str); 16] = [
     ("exaone", "ExaOne"),
 ];
 
+const PROVIDER_LINKS: [(&str, &str); 16] = [
+    ("nightrouter", "https://nightrouter.ai"),
+    ("exosai", "https://api.exosai.tech"),
+    ("mistral", "https://console.mistral.ai"),
+    ("inception", "https://platform.inceptionlabs.ai"),
+    ("furry", "https://ai.furry.edu.gr"),
+    ("bazaarlink", "https://bazaarlink.ai"),
+    ("nagaai", "https://naga.ac"),
+    ("airforce", "https://api.airforce"),
+    ("dreamprompting", "https://dreamprompting.com"),
+    ("crowllm", "https://crowllm.com"),
+    ("aibridge", "https://aibridge-api.com/dashboard.html"),
+    ("routeway", "https://routeway.ai"),
+    ("raon", "https://raon-console.krafton.ai"),
+    ("codiv", "https://codiv.ai/dashboard"),
+    ("maritaca", "https://plataforma.maritaca.ai"),
+    ("exaone", "https://docs.exaone.ai/ko/docs/overview"),
+];
+
+fn provider_link(id: &str) -> Option<&'static str> {
+    PROVIDER_LINKS.iter().find(|(key, _)| *key == id).map(|(_, url)| *url)
+}
+
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum Tab {
     Dashboard,
@@ -836,6 +859,9 @@ impl App {
                         pill(ui, &format!("{} KEYS", keys.len()), if keys.is_empty() { RED } else { GREEN });
                         ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                             ui.label(egui::RichText::new(id).size(11.0).monospace().color(MUTED));
+                            if let Some(url) = provider_link(id) {
+                                ui.hyperlink_to("Provider ↗", url);
+                            }
                         });
                     });
                     ui.add_space(6.0);
@@ -943,6 +969,9 @@ impl App {
                                 ui.vertical(|ui| {
                                     ui.monospace(egui::RichText::new(&id).size(11.0).color(CYAN));
                                     ui.label(egui::RichText::new(if upstream.is_empty() { "—" } else { upstream }).size(10.0).color(MUTED));
+                                    if let Some(url) = provider_link(upstream) {
+                                        ui.hyperlink_to("Provider ↗", url);
+                                    }
                                 });
                                 ui.vertical(|ui| {
                                     let request_price = m["price_per_request"].as_f64().unwrap_or(0.0);
@@ -1050,6 +1079,9 @@ impl App {
                                 ui.selectable_value(&mut self.model_form.upstream, id.to_string(), title);
                             }
                         });
+                    if let Some(url) = provider_link(&self.model_form.upstream) {
+                        ui.hyperlink_to("Open provider page ↗", url);
+                    }
                     ui.end_row();
                     field_label(ui, "Upstream model ID");
                     ui.add(egui::TextEdit::singleline(&mut self.model_form.upstream_id).desired_width(230.0).hint_text("provider's exact ID"));

@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="assets/css/tailwind.css?v=6" />
+  <link rel="stylesheet" href="assets/css/tailwind.css?v=8" />
   <link rel="stylesheet" href="assets/css/main.css?v=27" />
 </head>
 
@@ -202,9 +202,9 @@ console.<span class="tok-fn">log</span>(response.choices[<span class="tok-cmd">0
                 <tr><td class="px-5 py-3">Coding + vision</td><td class="px-4 py-3 font-mono text-xs text-slate-200">kimi-k3</td><td class="px-5 py-3">1M context · IMG + VID · $0.05/request</td></tr>
                 <tr><td class="px-5 py-3">General chat</td><td class="px-4 py-3 font-mono text-xs text-slate-200">gpt-6-luna</td><td class="px-5 py-3">900K context · IMG · $0.08 / $0.40 per 1M</td></tr>
                 <tr><td class="px-5 py-3">Diffusion</td><td class="px-4 py-3 font-mono text-xs text-slate-200">mercury-3</td><td class="px-5 py-3">$0.10 in / $0.35 out per 1M</td></tr>
-                <tr><td class="px-5 py-3">Free multimodal</td><td class="px-4 py-3 font-mono text-xs text-slate-200">qwen/qwen3.7-flash:free</td><td class="px-5 py-3">$0.00 · 1M context · IMG + VID</td></tr>
-                <tr><td class="px-5 py-3">Free image + video</td><td class="px-4 py-3 font-mono text-xs text-slate-200">minimax-m3.1-flash-free</td><td class="px-5 py-3">$0.00 · 42K context · IMG + VID</td></tr>
-                <tr><td class="px-5 py-3">Free vision</td><td class="px-4 py-3 font-mono text-xs text-slate-200">deepseek-v4.1-flash</td><td class="px-5 py-3">$0.00 · 1M context · IMG</td></tr>
+                <tr><td class="px-5 py-3">Free multimodal</td><td class="px-4 py-3 font-mono text-xs text-slate-200">qwen/qwen3.7-flash:free</td><td class="px-5 py-3">$0.00 · 1M context · IMG</td></tr>
+                <tr><td class="px-5 py-3">Free text</td><td class="px-4 py-3 font-mono text-xs text-slate-200">minimax-m3.1-flash-free</td><td class="px-5 py-3">$0.00 · 42K context · text only</td></tr>
+                <tr><td class="px-5 py-3">Free vision</td><td class="px-4 py-3 font-mono text-xs text-slate-200">gemini-3.1-flash-lite</td><td class="px-5 py-3">$0.00 · IMG · verified image input</td></tr>
                 <tr><td class="px-5 py-3">Free long text</td><td class="px-4 py-3 font-mono text-xs text-slate-200">s5-free</td><td class="px-5 py-3">$0.00 · 1M context · text only · limited-time free</td></tr>
                 <tr><td class="px-5 py-3">Preview · Korean/English</td><td class="px-4 py-3 font-mono text-xs text-slate-200">k-exaone-2.5</td><td class="px-5 py-3">512K context · text only · 1 req/s upstream</td></tr>
                 <tr><td class="px-5 py-3">Typed decision</td><td class="px-4 py-3 font-mono text-xs text-slate-200">openjev-0.1</td><td class="px-5 py-3">Separate endpoint · <code class="font-mono text-xs">/v1/systemone</code></td></tr>
@@ -225,7 +225,7 @@ console.<span class="tok-fn">log</span>(response.choices[<span class="tok-cmd">0
   <span class="tok-flag">-H</span> <span class="tok-str">"Authorization: Bearer $NOVA_API_KEY"</span> \
   <span class="tok-flag">-H</span> <span class="tok-str">"Content-Type: application/json"</span> \
   <span class="tok-flag">-d</span> <span class="tok-str">'{
-  <span class="tok-key">"model"</span>: <span class="tok-str">"gemini-3.8-flash"</span>,
+  <span class="tok-key">"model"</span>: <span class="tok-str">"gemini-3.1-flash-lite"</span>,
   <span class="tok-key">"messages"</span>: [{
     <span class="tok-key">"role"</span>: <span class="tok-str">"user"</span>,
     <span class="tok-key">"content"</span>: [
@@ -237,7 +237,7 @@ console.<span class="tok-fn">log</span>(response.choices[<span class="tok-cmd">0
           </div>
           <p class="mt-2 text-xs leading-relaxed text-slate-500">
             Video input is only available on models marked <span class="rounded bg-fuchsia-500/10 px-1.5 py-0.5 font-mono text-[10px] text-fuchsia-300">VID</span>.
-            The accepted video part is provider-specific — contact support for the exact schema before sending video.
+            Kimi K3 accepts a <code class="font-mono text-xs">{"type":"video_url","video_url":{"url":"..."}}</code> content part. Other models may reject video even if they accept images.
           </p>
 
           <h3 class="mt-8 text-sm font-semibold uppercase tracking-wider text-slate-400">Response</h3>
@@ -469,7 +469,7 @@ audio.<span class="tok-fn">play</span>();</code></pre>
 
           <h3 class="mt-6 text-sm font-semibold uppercase tracking-wider text-slate-400">Subscriptions</h3>
           <p class="mt-2 text-sm leading-relaxed text-slate-400">
-            Sub plans replace per-token billing with a daily paid-token quota. Free models stay unlimited
+            Sub plans replace per-token billing with a daily paid-token quota. Free models stay $0
             (fair use), and premium models include a smaller daily token allowance (shown on Models). PayPal is captured server-side and activates
             the plan automatically. Bank transfers auto-credit when a bank webhook is connected;
             otherwise support verifies the receipt before activation. Activation also adds bonus credit: Starter +$3, Pro +$5, Ultra +$12. After the daily quota is used, further paid requests bill from your balance instead of blocking.
@@ -533,7 +533,7 @@ audio.<span class="tok-fn">play</span>();</code></pre>
                 <tr><td class="px-5 py-3 font-mono text-xs text-red-300">402</td><td class="px-4 py-3 font-mono text-xs">insufficient_balance_error</td><td class="px-5 py-3">Balance exhausted — top up in the dashboard.</td></tr>
                 <tr><td class="px-5 py-3 font-mono text-xs text-red-300">429</td><td class="px-4 py-3 font-mono text-xs">rate_limit_error</td><td class="px-5 py-3">Rate cap hit, or the Playground <code class="font-mono text-xs">try_limit_reached</code> (5/day). Retry with backoff.</td></tr>
                 <tr><td class="px-5 py-3 font-mono text-xs text-red-300">502</td><td class="px-4 py-3 font-mono text-xs">upstream_error</td><td class="px-5 py-3">Every upstream attempt failed. The request is not billed — retry or switch model.</td></tr>
-                <tr><td class="px-5 py-3 font-mono text-xs text-red-300">500 / 503</td><td class="px-4 py-3 font-mono text-xs">server_error</td><td class="px-5 py-3">Temporary service issue — not billed. Auto-routing usually retries for you.</td></tr>
+                <tr><td class="px-5 py-3 font-mono text-xs text-red-300">500 / 503</td><td class="px-4 py-3 font-mono text-xs">server_error</td><td class="px-5 py-3">Temporary service issue — not billed. The gateway retries 429/5xx up to 5 times before returning an error.</td></tr>
               </tbody>
             </table>
           </div>
@@ -567,7 +567,6 @@ audio.<span class="tok-fn">play</span>();</code></pre>
               </tbody>
             </table>
           </div>
-          <p class="mt-4 text-xs text-slate-500">Need a guaranteed RPM or SLA? Contact sales for a committed-use tier.</p>
         </section>
 
       </article>
@@ -589,7 +588,7 @@ audio.<span class="tok-fn">play</span>();</code></pre>
   <script src="assets/js/effects.js?v=26" defer></script>
   <script src="assets/js/config.js?v=1" defer></script>
   <script src="assets/js/api.js?v=27" defer></script>
-  <script src="assets/js/models-data.js?v=36" defer></script>
+  <script src="assets/js/models-data.js?v=38" defer></script>
   <script src="assets/js/docs.js?v=34" defer></script>
 </body>
 </html>

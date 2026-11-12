@@ -32,8 +32,8 @@
       const note = document.getElementById('models-note');
       if (!note) return;
       note.textContent = window.NOVA_MODELS_SOURCE === 'live'
-        ? 'Prices are per 1M tokens on standard tier. Latency measured from us-east-1. · catalogue synced live from backend · Free tier + TTS subscription included'
-        : 'Prices are per 1M tokens on standard tier. Latency measured from us-east-1. · backend offline — showing cached catalogue · Free tier + TTS subscription included';
+        ? 'Prices are per 1M tokens unless marked per request. Speed is measured end-to-end. · catalogue synced live · failed 429/5xx requests retry automatically'
+        : 'Prices are per 1M tokens unless marked per request. Speed is measured end-to-end. · backend offline — showing cached catalogue';
     };
 
     filterWrap.querySelectorAll('.filter-tab').forEach((btn) => {

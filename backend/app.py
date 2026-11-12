@@ -329,17 +329,17 @@ PROVIDERS = {
 MODELS = [
     {"id": "claude-opus-5.5", "name": "Claude Opus 5.5", "provider": "Anthropic", "context": "1M", "speed": 85, "input": 3.2, "output": 16.0, "image": True, "video": False, "category": "chat", "tag": "Popular", "note": "", "upstream_id": "claude-opus-5.5-free"},
     {"id": "claude-sonnet-5.5", "name": "Claude Sonnet 5.5", "provider": "Anthropic", "context": "1M", "speed": 92, "input": 1.8, "output": 9.0, "image": True, "video": False, "category": "chat", "tag": None, "note": "", "upstream_id": "claude-sonnet-5-5-free"},
-    {"id": "gpt-6-luna", "name": "GPT-6", "provider": "OpenAI", "context": "900K", "speed": 118, "input": 0.08, "output": 0.4, "image": True, "video": False, "category": "chat", "tag": "New", "note": ""},
-    {"id": "gpt-5.6-luna", "name": "GPT-5.6", "provider": "OpenAI", "context": "900K", "speed": 130, "input": 0.0, "output": 0.0, "image": True, "video": False, "category": "chat", "tag": "Free", "note": ""},
-    {"id": "grok-4.6", "name": "Grok 4.6", "provider": "xAI", "context": "500K", "speed": 150, "input": 1.7, "output": 5.1, "image": True, "video": False, "category": "chat", "tag": None, "note": ""},
-    {"id": "deepseek-v4.1-flash", "name": "DeepSeek V4.1", "provider": "DeepSeek", "context": "1M", "speed": 145, "input": 0.0, "output": 0.0, "image": True, "video": False, "category": "code", "tag": "Free", "note": "", "upstream_id": "deepseek-v4.1-flash-free"},
+    {"id": "gpt-6-luna", "name": "GPT-6", "provider": "OpenAI", "context": "900K", "speed": 18.0, "input": 0.08, "output": 0.4, "image": True, "video": False, "category": "chat", "tag": "New", "note": ""},
+    {"id": "gpt-5.6-luna", "name": "GPT-5.6", "provider": "OpenAI", "context": "900K", "speed": 8.03, "input": 0.0, "output": 0.0, "image": True, "video": False, "category": "chat", "tag": "Free", "note": ""},
+    {"id": "grok-4.6", "name": "Grok 4.6", "provider": "xAI", "context": "500K", "speed": 0.68, "input": 1.7, "output": 5.1, "image": True, "video": False, "category": "chat", "tag": None, "note": ""},
+    {"id": "deepseek-v4.1-flash", "name": "DeepSeek V4.1", "provider": "DeepSeek", "context": "1M", "speed": 0, "input": 0.0, "output": 0.0, "image": False, "video": False, "category": "code", "tag": "Free", "note": "", "upstream_id": "deepseek-v4.1-flash-free"},
     {"id": "deepseek-v4.1-flash-1017", "name": "DeepSeek V4.1 1017", "provider": "DeepSeek", "context": "1M", "speed": 145, "input": 0.005, "output": 0.24, "image": True, "video": False, "category": "code", "tag": None, "note": "", "upstream_id": "deepseek-v4.1-flash-1017-free"},
     {"id": "kimi-k3.1-pro", "name": "Kimi k3.1 Pro", "provider": "Moonshot AI", "context": "1M", "speed": 120, "input": 1.8, "output": 9.0, "image": True, "video": True, "category": "chat", "tag": None, "note": "", "upstream_id": "kimi-k3.1-pro-free"},
-    {"id": "mistral-large-4", "name": "Mistral Large 4", "provider": "Mistral AI", "context": "1M", "speed": 98, "input": 0.0, "output": 0.0, "image": True, "video": False, "category": "chat", "tag": "Free", "note": ""},
-    {"id": "mercury-3", "name": "Mercury 3", "provider": "Inception", "context": "1M", "speed": 1000, "input": 0.1, "output": 0.35, "image": False, "video": False, "category": "code", "tag": "Diffusion", "note": ""},
+    {"id": "mistral-large-4", "name": "Mistral Large 4", "provider": "Mistral AI", "context": "1M", "speed": 76.47, "input": 0.0, "output": 0.0, "image": True, "video": False, "category": "chat", "tag": "Free", "note": ""},
+    {"id": "mercury-3", "name": "Mercury 3", "provider": "Inception", "context": "1M", "speed": 210.83, "input": 0.1, "output": 0.35, "image": False, "video": False, "category": "code", "tag": "Diffusion", "note": ""},
     {"id": "glm-5.3-flash", "name": "GLM 5.3 Flash", "provider": "Z.ai", "context": "1M", "speed": 240, "input": 0.03, "output": 0.07, "image": True, "video": True, "category": "chat", "tag": None, "note": ""},
     {"id": "gemma-4-31b", "name": "Gemma 4 31B", "provider": "Google", "context": "256K", "speed": 0, "input": 0.0, "output": 0.0, "image": True, "video": False, "category": "chat", "tag": "Free", "note": "Free multimodal · text + image", "upstream_id": "google/gemma-4-31b-it:free"},
-    {"id": "qwen/qwen3.7-flash:free", "name": "Qwen 3.7", "provider": "Alibaba", "context": "1M", "speed": 130, "input": 0.0, "output": 0.0, "image": True, "video": True, "category": "chat", "tag": "Free", "note": ""},
+    {"id": "qwen/qwen3.7-flash:free", "name": "Qwen 3.7", "provider": "Alibaba", "context": "1M", "speed": 41.42, "input": 0.0, "output": 0.0, "image": True, "video": False, "category": "chat", "tag": "Free", "note": "Free · image input"},
     {"id": "gemini-4-argon", "name": "Gemini 4 Argon", "provider": "Google", "context": "1M", "speed": 110, "input": 0.4, "output": 1.2, "image": True, "video": True, "category": "chat", "tag": None, "note": "", "upstream_id": "gemini-4-argon-free"},
     {"id": "ernie-5.5-flash", "name": "ERNIE-5.5-Flash", "provider": "Baidu", "context": "1M", "speed": 0, "input": 0.14, "output": 0.565, "image": False, "video": False, "category": "chat", "tag": None, "note": "", "upstream_id": "baidu/ernie-5.5-flash-preview:free"},
     {"id": "gemini-3.8-flash-lite-tts", "name": "Gemini 3.8 Flash-Lite TTS", "provider": "Google", "context": "—", "speed": 0, "input": 0.0, "output": 0.0055, "image": False, "video": False, "category": "tts", "tag": "Sub", "note": "Free with subscription · up to 100 req/day", "price_unit": "1k_chars", "upstream_id": "google/gemini-3.8-flash-lite-tts:free"},
@@ -1448,6 +1448,58 @@ def load_keys_from_file(filepath, fallback_key=None):
 
 def json_bytes(obj): return json.dumps(obj, ensure_ascii=False).encode("utf-8")
 
+UPSTREAM_RETRY_ATTEMPTS = max(1, int(os.getenv("NOVA_UPSTREAM_RETRY_ATTEMPTS", "5")))
+UPSTREAM_RETRY_DELAY = float(os.getenv("NOVA_UPSTREAM_RETRY_DELAY", "1.5"))
+
+def open_upstream(url, data, keys, *, accept="application/json", timeout=UPSTREAM_TIMEOUT,
+                  attempts=None, retry_delay=None, label="upstream",
+                  retry_statuses=(408, 425, 429, 500, 502, 503, 504),
+                  rotate_statuses=(401, 403)):
+    """Open an upstream request with bounded retries and key rotation.
+
+    A flaky 429/5xx gets up to five attempts with linear backoff. 401/403
+    rotates to the next key immediately. The caller receives the response,
+    the key that was used, and the last HTTP/network exception (if any).
+    """
+    attempts = max(1, int(attempts or UPSTREAM_RETRY_ATTEMPTS))
+    delay_base = float(UPSTREAM_RETRY_DELAY if retry_delay is None else retry_delay)
+    pool = list(keys)
+    random.shuffle(pool)
+    last_exc = None
+    last_key = None
+    for attempt in range(1, attempts + 1):
+        upstream_key = pool[(attempt - 1) % len(pool)]
+        last_key = upstream_key
+        request = urllib.request.Request(
+            url, data=data,
+            headers={"Authorization": f"Bearer {upstream_key}", "Content-Type": "application/json",
+                     "Accept": accept, "User-Agent": UPSTREAM_UA},
+            method="POST",
+        )
+        try:
+            return urllib.request.urlopen(request, timeout=timeout), upstream_key, None
+        except urllib.error.HTTPError as exc:
+            last_exc = exc
+            retryable = exc.code in retry_statuses
+            rotate = exc.code in rotate_statuses
+            if attempt < attempts and (retryable or rotate):
+                wait = min(delay_base * attempt, 8.0) if retryable else 0.4
+                print(f"[{label}] HTTP {exc.code} attempt {attempt}/{attempts}; retrying in {wait:.1f}s")
+                try: exc.close()
+                except Exception: pass
+                time.sleep(wait)
+                continue
+            return None, upstream_key, exc
+        except Exception as exc:
+            last_exc = exc
+            if attempt < attempts:
+                wait = min(delay_base * attempt, 8.0)
+                print(f"[{label}] network error attempt {attempt}/{attempts}; retrying in {wait:.1f}s: {exc}")
+                time.sleep(wait)
+                continue
+            return None, upstream_key, exc
+    return None, last_key, last_exc
+
 class NovaHandler(BaseHTTPRequestHandler):
     server_version = "NovaCompute/1.0"
     protocol_version = "HTTP/1.0"
@@ -2183,47 +2235,28 @@ class NovaHandler(BaseHTTPRequestHandler):
         payload["model"] = entry.get("upstream_id") or model
         payload.setdefault("voice", "Kore")  # upstream yêu cầu voice (Gemini TTS)
         started = time.time()
-        last_exc = None
-        retryable = (400, 408, 409, 425, 429, 500, 502, 503, 504)
-        for upstream_key in keys[:3]:
-            for attempt in (1, 2):
-                req = urllib.request.Request(
-                    speech_url, data=json_bytes(payload),
-                    headers={"Authorization": f"Bearer {upstream_key}", "Content-Type": "application/json",
-                             "Accept": "audio/wav, audio/mpeg, application/octet-stream", "User-Agent": UPSTREAM_UA},
-                    method="POST")
-                try:
-                    with urllib.request.urlopen(req, timeout=UPSTREAM_TIMEOUT) as resp:
-                        audio = resp.read()
-                        ctype = resp.headers.get("Content-Type", "audio/wav")
-                    latency = int((time.time() - started) * 1000)
-                    record_usage(user["id"], key["id"], model, max(1, len(text) // 4), 0, latency, status="ok", cost=cost, client=client)
-                    self.send_response(200)
-                    self.send_header("Content-Type", ctype)
-                    self.send_header("Content-Length", str(len(audio)))
-                    self.send_header("Cache-Control", "no-store")
-                    self.end_headers()
-                    self.wfile.write(audio)
-                    return
-                except urllib.error.HTTPError as exc:
-                    last_exc = exc
-                    if exc.code in retryable and attempt == 1:
-                        print(f"[tts] HTTP {exc.code}, retrying in 1.5s...")
-                        time.sleep(1.5)
-                        continue
-                    if exc.code in (401, 403, 429):
-                        break
-                    detail = ""
-                    try: detail = exc.read().decode("utf-8", "replace")[:300]
-                    except Exception: pass
-                    return self.send_error_json(502, "upstream_error", "upstream_rejected", f"TTS upstream HTTP {exc.code}: {detail}")
-                except Exception as exc:
-                    last_exc = exc
-                    if attempt == 1:
-                        time.sleep(1.5)
-                        continue
-                    break
-        return self.send_error_json(502, "upstream_error", "tts_failed", f"All TTS keys failed. Last error: {str(last_exc)}")
+        resp, _upstream_key, last_exc = open_upstream(
+            speech_url, json_bytes(payload), keys,
+            accept="audio/wav, audio/mpeg, application/octet-stream",
+            label="tts", retry_statuses=(400, 408, 409, 425, 429, 500, 502, 503, 504))
+        if resp is None:
+            detail = ""
+            if isinstance(last_exc, urllib.error.HTTPError):
+                try: detail = last_exc.read().decode("utf-8", "replace")[:300]
+                except Exception: pass
+            return self.send_error_json(502, "upstream_error", "tts_failed",
+                                        f"All TTS attempts failed. {detail or last_exc}")
+        with resp:
+            audio = resp.read()
+            ctype = resp.headers.get("Content-Type", "audio/wav")
+        latency = int((time.time() - started) * 1000)
+        record_usage(user["id"], key["id"], model, max(1, len(text) // 4), 0, latency, status="ok", cost=cost, client=client)
+        self.send_response(200)
+        self.send_header("Content-Type", ctype)
+        self.send_header("Content-Length", str(len(audio)))
+        self.send_header("Cache-Control", "no-store")
+        self.end_headers()
+        self.wfile.write(audio)
 
     def handle_moderations(self):
         refresh_models()
@@ -2251,27 +2284,22 @@ class NovaHandler(BaseHTTPRequestHandler):
         payload = dict(body); payload["model"] = upstream_model
         url = provider_info["url"].replace("/chat/completions", "/moderations")
         started = time.time()
-        request = urllib.request.Request(
-            url, data=json_bytes(payload),
-            headers={"Authorization": f"Bearer {keys[0]}", "Content-Type": "application/json",
-                     "Accept": "application/json", "User-Agent": UPSTREAM_UA},
-            method="POST",
-        )
-        try:
-            with urllib.request.urlopen(request, timeout=UPSTREAM_TIMEOUT) as upstream:
-                raw = upstream.read()
-            data = json.loads(raw.decode("utf-8"))
-        except urllib.error.HTTPError as exc:
+        upstream, _upstream_key, last_exc = open_upstream(
+            url, json_bytes(payload), keys, label="moderation", timeout=60)
+        if upstream is None:
             detail = ""
-            try: detail = exc.read().decode("utf-8", "replace")[:300]
-            except Exception: pass
-            if exc.code in (402, 404) or "model_not_found" in detail.lower():
-                return self.send_error_json(503, "upstream_error", "model_unavailable",
-                                            "This moderation model is temporarily unavailable. Try another model.")
-            return self.send_error_json(502, "upstream_error", "upstream_rejected", f"Upstream HTTP {exc.code}: {detail}")
-        except Exception as exc:
-            print(f"[moderation] {model}: {exc}")
+            if isinstance(last_exc, urllib.error.HTTPError):
+                try: detail = last_exc.read().decode("utf-8", "replace")[:300]
+                except Exception: pass
+                if last_exc.code in (402, 404) or "model_not_found" in detail.lower():
+                    return self.send_error_json(503, "upstream_error", "model_unavailable",
+                                                "This moderation model is temporarily unavailable. Try another model.")
+                return self.send_error_json(502, "upstream_error", "upstream_rejected", f"Upstream HTTP {last_exc.code}: {detail}")
+            print(f"[moderation] {model}: {last_exc}")
             return self.send_error_json(502, "upstream_error", "upstream_unavailable", "Moderation provider is unavailable. Try again.")
+        with upstream:
+            raw = upstream.read()
+        data = json.loads(raw.decode("utf-8"))
         latency = int((time.time() - started) * 1000)
         usage = (data.get("usage") or {}) if isinstance(data, dict) else {}
         record_usage(user["id"], key["id"], model, int(usage.get("prompt_tokens") or 0),
@@ -2303,24 +2331,19 @@ class NovaHandler(BaseHTTPRequestHandler):
         upstream_model = entry.get("upstream_id") or model
         payload = dict(body); payload["model"] = upstream_model
         started = time.time()
-        request = urllib.request.Request(
-            provider_info["url"], data=json_bytes(payload),
-            headers={"Authorization": f"Bearer {keys[0]}", "Content-Type": "application/json",
-                     "Accept": "application/json", "User-Agent": UPSTREAM_UA},
-            method="POST",
-        )
-        try:
-            with urllib.request.urlopen(request, timeout=UPSTREAM_TIMEOUT) as upstream:
-                raw = upstream.read()
-            data = json.loads(raw.decode("utf-8"))
-        except urllib.error.HTTPError as exc:
+        upstream, _upstream_key, last_exc = open_upstream(
+            provider_info["url"], json_bytes(payload), keys, label=f"systemone:{model}", timeout=60)
+        if upstream is None:
             detail = ""
-            try: detail = exc.read().decode("utf-8", "replace")[:300]
-            except Exception: pass
-            return self.send_error_json(502, "upstream_error", "upstream_rejected", f"Upstream HTTP {exc.code}: {detail}")
-        except Exception as exc:
-            print(f"[systemone] {model}: {exc}")
+            if isinstance(last_exc, urllib.error.HTTPError):
+                try: detail = last_exc.read().decode("utf-8", "replace")[:300]
+                except Exception: pass
+                return self.send_error_json(502, "upstream_error", "upstream_rejected", f"Upstream HTTP {last_exc.code}: {detail}")
+            print(f"[systemone] {model}: {last_exc}")
             return self.send_error_json(502, "upstream_error", "upstream_unavailable", "Decision provider is unavailable. Try again.")
+        with upstream:
+            raw = upstream.read()
+        data = json.loads(raw.decode("utf-8"))
         latency = int((time.time() - started) * 1000)
         usage = (data.get("usage") or {}) if isinstance(data, dict) else {}
         record_usage(user["id"], key["id"], model, int(usage.get("input_tokens") or 0),
@@ -2418,61 +2441,22 @@ class NovaHandler(BaseHTTPRequestHandler):
         data_bytes = json_bytes(payload)
         
         started = time.time()
-        upstream = None
-        last_exc = None
-        # Auto-retry for flaky upstreams (furry queue, transient 5xx, timeouts).
-        retry_delay = float(os.getenv("NOVA_UPSTREAM_RETRY_DELAY", "1.5"))
-        retry_attempts = max(1, int(os.getenv("NOVA_UPSTREAM_RETRY_ATTEMPTS", "3")))
-        retry_statuses = (429, 500, 502, 503, 504)
+        upstream, _used_key, last_exc = open_upstream(
+            url, data_bytes, upstream_keys,
+            accept="text/event-stream" if stream else "application/json",
+            label=provider_name)
 
-        random.shuffle(upstream_keys)
-
-        for upstream_key in upstream_keys[:5]:
-            for attempt in range(1, retry_attempts + 1):
-                request = urllib.request.Request(
-                    url, data=data_bytes,
-                    headers={
-                        "Authorization": f"Bearer {upstream_key}",
-                        "Content-Type": "application/json",
-                        "Accept": "text/event-stream" if stream else "application/json",
-                        "User-Agent": UPSTREAM_UA,
-                    },
-                    method="POST",
-                )
-                try:
-                    upstream = urllib.request.urlopen(request, timeout=UPSTREAM_TIMEOUT)
-                    break
-                except urllib.error.HTTPError as exc:
-                    last_exc = exc
-                    if exc.code in retry_statuses and attempt < retry_attempts:
-                        print(f"[{provider_name}] Key {mask_key(upstream_key)} got {exc.code} "
-                              f"(attempt {attempt}/{retry_attempts}), retrying in {retry_delay}s...")
-                        time.sleep(retry_delay)
-                        continue
-                    if exc.code in (429, 401, 403):
-                        print(f"[{provider_name}] Key {mask_key(upstream_key)} failed {exc.code}, trying next...")
-                        break
-                    detail = ""
-                    try: detail = exc.read().decode("utf-8", "replace")[:400]
-                    except: pass
-                    print(f"[{provider_name}] model {model} rejected {exc.code}: {detail[:200]}")
-                    if exc.code in (402, 404) or "model_not_found" in detail.lower() or "not registered" in detail.lower():
-                        return self.send_error_json(503, "upstream_error", "model_unavailable",
-                                                    "This model is temporarily unavailable. Try another model.")
-                    return self.send_error_json(502, "upstream_error", "upstream_rejected", f"Upstream HTTP {exc.code}: {detail}")
-                except Exception as exc:
-                    last_exc = exc
-                    if attempt < retry_attempts:
-                        print(f"[{provider_name}] Network error (attempt {attempt}/{retry_attempts}): {exc} — retrying in {retry_delay}s...")
-                        time.sleep(retry_delay)
-                        continue
-                    print(f"[{provider_name}] Network error: {exc}")
-                    break
-            if upstream:
-                break
-                
         if not upstream:
-            return self.send_error_json(502, "upstream_error", "all_keys_failed", f"All keys for {provider_name} failed. Last error: {str(last_exc)}")
+            if isinstance(last_exc, urllib.error.HTTPError):
+                detail = ""
+                try: detail = last_exc.read().decode("utf-8", "replace")[:400]
+                except Exception: pass
+                print(f"[{provider_name}] model {model} rejected {last_exc.code}: {detail[:200]}")
+                if last_exc.code in (402, 404) or "model_not_found" in detail.lower() or "not registered" in detail.lower():
+                    return self.send_error_json(503, "upstream_error", "model_unavailable",
+                                                "This model is temporarily unavailable. Try another model.")
+                return self.send_error_json(502, "upstream_error", "upstream_rejected", f"Upstream HTTP {last_exc.code}: {detail}")
+            return self.send_error_json(502, "upstream_error", "all_keys_failed", f"All upstream attempts failed for {provider_name}. Last error: {str(last_exc)}")
 
         if stream: return self.relay_stream(upstream, user, key, model, bill_in, bill_out, bill_request, started, client)
 

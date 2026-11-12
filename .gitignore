@@ -50,3 +50,6 @@ instabox-keeper/node_modules/
 novarouter-proxy/.wrangler/
 novarouter-proxy/node_modules/
 instabox-openapi.json
+
+# Model watcher local state
+monitor/model_watch_state.json

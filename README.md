@@ -10,7 +10,7 @@
 
 **Dashboard:** [https://novarouter.cc.cd/dashboard.html](https://novarouter.cc.cd/dashboard.html)
 
-NovaCompute gives you one OpenAI-compatible endpoint for 35 models — 31 chat, vision, moderation and TTS models plus 4 decision models. 29 are free (25 chat/vision/TTS + 4 decision). Create an account, get an API key, and send your first request in under a minute. The first **50 customer accounts** get the founding free plan; after that, access is pay-as-you-go or subscription.
+NovaCompute gives you one OpenAI-compatible endpoint for 36 models — 32 chat, vision, moderation and TTS models plus 4 decision models. 30 are free (26 chat/vision/TTS + 4 decision). Create an account, get an API key, and send your first request in under a minute. The first **50 customer accounts** get the founding free plan; after that, access is pay-as-you-go or subscription.
 
 No credit card is required to claim a founding free seat.
 
@@ -20,12 +20,13 @@ No credit card is required to claim a founding free seat.
 
 - **Chat and reasoning** — GPT-6, Grok 4.6, Kimi K3, DeepSeek, Qwen, Gemini, GLM, ERNIE, Mistral, MiniMax, Maritaca, K-EXAONE and more.
 - **Vision** — send images to multimodal models with the standard `image_url` content part.
-- **Video-capable models** — Qwen 3.7, Kimi K3 and MiniMax M3.1 Flash accept video input.
+- **Video-capable models** — Kimi K3 accepts video input through the standard content-part request.
 - **Streaming** — token-by-token SSE on `/v1/chat/completions`.
 - **Text-to-speech** — `POST /v1/audio/speech` with Gemini 3.8 Flash-Lite / Flash TTS.
 - **Moderation** — Omni Moderation through `POST /v1/moderations`.
 - **Typed decisions** — four Codiv decision models for classification, routing and scoring through `POST /v1/systemone`. See [decision.html](https://novarouter.cc.cd/decision.html).
 - **One key, one bill** — no provider accounts, no SDK rewrites. Works with the OpenAI SDK and any OpenAI-compatible client.
+- **Transient failures retry** — 429/5xx responses get up to 5 attempts with backoff and key rotation before the request is reported as failed.
 - **Live usage** — dashboard charts, API keys, balance, plans and payment history with real data only.
 
 ---
@@ -44,9 +45,9 @@ After the 50 seats are claimed, new accounts are **pay-as-you-go**: add credit o
 
 ## Models and pricing
 
-The live catalogue currently has **35 models: 29 free (25 chat/vision/TTS + 4 decision), 16 with image input and 3 with video input**. That is 31 chat, vision, moderation and TTS models plus 4 decision models on a separate endpoint. Prices are per **1M tokens** unless marked per request or per 1,000 characters.
+The live catalogue currently has **36 models: 30 free (26 chat/vision/TTS + 4 decision), 11 with image input and 1 with video input**. That is 32 chat, vision, moderation and TTS models plus 4 decision models on a separate endpoint. Prices are per **1M tokens** unless marked per request or per 1,000 characters.
 
-**Free chat/code ($0.00):** GPT-5.6, DeepSeek V4.1, DeepSeek V4.1 1017, DeepSeek V4 Flash, DeepSeek V4 Flash 0731, DeepSeek V4 Flash Vision, DeepSeek V4 Pro, DeepSeek V4 Pro 0813, Mistral Large 4, Qwen 3.7, Qwen 3.8 Max, Gemini 3.8 Flash, Gemini 3.1 Flash Lite, ERNIE-5.5-Flash, Nemotron 3.5 Super VL, Nemotron 3.5 Lightning, Nemotron 3 Ultra, Dots3 Note Preview, GLM-4 Plus, GLM-4 Air, MiniMax M3.1 Flash, Raon-1 Mini, S5 Free, K-EXAONE 2.5.
+**Free chat/code ($0.00):** GPT-5.6, GPT-5.6 Sol, DeepSeek V4.1, DeepSeek V4.1 1017, DeepSeek V4 Flash, DeepSeek V4 Flash 0731, DeepSeek V4 Flash Vision, DeepSeek V4 Pro, DeepSeek V4 Pro 0813, Mistral Large 4, Qwen 3.7, Qwen 3.8 Max, Gemini 3.8 Flash, Gemini 3.1 Flash Lite, ERNIE-5.5-Flash, Nemotron 3.5 Super VL, Nemotron 3.5 Lightning, Nemotron 3 Ultra, Dots3 Note Preview, GLM-4 Plus, GLM-4 Air, MiniMax M3.1 Flash, Raon-1 Mini, S5 Free, K-EXAONE 2.5.
 
 S5 Free is a limited-time free model from Maritaca (text only, 1M context). K-EXAONE 2.5 is a preview model; LG AI Research has not published API pricing, so it is listed at $0 for now.
 
@@ -105,7 +106,7 @@ Image input:
 
 ```json
 {
-  "model": "gemini-3.8-flash",
+  "model": "gemini-3.1-flash-lite",
   "messages": [{
     "role": "user",
     "content": [
