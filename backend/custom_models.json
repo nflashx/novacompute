@@ -336,23 +336,6 @@
   },
   {
     "speed": 0,
-    "image": false,
-    "video": false,
-    "price_unit": "",
-    "tag": "Free",
-    "id": "glm-4-flash",
-    "name": "GLM-4 Flash",
-    "provider": "Zhipu",
-    "context": "—",
-    "input": 0.0,
-    "output": 0.0,
-    "category": "chat",
-    "note": "Free tier · rate limited",
-    "upstream": "aibridge",
-    "upstream_id": "glm-4-flash"
-  },
-  {
-    "speed": 0,
     "image": true,
     "video": true,
     "price_unit": "",
