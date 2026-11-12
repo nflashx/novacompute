@@ -1,0 +1,14 @@
+name = "novacompute-instabox-keeper"
+main = "src/index.js"
+compatibility_date = "2026-11-01"
+
+# Every 10 minutes: wake a paused machine and start a stopped one.
+# Every 7 hours: stop it briefly, then start it again before the 480-minute
+# free-plan max-run pause.
+[triggers]
+crons = ["*/10 * * * *", "0 */7 * * *"]
+
+[vars]
+MACHINE_ID = "m_PASTE_YOUR_MACHINE_ID"
+PUBLIC_URL = "https://PASTE-YOUR-MACHINE-PUBLIC-URL"
+INSTABOX_API_BASE = "https://api.instabox.sh"
