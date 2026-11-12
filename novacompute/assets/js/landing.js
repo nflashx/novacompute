@@ -83,7 +83,7 @@
   /* ---------- Hero code window: type out the cURL sample ---------- */
   const CURL_TOKENS = [
     { c: 'tok-cmd', t: 'curl ' },
-    { c: 'tok-url', t: 'https://api.novacompute.io/v1/chat/completions' },
+    { c: 'tok-url', t: `${window.location.origin}/v1/chat/completions` },
     { t: ' \\\n  ' },
     { c: 'tok-flag', t: '-H ' },
     { c: 'tok-str', t: '"Authorization: Bearer $NOVA_API_KEY"' },
@@ -102,6 +102,10 @@
     { t: '\n' },
     { c: 'tok-str', t: "}'" },
   ];
+  document.querySelectorAll('.code-pane span').forEach((el) => {
+    if (el.textContent.includes('YOUR-DOMAIN')) el.textContent = el.textContent.replaceAll('YOUR-DOMAIN', window.location.host);
+  });
+
   const curlCode = document.querySelector('#code-curl code');
   if (curlCode && window.novaTypeCode) {
     setTimeout(() => window.novaTypeCode(curlCode, CURL_TOKENS, 11), 900);

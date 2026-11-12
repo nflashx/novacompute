@@ -1,17 +1,18 @@
 /**
  * NovaCompute — Instabox machine keeper.
  *
- * Free Instabox machines pause after 30 minutes idle and after 480 minutes of
- * continuous runtime. This Worker keeps one machine alive with cron triggers:
- *   - every 10 min: wake (paused) or start (stopped) + health check
- *   - every 7 h: stop then start, to reset the 480-minute max-run clock
+ * The free machine pauses after 30 minutes idle and has a short max-run limit
+ * (the dashboard currently reports maxRunMinutes=120). This Worker:
+ *   - every 10 min: keeps the machine awake / wakes or starts it;
+ *   - reads maxRunMinutes from the API and stop/starts it 10 minutes before
+ *     the limit, so it never hits the escalating max-run cooldown.
  *
  * Secrets:
  *   npx wrangler secret put INSTABOX_API_KEY
  *
- * Vars in wrangler.toml:
+ * Vars:
  *   MACHINE_ID   m_...
- *   PUBLIC_URL   https://...instabox.sh (or your own URL)
+ *   PUBLIC_URL   https://8000-....instabox.tech
  */
 
 const json = (data, status = 200) =>
@@ -20,65 +21,76 @@ const json = (data, status = 200) =>
     headers: { 'content-type': 'application/json; charset=utf-8' },
   });
 
-function apiBase(env) {
-  return (env.INSTABOX_API_BASE || 'https://api.instabox.sh').replace(/\/+$/, '');
-}
+const base = (env) => (env.INSTABOX_API_BASE || 'https://api.instabox.sh').replace(/\/+$/, '');
 
-async function call(env, path, method = 'POST') {
-  const url = `${apiBase(env)}/v1/machines/${encodeURIComponent(env.MACHINE_ID)}${path}`;
-  const res = await fetch(url, {
+async function req(env, path, method = 'GET') {
+  const headers = { 'X-API-Key': env.INSTABOX_API_KEY, Accept: 'application/json' };
+  if (method !== 'GET') headers['Idempotency-Key'] = crypto.randomUUID();
+  const res = await fetch(`${base(env)}/v1/machines/${encodeURIComponent(env.MACHINE_ID)}${path}`, {
     method,
-    headers: {
-      'X-API-Key': env.INSTABOX_API_KEY,
-      'Idempotency-Key': crypto.randomUUID(),
-      Accept: 'application/json',
-    },
+    headers,
   });
   let body = null;
   try { body = await res.json(); } catch (_) { body = null; }
-  return { status: res.status, retryAfter: res.headers.get('Retry-After'), body };
+  return { status: res.status, body };
 }
 
 async function health(env) {
-  const base = (env.PUBLIC_URL || '').replace(/\/+$/, '');
-  if (!base) return { status: 0, note: 'PUBLIC_URL not set' };
+  const url = (env.PUBLIC_URL || '').replace(/\/+$/, '');
+  if (!url) return { status: 0, note: 'PUBLIC_URL not set' };
   try {
-    const res = await fetch(`${base}/api/health`, {
-      headers: { Accept: 'application/json' },
-      cf: { cacheTtl: 0 },
-    });
+    const res = await fetch(`${url}/api/health`, { cf: { cacheTtl: 0 } });
     return { status: res.status, ok: res.ok };
   } catch (err) {
     return { status: 0, error: String(err) };
   }
 }
 
-async function run(env, cron = 'manual') {
-  const out = { cron, machine: env.MACHINE_ID, at: new Date().toISOString() };
+function minutesSince(iso) {
+  if (!iso) return 0;
+  return (Date.now() - Date.parse(iso)) / 60000;
+}
 
-  // 7-hour maintenance: reset the 480-minute max-run clock.
-  if (cron === '0 */7 * * *') {
-    out.stop = await call(env, '/stop');
-    // Give the VM a moment to stop; the next 10-minute cron will start it if
-    // this start races the stop.
+async function run(env) {
+  const out = { machine: env.MACHINE_ID, at: new Date().toISOString() };
+
+  const machine = await req(env, '');
+  out.state = machine.body?.state || null;
+  if (machine.status === 404) {
+    out.error = 'machine not found — it may have been deleted; recreate from a snapshot';
+    return out;
+  }
+  if (machine.status >= 400 || !machine.body) {
+    out.error = machine.body?.error || `machine lookup HTTP ${machine.status}`;
+    return out;
+  }
+
+  const state = String(machine.body.state || '').toLowerCase();
+  const maxRun = Number(machine.body.maxRunMinutes || 0);
+  const elapsed = minutesSince(machine.body.runStartedAt);
+  const buffer = Number(env.RESTART_BUFFER_MINUTES || 10);
+
+  // Restart before the max-run pause. This also avoids the escalating cooldown.
+  if (state === 'running' && maxRun > 0 && elapsed >= maxRun - buffer) {
+    out.elapsedMinutes = Math.round(elapsed);
+    out.maxRunMinutes = maxRun;
+    out.stop = await req(env, '/stop', 'POST');
     await new Promise((r) => setTimeout(r, 15000));
-    out.start = await call(env, '/start');
+    out.start = await req(env, '/start', 'POST');
     out.health = await health(env);
     return out;
   }
 
-  // Normal tick: wake a self-paused machine; if that is not possible, start it.
-  out.wake = await call(env, '/wake');
-  if (out.wake.status === 409) {
-    const code = out.wake.body?.error?.code || '';
-    if (!String(code).includes('cooldown')) {
-      out.start = await call(env, '/start');
-    }
-  } else if (out.wake.status === 404) {
-    out.start = null;
-    out.error = 'machine not found — it may have been deleted; recreate from a snapshot';
-  } else if (out.wake.status >= 400) {
-    out.start = await call(env, '/start');
+  if (state === 'stopped') {
+    out.start = await req(env, '/start', 'POST');
+  } else if (state === 'paused' || state === 'suspended') {
+    out.wake = await req(env, '/wake', 'POST');
+    if (out.wake.status >= 400) out.start = await req(env, '/start', 'POST');
+  } else if (state === 'running') {
+    // A health request also resets the 30-minute idle timer.
+    out.wake = await req(env, '/wake', 'POST');
+  } else {
+    out.note = `state ${state}; no action`;
   }
 
   out.health = await health(env);
@@ -87,11 +99,9 @@ async function run(env, cron = 'manual') {
 
 export default {
   async scheduled(event, env, ctx) {
-    ctx.waitUntil(run(env, event.cron));
+    ctx.waitUntil(run(env));
   },
-
   async fetch(request, env) {
-    // Manual trigger / status: open the Worker URL.
-    return json(await run(env, 'manual'));
+    return json(await run(env));
   },
 };

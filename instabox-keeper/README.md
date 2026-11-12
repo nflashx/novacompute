@@ -7,8 +7,9 @@
 - `agent-browser` template includes Python 3.13, Node, Bun, Rust, Docker
 - Public HTTPS URL for a published port
 - **Idle pause: 30 minutes fixed**
-- **Max run: 480 minutes**, then a cooldown (5–20 min first time, 60–75 min
-  second, 120–135 min after repeated max-run pauses)
+- **Max run: 120 minutes on the current free machine** (the plan docs say 480;
+  the API reports the real value), then a cooldown (5–20 min first time,
+  60–75 min second, 120–135 min after repeated max-run pauses)
 - Starts: 3/minute
 
 The docs do **not** mention a 120-hour limit. The dashboard may show a trial or
@@ -69,10 +70,12 @@ Create the API key in the Instabox dashboard → **API keys**.
 
 Cron behaviour:
 
-- Every 10 minutes: `POST /wake`; if the machine is stopped, `POST /start`;
-  then fetch `PUBLIC_URL/api/health`.
-- Every 7 hours: `POST /stop` then `POST /start`, before the 480-minute
-  max-run pause. The next 10-minute tick starts it if the stop/start races.
+- Every 10 minutes: read the machine. If running and within 10 minutes of
+  `maxRunMinutes`, `POST /stop` then `POST /start` (the current free machine
+  reports 120 minutes). Otherwise `/wake` while running, `/wake` or `/start`
+  when paused, `/start` when stopped.
+- Then fetch `PUBLIC_URL/api/health`; the health request also resets the
+  30-minute idle timer.
 
 Open the Worker URL at any time for a manual status JSON.
 

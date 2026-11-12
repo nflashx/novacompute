@@ -105,7 +105,7 @@
             </div>
 
             <!-- Panes -->
-            <pre data-lang="curl" id="code-curl" class="code-pane h-[400px] overflow-auto bg-[#0b1120] p-5 font-mono text-[13px] leading-6 text-slate-300"><code><span class="tok-cmd">curl</span> <span class="tok-url">https://api.novacompute.io/v1/chat/completions</span> \
+            <pre data-lang="curl" id="code-curl" class="code-pane h-[400px] overflow-auto bg-[#0b1120] p-5 font-mono text-[13px] leading-6 text-slate-300"><code><span class="tok-cmd">curl</span> <span class="tok-url">https://YOUR-DOMAIN/v1/chat/completions</span> \
   <span class="tok-flag">-H</span> <span class="tok-str">"Authorization: Bearer $NOVA_API_KEY"</span> \
   <span class="tok-flag">-H</span> <span class="tok-str">"Content-Type: application/json"</span> \
   <span class="tok-flag">-d</span> <span class="tok-str">'{
@@ -116,7 +116,7 @@
             <pre data-lang="python" class="code-pane hidden h-[400px] overflow-auto bg-[#0b1120] p-5 font-mono text-[13px] leading-6 text-slate-300"><code><span class="tok-kw">from</span> openai <span class="tok-kw">import</span> OpenAI
 
 client = <span class="tok-fn">OpenAI</span>(
-    <span class="tok-key">base_url</span>=<span class="tok-str">"https://api.novacompute.io/v1"</span>,
+    <span class="tok-key">base_url</span>=<span class="tok-str">"https://YOUR-DOMAIN/v1"</span>,
     <span class="tok-key">api_key</span>=os.environ[<span class="tok-str">"NOVA_API_KEY"</span>],
 )
 
@@ -132,7 +132,7 @@ stream = client.chat.completions.<span class="tok-fn">create</span>(
             <pre data-lang="js" class="code-pane hidden h-[400px] overflow-auto bg-[#0b1120] p-5 font-mono text-[13px] leading-6 text-slate-300"><code><span class="tok-kw">import</span> OpenAI <span class="tok-kw">from</span> <span class="tok-str">"openai"</span>;
 
 <span class="tok-kw">const</span> client = <span class="tok-kw">new</span> <span class="tok-fn">OpenAI</span>({
-  <span class="tok-key">baseURL</span>: <span class="tok-str">"https://api.novacompute.io/v1"</span>,
+  <span class="tok-key">baseURL</span>: <span class="tok-str">"https://YOUR-DOMAIN/v1"</span>,
   <span class="tok-key">apiKey</span>: process.env.<span class="tok-cmd">NOVA_API_KEY</span>,
 });
 
@@ -340,6 +340,6 @@ stream = client.chat.completions.<span class="tok-fn">create</span>(
   <script src="assets/js/config.js?v=1" defer></script>
   <script src="assets/js/api.js?v=27" defer></script>
   <script src="assets/js/models-data.js?v=29" defer></script>
-  <script src="assets/js/landing.js?v=26" defer></script>
+  <script src="assets/js/landing.js?v=27" defer></script>
 </body>
 </html>
