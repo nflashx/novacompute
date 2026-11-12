@@ -109,9 +109,9 @@
   }
 
   if (modelRows && window.NOVA_MODELS) {
-    renderModelTable(window.NOVA_MODELS);
+    renderModelTable(window.NOVA_MODELS.filter((m) => m.category !== 'decision'));
     if (window.fetchModels) {
-      window.fetchModels().then((models) => renderModelTable(models));
+      window.fetchModels().then((models) => renderModelTable(models.filter((m) => m.category !== 'decision')));
     }
   }
 

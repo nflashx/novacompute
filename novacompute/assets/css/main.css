@@ -18,7 +18,7 @@ select option {
   color: #e2e8f0;
 }
 
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; overflow-x: clip; }
 
 body {
   background-color: var(--c-bg);

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <style>html{background-color:#05070e;color-scheme:dark}body{background-color:#05070e}</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Decision Models — NovaCompute</title>
+  <meta name="description" content="Typed, calibrated decision models on NovaCompute — separate from chat completions. One API key, POST /v1/systemone." />
+  <meta name="theme-color" content="#05070e" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='24' y2='24' gradientUnits='userSpaceOnUse'%3E%3Cstop stop-color='%23a78bfa'/%3E%3Cstop offset='1' stop-color='%2322d3ee'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M12 1.5l2.6 7.9 7.9 2.6-7.9 2.6L12 22.5l-2.6-7.9-7.9-2.6 7.9-2.6L12 1.5z' fill='url(%23g)'/%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/tailwind.css?v=6" />
+  <link rel="stylesheet" href="assets/css/main.css?v=27" />
+</head>
+<body class="bg-night font-sans text-slate-200 antialiased overflow-x-hidden">
+  <div id="site-header"></div>
+
+  <main class="relative overflow-hidden">
+    <div class="orb right-[-160px] top-[8%] h-[380px] w-[380px]" style="background:rgba(124,58,237,.16)"></div>
+    <div class="orb left-[-160px] bottom-[8%] h-[340px] w-[340px]" style="background:rgba(34,211,238,.10)"></div>
+
+    <section class="relative mx-auto max-w-6xl px-6 pb-10 pt-20">
+      <span class="inline-flex items-center rounded-full border border-violet-400/25 bg-violet-500/10 px-3.5 py-1.5 text-xs font-semibold tracking-widest text-violet-300">SYSTEM ONE</span>
+      <h1 class="mt-6 max-w-3xl font-display text-4xl font-bold tracking-tight text-white sm:text-5xl">
+        Decision models, <span class="text-gradient">not chat.</span>
+      </h1>
+      <p class="mt-5 max-w-2xl leading-relaxed text-slate-400">
+        These models answer <strong class="text-slate-200">typed questions</strong> about a piece of text and return a calibrated
+        probability for every option. Use them for routing, triage, classification and scoring — for free-form text,
+        use the chat models instead.
+      </p>
+      <div class="mt-8 flex flex-wrap gap-3">
+        <a href="docs.html#models-list" class="btn-ghost inline-flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold text-slate-200">Chat models</a>
+        <a href="dashboard.html" class="btn-primary inline-flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold text-white">Get an API key</a>
+      </div>
+    </section>
+
+    <section class="relative mx-auto max-w-6xl px-6 pb-16">
+      <div class="glass rounded-2xl p-6 sm:p-8">
+        <h2 class="font-display text-xl font-bold text-white">Call a decision model</h2>
+        <p class="mt-2 text-sm leading-relaxed text-slate-400">
+          Send one request to <code class="font-mono text-cyan-300">POST /v1/systemone</code> with the text and the questions you want answered.
+          Every question is scored in the same request.
+        </p>
+        <pre class="scroll-thin mt-5 overflow-x-auto rounded-xl border border-white/[0.06] bg-[#0b1120] p-5 font-mono text-[13px] leading-6 text-slate-300"><code>curl https://novarouter.cc.cd/v1/systemone \
+  -H "Authorization: Bearer $NOVA_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "openjev-0.1",
+    "state": "I was charged twice and support has not replied for three days.",
+    "questions": {
+      "department": {
+        "type": "choice",
+        "instructions": "Which team should handle this",
+        "criteria": {
+          "billing": "Payment or subscription issues",
+          "technical": "Bugs or integration problems"
+        }
+      },
+      "urgent": {
+        "type": "noul",
+        "instructions": "The message conveys urgency"
+      }
+    }
+  }'</code></pre>
+        <p class="mt-4 text-xs leading-relaxed text-slate-500">
+          Response: <code class="font-mono text-slate-300">answers.&lt;question&gt;.choice</code> (or <code class="font-mono text-slate-300">score</code> / <code class="font-mono text-slate-300">noul</code>) plus a probability map and confidence.
+        </p>
+      </div>
+    </section>
+
+    <section class="relative mx-auto max-w-6xl px-6 pb-20">
+      <div class="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h2 class="font-display text-2xl font-bold text-white">Decision catalogue</h2>
+          <p class="mt-2 text-sm text-slate-400">Free models from Codiv. Limits are per request; <span class="font-mono text-xs">/ q</span> means per question.</p>
+        </div>
+        <a href="https://codiv.ai/docs" target="_blank" rel="noopener" class="btn-ghost rounded-lg px-4 py-2.5 text-sm font-medium text-slate-200">Codiv docs ↗</a>
+      </div>
+      <div class="glass mt-6 overflow-hidden rounded-2xl">
+        <div class="overflow-x-auto">
+          <table class="w-full min-w-[720px] text-left text-sm">
+            <thead class="border-b border-white/[0.06] text-[11px] uppercase tracking-widest text-slate-500">
+              <tr>
+                <th class="px-6 py-4 font-medium">Model</th>
+                <th class="px-4 py-4 font-medium">API ID</th>
+                <th class="px-4 py-4 font-medium">Context / limit</th>
+                <th class="px-4 py-4 font-medium">Input</th>
+                <th class="px-4 py-4 font-medium">Price</th>
+              </tr>
+            </thead>
+            <tbody id="decision-rows" class="divide-y divide-white/[0.04]">
+              <tr><td colspan="5" class="px-6 py-10 text-center text-sm text-slate-500">Loading decision models…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <p class="mt-4 text-xs text-slate-500">These models are not available through <code class="font-mono">/v1/chat/completions</code>.</p>
+    </section>
+  </main>
+
+  <div id="site-footer"></div>
+
+  <script src="assets/js/layout.js?v=29" defer></script>
+  <script src="assets/js/effects.js?v=26" defer></script>
+  <script src="assets/js/config.js?v=1" defer></script>
+  <script src="assets/js/api.js?v=27" defer></script>
+  <script src="assets/js/models-data.js?v=34" defer></script>
+  <script defer>
+    document.addEventListener('DOMContentLoaded', function () {
+      const body = document.getElementById('decision-rows');
+      if (!body) return;
+      const render = (models) => {
+        const rows = (models || []).filter((m) => m.category === 'decision');
+        if (!rows.length) {
+          body.innerHTML = '<tr><td colspan="5" class="px-6 py-10 text-center text-sm text-slate-500">Decision models are temporarily unavailable.</td></tr>';
+          return;
+        }
+        body.innerHTML = rows.map((m) => `
+          <tr class="transition-colors hover:bg-white/[0.02]">
+            <td class="px-6 py-4">
+              <p class="font-medium text-white">${m.name}</p>
+              <p class="mt-0.5 text-[11px] text-slate-500">${m.provider}</p>
+            </td>
+            <td class="px-4 py-4 font-mono text-xs text-cyan-300">${m.id}</td>
+            <td class="px-4 py-4 text-xs text-slate-400">${m.context || '—'}</td>
+            <td class="px-4 py-4 text-xs text-slate-400">${m.image ? 'Text + image' : 'Text'}</td>
+            <td class="px-4 py-4"><span class="font-medium text-emerald-400">Free</span></td>
+          </tr>`).join('');
+      };
+      if (window.fetchModels) {
+        window.fetchModels().then(render);
+      } else {
+        render(window.NOVA_MODELS || []);
+      }
+    });
+  </script>
+</body>
+</html>

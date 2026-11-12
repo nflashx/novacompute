@@ -10,7 +10,7 @@
 
 **Dashboard:** [https://novarouter.cc.cd/dashboard.html](https://novarouter.cc.cd/dashboard.html)
 
-NovaCompute gives you one OpenAI-compatible endpoint for 25 models — 19 of them free. Create an account, get an API key, and send your first request in under a minute. The first **50 customer accounts** get the founding free plan; after that, access is pay-as-you-go or subscription.
+NovaCompute gives you one OpenAI-compatible endpoint for 36 models — 30 chat, vision, moderation and TTS models plus 6 decision models. 28 of them are free. Create an account, get an API key, and send your first request in under a minute. The first **50 customer accounts** get the founding free plan; after that, access is pay-as-you-go or subscription.
 
 No credit card is required to claim a founding free seat.
 
@@ -18,12 +18,13 @@ No credit card is required to claim a founding free seat.
 
 ## What you can build
 
-- **Chat and reasoning** — Claude Opus/Sonnet, GPT-6, Grok 4.6, Gemini 4 Argon, Kimi, DeepSeek, GLM, ERNIE, Mistral and more.
+- **Chat and reasoning** — GPT-6, Grok 4.6, Kimi K3, DeepSeek, Qwen, Gemini, GLM, ERNIE, Mistral, MiniMax and more.
 - **Vision** — send images to multimodal models with the standard `image_url` content part.
-- **Video-capable models** — Qwen 3.7 and Kimi K3 accept video input.
+- **Video-capable models** — Qwen 3.7, Kimi K3 and MiniMax M3.1 Flash accept video input.
 - **Streaming** — token-by-token SSE on `/v1/chat/completions`.
 - **Text-to-speech** — `POST /v1/audio/speech` with Gemini 3.8 Flash-Lite / Flash TTS.
 - **Moderation** — Omni Moderation through `POST /v1/moderations`.
+- **Typed decisions** — six Codiv decision models for classification, routing and scoring through `POST /v1/systemone`. See [decision.html](https://novarouter.cc.cd/decision.html).
 - **One key, one bill** — no provider accounts, no SDK rewrites. Works with the OpenAI SDK and any OpenAI-compatible client.
 - **Live usage** — dashboard charts, API keys, balance, plans and payment history with real data only.
 
@@ -43,11 +44,13 @@ After the 50 seats are claimed, new accounts are **pay-as-you-go**: add credit o
 
 ## Models and pricing
 
-The live catalogue currently has **25 models: 19 free, 14 with image input and 2 with video input**. Prices are per **1M tokens** unless marked per 1,000 characters.
+The live catalogue currently has **36 models: 28 free, 17 with image input and 3 with video input**. That is 30 chat, vision, moderation and TTS models plus 6 decision models on a separate endpoint. Prices are per **1M tokens** unless marked per request or per 1,000 characters.
 
-**Free ($0.00):** GPT-5.6, DeepSeek V4.1, DeepSeek V4.1 1017, DeepSeek V4 Flash, DeepSeek V4 Flash 0731, DeepSeek V4 Flash Vision, DeepSeek V4 Pro, DeepSeek V4 Pro 0813, Mistral Large 4, Qwen 3.7, Qwen 3.8 Max, Gemini 3.8 Flash, Gemini 3.1 Flash Lite, ERNIE-5.5-Flash, Nemotron 3.5 Super VL, Nemotron 3.5 Lightning, Nemotron 3 Ultra, Dots3 Note Preview.
+**Free chat/code ($0.00):** GPT-5.6, DeepSeek V4.1, DeepSeek V4.1 1017, DeepSeek V4 Flash, DeepSeek V4 Flash 0731, DeepSeek V4 Flash Vision, DeepSeek V4 Pro, DeepSeek V4 Pro 0813, Mistral Large 4, Qwen 3.7, Qwen 3.8 Max, Gemini 3.8 Flash, Gemini 3.1 Flash Lite, ERNIE-5.5-Flash, Nemotron 3.5 Super VL, Nemotron 3.5 Lightning, Nemotron 3 Ultra, Dots3 Note Preview, GLM-4 Flash, MiniMax M3.1 Flash, Raon-1 Mini.
 
 **Moderation:** Omni Moderation is free through `POST /v1/moderations` (not chat completions).
+
+**Decision:** OpenJev 0.1, Laya 1.0, Verdict 1.4, CLM 0.1, JevK5 0.3 and Clef-flash 1.0 are free through `POST /v1/systemone` (not chat completions).
 
 **Paid:**
 
@@ -56,7 +59,9 @@ The live catalogue currently has **25 models: 19 free, 14 with image input and 2
 | GPT-6 | $0.08 | $0.40 |
 | Grok 4.6 | $1.70 | $5.10 |
 | Mercury 3 | $0.10 | $0.35 |
-| Kimi K3 | $0.02 / request | — |
+| GLM-4 Plus | $1.20 | $6.00 |
+| GLM-4 Air | $0.48 | $1.92 |
+| Kimi K3 | $0.05 / request | — |
 
 **Text-to-speech:** Gemini 3.8 Flash-Lite TTS at $0.0055 / 1k chars and Gemini 3.8 Flash TTS at $0.0080 / 1k chars via `POST /v1/audio/speech`.
 
@@ -100,7 +105,7 @@ Image input:
 
 ```json
 {
-  "model": "gemini-4-argon",
+  "model": "gemini-3.8-flash",
   "messages": [{
     "role": "user",
     "content": [
@@ -153,6 +158,7 @@ Google and GitHub accounts are regular customer accounts. The site administrator
 | Endpoint | Purpose |
 |---|---|
 | `POST /v1/chat/completions` | Chat, reasoning, vision and video input; streaming supported |
+| `POST /v1/systemone` | Typed decision models (classification, routing, scoring) |
 | `POST /v1/moderations` | Omni Moderation via the moderation API |
 | `POST /v1/audio/speech` | Gemini TTS, returns WAV |
 | `GET /v1/models` | Live model catalogue, prices and capabilities |
@@ -182,6 +188,7 @@ Rate limits apply per API key and tier; see the [docs](https://novarouter.cc.cd/
 - **Sign in:** [https://novarouter.cc.cd/login.html](https://novarouter.cc.cd/login.html)
 - **Dashboard:** [https://novarouter.cc.cd/dashboard.html](https://novarouter.cc.cd/dashboard.html)
 - **Docs:** [https://novarouter.cc.cd/docs.html](https://novarouter.cc.cd/docs.html)
+- **Decision models:** [https://novarouter.cc.cd/decision.html](https://novarouter.cc.cd/decision.html)
 - **Models:** [https://novarouter.cc.cd/v1/models](https://novarouter.cc.cd/v1/models)
 - **Free seats:** [https://novarouter.cc.cd/api/free-seats](https://novarouter.cc.cd/api/free-seats)
 

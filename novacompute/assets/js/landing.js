@@ -107,7 +107,7 @@
     { c: 'tok-str', t: "'{" },
     { t: '\n  ' },
     { c: 'tok-key', t: '"model"' },
-    { c: 'tok-str', t: ': "glm-5.3-flash",' },
+    { c: 'tok-str', t: ': "deepseek-v4.1-flash",' },
     { t: '\n  ' },
     { c: 'tok-key', t: '"messages"' },
     { c: 'tok-str', t: ': [{ "role": "user", "content": "Hello, Nova!" }]' },
