@@ -87,7 +87,7 @@
         : isFree
           ? '<span class="rounded bg-emerald-500/10 px-1.5 py-0.5 font-mono text-[10px] text-emerald-300">FREE</span>'
           : '';
-      const mult = (!isTts && !isRequest && m.sub_allowance_pro)
+      const mult = (!isTts && !isRequest && !isFree && m.sub_allowance_pro)
         ? `<span class="rounded bg-indigo-500/10 px-1.5 py-0.5 font-mono text-[10px] text-indigo-300" title="Included daily on the Pro plan; scales with your plan.">Included ${shortTokens(m.sub_allowance_pro)}/day</span>`
         : '';
       return `<tr>

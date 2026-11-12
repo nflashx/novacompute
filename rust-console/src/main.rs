@@ -21,7 +21,7 @@ const GREEN: egui::Color32 = egui::Color32::from_rgb(52, 211, 153);
 const AMBER: egui::Color32 = egui::Color32::from_rgb(251, 191, 36);
 const RED: egui::Color32 = egui::Color32::from_rgb(251, 113, 133);
 
-const PROVIDERS: [(&str, &str); 14] = [
+const PROVIDERS: [(&str, &str); 16] = [
     ("nightrouter", "NightRouter"),
     ("exosai", "ExosAI"),
     ("mistral", "Mistral"),
@@ -36,6 +36,8 @@ const PROVIDERS: [(&str, &str); 14] = [
     ("routeway", "Routeway"),
     ("raon", "Raon/Krafton"),
     ("codiv", "Codiv"),
+    ("maritaca", "Maritaca"),
+    ("exaone", "ExaOne"),
 ];
 
 #[derive(Clone, Copy, PartialEq, Eq)]

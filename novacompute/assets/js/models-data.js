@@ -45,16 +45,16 @@
     { id: "gemini-3.1-flash-lite", name: "Gemini 3.1 Flash Lite", provider: "Google", color: "#4285f4", context: "—", speed: 0, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: true, video: false, note: "Free · vision-capable", quota_multiplier: 1 },
     { id: "qwen-3.8-max-free", name: "Qwen 3.8 Max", provider: "Alibaba", color: "#6366f1", context: "—", speed: 0, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: false, video: false, note: "Free tier · rate limited", quota_multiplier: 1 },
     { id: "kimi-k3", name: "Kimi K3", provider: "Moonshot AI", color: "#8b5cf6", context: "1M", speed: 245, input: 0.0, output: 0.0, price_per_request: 0.05, tag: "New", category: "code", image: true, video: true, note: "Per request · vision & video", price_unit: "request", quota_multiplier: 1 },
-    { id: "glm-4-plus", name: "GLM-4 Plus", provider: "Zhipu", color: "#0ea5e9", context: "—", speed: 0, input: 1.2, output: 6.0, tag: "New", category: "chat", image: false, video: false, note: "Coding-capable · GLM-4", quota_multiplier: 1 },
-    { id: "glm-4-air", name: "GLM-4 Air", provider: "Zhipu", color: "#0ea5e9", context: "—", speed: 0, input: 0.48, output: 1.92, tag: "New", category: "chat", image: false, video: false, note: "Coding-capable · GLM-4", quota_multiplier: 1 },
+    { id: "glm-4-plus", name: "GLM-4 Plus", provider: "Zhipu", color: "#0ea5e9", context: "—", speed: 0, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: false, video: false, note: "Free · basic coding", quota_multiplier: 1 },
+    { id: "glm-4-air", name: "GLM-4 Air", provider: "Zhipu", color: "#0ea5e9", context: "—", speed: 0, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: false, video: false, note: "Free · basic coding", quota_multiplier: 1 },
     { id: "minimax-m3.1-flash-free", name: "MiniMax M3.1 Flash", provider: "MiniMax", color: "#f59e0b", context: "42K", speed: 0, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: true, video: true, note: "Free tier · multimodal", quota_multiplier: 1 },
     { id: "raon-1-mini", name: "Raon-1 Mini", provider: "Krafton AI", color: "#22d3ee", context: "262K", speed: 0, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: false, video: false, note: "Free tier · text only", quota_multiplier: 1 },
     { id: "openjev-0.1", name: "OpenJev 0.1", provider: "Codiv", color: "#a78bfa", context: "65K", speed: 0, input: 0.0, output: 0.0, tag: "Free", category: "decision", image: true, video: false, note: "Decision API · /v1/systemone", quota_multiplier: 1 },
-    { id: "laya-1.0", name: "Laya 1.0", provider: "Codiv", color: "#a78bfa", context: "1K / q", speed: 0, input: 0.0, output: 0.0, tag: "Free", category: "decision", image: false, video: false, note: "Decision API · /v1/systemone", quota_multiplier: 1 },
     { id: "verdict-1.4", name: "Verdict 1.4", provider: "Codiv", color: "#a78bfa", context: "512 / q", speed: 0, input: 0.0, output: 0.0, tag: "Free", category: "decision", image: false, video: false, note: "Decision API · /v1/systemone", quota_multiplier: 1 },
     { id: "clm-0.1", name: "CLM 0.1", provider: "Codiv", color: "#a78bfa", context: "2K / q", speed: 0, input: 0.0, output: 0.0, tag: "Free", category: "decision", image: false, video: false, note: "Decision API · /v1/systemone", quota_multiplier: 1 },
     { id: "jevk5-0.3", name: "JevK5 0.3", provider: "Codiv", color: "#a78bfa", context: "16K", speed: 0, input: 0.0, output: 0.0, tag: "Free", category: "decision", image: false, video: false, note: "Decision API · /v1/systemone", quota_multiplier: 1 },
-    { id: "clef-flash-1.0", name: "Clef-flash 1.0", provider: "Codiv", color: "#a78bfa", context: "16K", speed: 0, input: 0.0, output: 0.0, tag: "Free", category: "decision", image: true, video: false, note: "Decision API · /v1/systemone", quota_multiplier: 1 },
+    { id: "s5-free", name: "S5 Free", provider: "Maritaca AI", color: "#16a34a", context: "1M", speed: 0, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: false, video: false, note: "Free for a limited time · text only", quota_multiplier: 1 },
+    { id: "k-exaone-2.5", name: "K-EXAONE 2.5", provider: "LG AI Research", color: "#c026d3", context: "512K", speed: 0, input: 0.0, output: 0.0, tag: "New", category: "chat", image: false, video: false, note: "Preview · 1 req/s · pricing not published", quota_multiplier: 1 },
   ];
 
   const FALLBACK_BY_ID = {};
@@ -76,6 +76,7 @@
     'z.ai': '#0ea5e9', zhipu: '#0ea5e9', alibaba: '#6366f1', xai: '#f43f5e',
     google: '#4285f4', baidu: '#2932e1', nvidia: '#76b900',
     'dots studio': '#ec4899', minimax: '#f59e0b', 'krafton ai': '#22d3ee', codiv: '#a78bfa',
+    'maritaca ai': '#16a34a', 'lg ai research': '#c026d3',
   };
   const COLOR_PALETTE = ['#8b5cf6', '#22d3ee', '#f472b6', '#f59e0b', '#34d399', '#60a5fa'];
 
@@ -84,14 +85,14 @@
     Anthropic: 'CL', OpenAI: 'GPT', DeepSeek: 'DS', 'Moonshot AI': 'KM',
     'Mistral AI': 'MS', Inception: 'MC', 'Z.ai': 'GLM', Zhipu: 'GLM', Alibaba: 'QW',
     xAI: 'GK', Google: 'GM', Baidu: 'ER', NVIDIA: 'NV', 'Dots Studio': 'DS',
-    MiniMax: 'MM', 'Krafton AI': 'RN', Codiv: 'CD', Custom: 'NV',
+    MiniMax: 'MM', 'Krafton AI': 'RN', Codiv: 'CD', 'Maritaca AI': 'MT', 'LG AI Research': 'EX', Custom: 'NV',
   };
 
   function displayCode(m) {
     const isFree = m.input === 0 && m.output === 0 && Number(m.price_per_request || 0) === 0;
     if (!isFree) return m.id;
     const abbr = m.category === 'moderation' ? 'OM' : (PROVIDER_ABBR[m.provider] || 'NV');
-    const base = m.id.replace(/^.*\//, '').replace(/:free$/, '');
+    const base = m.id.replace(/^.*\//, '').replace(/(?::free|-free)$/, '');
     return `${abbr}-${base}-free`;
   }
 

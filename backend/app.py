@@ -315,6 +315,14 @@ PROVIDERS = {
         "url": "https://api.codiv.ai/v1/systemone",
         "keys_file": os.path.join(BASE_DIR, "codiv_keys.json"),
     },
+    "maritaca": {
+        "url": "https://chat.maritaca.ai/api/chat/completions",
+        "keys_file": os.path.join(BASE_DIR, "maritaca_keys.json"),
+    },
+    "exaone": {
+        "url": "https://api.exaone.ai/v1/chat/completions",
+        "keys_file": os.path.join(BASE_DIR, "exaone_keys.json"),
+    },
 }
 
 # ================= DANH SÁCH MODEL & GIÁ =================
@@ -2399,6 +2407,14 @@ class NovaHandler(BaseHTTPRequestHandler):
         
         stream = bool(body.get("stream"))
         payload = dict(body); payload["model"] = upstream_model
+        # Maritaca S5 only accepts the default temperature; drop a custom value
+        # instead of letting the whole request fail with HTTP 400.
+        if provider_name == "maritaca" and "temperature" in payload:
+            try:
+                if abs(float(payload["temperature"]) - 1.0) > 1e-9:
+                    payload.pop("temperature", None)
+            except (TypeError, ValueError):
+                payload.pop("temperature", None)
         data_bytes = json_bytes(payload)
         
         started = time.time()
