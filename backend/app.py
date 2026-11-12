@@ -291,6 +291,14 @@ PROVIDERS = {
         "url": "https://api.airforce/v1/chat/completions",
         "keys_file": os.path.join(BASE_DIR, "airforce_keys.json"),
     },
+    "dreamprompting": {
+        "url": "https://dreamprompting.com/api/v1/chat/completions",
+        "keys_file": os.path.join(BASE_DIR, "dreamprompting_keys.json"),
+    },
+    "crowllm": {
+        "url": "https://crowllm.com/v1/chat/completions",
+        "keys_file": os.path.join(BASE_DIR, "crowllm_keys.json"),
+    },
 }
 
 # ================= DANH SÁCH MODEL & GIÁ =================

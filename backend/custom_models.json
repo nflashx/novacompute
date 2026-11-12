@@ -132,8 +132,8 @@
     "price_unit": "",
     "image": true,
     "video": false,
-    "upstream": "nagaai",
-    "upstream_id": "nvidia/nemotron-3.5-super-vl:free"
+    "upstream": "crowllm",
+    "upstream_id": "nemotron-3.5-super-vl:free"
   },
   {
     "id": "dots-3-note-free",
@@ -228,20 +228,41 @@
     "hidden": true
   },
   {
-    "id": "kimi-3.0-code",
-    "name": "Kimi 3.0 Code",
-    "provider": "Moonshot AI",
+    "id": "gemini-2.5-flash-free",
+    "hidden": true
+  },
+  {
+    "id": "gemini-3.8-flash",
+    "name": "Gemini 3.8 Flash",
+    "provider": "Google",
+    "context": "1M",
+    "speed": 0,
+    "input": 0.0,
+    "output": 0.0,
+    "category": "chat",
+    "tag": "Free",
+    "note": "Free \u00b7 vision-capable",
+    "price_unit": "",
+    "image": true,
+    "video": false,
+    "upstream": "crowllm",
+    "upstream_id": "gemini-3.8-flash:free"
+  },
+  {
+    "id": "gemini-3.1-flash-lite",
+    "name": "Gemini 3.1 Flash Lite",
+    "provider": "Google",
     "context": "\u2014",
     "speed": 0,
-    "input": 0.76,
-    "output": 3.2,
-    "category": "code",
-    "tag": "New",
-    "note": "Coding model \u00b7 4K output",
+    "input": 0.0,
+    "output": 0.0,
+    "category": "chat",
+    "tag": "Free",
+    "note": "Free \u00b7 vision-capable",
     "price_unit": "",
-    "image": false,
+    "image": true,
     "video": false,
-    "upstream": "airforce",
-    "upstream_id": "kimi-k2.7-code"
+    "upstream": "dreamprompting",
+    "upstream_id": "google/gemini-3.1-flash-lite"
   }
 ]
