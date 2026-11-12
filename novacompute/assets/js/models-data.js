@@ -31,13 +31,13 @@
     { id: 'mistral-large-4', name: 'Mistral Large 4', provider: 'Mistral AI', color: '#ff7000', context: '1M', speed: 98, input: 0.0, output: 0.0, tag: 'Free', category: 'chat', image: true, video: false, note: '' },
     { id: 'mercury-3', name: 'Mercury 3', provider: 'Inception', color: '#d946ef', context: '1M', speed: 1000, input: 0.1, output: 0.35, tag: 'Diffusion', category: 'code', image: false, video: false, note: '' },
     { id: 'glm-5.3-flash', name: 'GLM 5.3 Flash', provider: 'Z.ai', color: '#0ea5e9', context: '1M', speed: 240, input: 0.03, output: 0.07, tag: null, category: 'chat', image: true, video: true, note: '' },
-    { id: 'glm-5.3', name: 'GLM 5.3', provider: 'Z.ai', color: '#0ea5e9', context: '1M', speed: 85, input: 0.0, output: 0.0, tag: 'Free', category: 'chat', image: false, video: false, note: '' },
+    { id: 'gemma-4-31b', name: 'Gemma 4 31B', provider: 'Google', color: '#4285f4', context: '256K', speed: 0, input: 0.0, output: 0.0, tag: 'Free', category: 'chat', image: true, video: false, note: 'Free multimodal · text + image' },
     { id: 'qwen/qwen3.7-flash:free', name: 'Qwen 3.7', provider: 'Alibaba', color: '#6366f1', context: '1M', speed: 130, input: 0.0, output: 0.0, tag: 'Free', category: 'chat', image: true, video: true, note: '' },
     { id: 'gemini-4-argon', name: 'Gemini 4 Argon', provider: 'Google', color: '#4285f4', context: '1M', speed: 110, input: 0.4, output: 1.2, tag: null, category: 'chat', image: true, video: true, note: '' },
     { id: 'ernie-5.5-flash', name: 'ERNIE-5.5-Flash', provider: 'Baidu', color: '#2932e1', context: '1M', speed: 0, input: 0.14, output: 0.565, tag: null, category: 'chat', image: false, video: false, note: '' },
     { id: 'gemini-3.8-flash-lite-tts', name: 'Gemini 3.8 Flash-Lite TTS', provider: 'Google', color: '#4285f4', context: '—', speed: 0, input: 0.0, output: 0.0055, price_unit: '1k_chars', tag: 'Sub', category: 'tts', image: false, video: false, note: 'Free with subscription · up to 100 req/day' },
     { id: 'gemini-3.8-flash-tts', name: 'Gemini 3.8 Flash TTS', provider: 'Google', color: '#4285f4', context: '—', speed: 0, input: 0.0, output: 0.008, price_unit: '1k_chars', tag: 'Sub', category: 'tts', image: false, video: false, note: 'Free with subscription · up to 100 req/day' },
-    { id: 'omni-moderation', name: 'Omni Moderation', provider: 'OpenAI', color: '#10a37f', context: '—', speed: 0, input: 0.0, output: 0.0, tag: 'Free', category: 'moderation', image: true, video: false, note: 'Moderation API · free' },
+    { id: 'gemini-2.5-flash-free', name: 'Gemini 2.5 Flash', provider: 'Google', color: '#4285f4', context: '1M', speed: 0, input: 0.0, output: 0.0, tag: 'Free', category: 'chat', image: true, video: false, note: 'Free multimodal · text + image' },
   ];
 
   const FALLBACK_BY_ID = {};

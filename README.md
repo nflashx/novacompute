@@ -1,37 +1,79 @@
 # NovaCompute
 
-**One OpenAI-compatible API for 18 frontier AI models — live at [novarouter.cc.cd](https://novarouter.cc.cd).**
+**A free shared AI API for the first 50 developers — plus premium model APIs on demand.**
 
-NovaCompute is an AI API reseller: a dark, fast storefront plus a Python gateway that routes chat, vision, video-capable and text-to-speech requests to upstream providers with key rotation, retries and per-token billing.
+**Live website:** [https://novarouter.cc.cd](https://novarouter.cc.cd)
 
-- **Website:** [https://novarouter.cc.cd](https://novarouter.cc.cd)
-- **API base URL:** `https://novarouter.cc.cd/v1`
-- **Docs:** [https://novarouter.cc.cd/docs.html](https://novarouter.cc.cd/docs.html)
-- **Dashboard:** [https://novarouter.cc.cd/dashboard.html](https://novarouter.cc.cd/dashboard.html)
-- **Health check:** [https://novarouter.cc.cd/api/health](https://novarouter.cc.cd/api/health)
-- **Model catalogue:** [https://novarouter.cc.cd/v1/models](https://novarouter.cc.cd/v1/models)
+**API base URL:** `https://novarouter.cc.cd/v1`
 
-> **Founding offer:** the free plan is limited to the **first 50 customer accounts**. After that, new accounts are pay-as-you-go — add credit or subscribe to use the API. The live remaining count is at [`/api/free-seats`](https://novarouter.cc.cd/api/free-seats).
+**Docs:** [https://novarouter.cc.cd/docs.html](https://novarouter.cc.cd/docs.html)
+
+**Dashboard:** [https://novarouter.cc.cd/dashboard.html](https://novarouter.cc.cd/dashboard.html)
+
+NovaCompute gives you one OpenAI-compatible endpoint for 18 frontier models. Create an account, get an API key, and send your first request in under a minute. The first **50 customer accounts** get the founding free plan; after that, access is pay-as-you-go or subscription.
+
+No credit card is required to claim a founding free seat.
 
 ---
 
-## What it does
+## What you can build
 
-- **18 models, one key** — OpenAI SDK compatible chat completions with streaming (SSE).
-- **Free models** — Qwen 3.7, DeepSeek V4.1, GPT-5.6, Mistral Large 4, GLM 5.3, Omni Moderation.
-- **Paid models** — Claude Opus/Sonnet, GPT-6, Grok 4.6, Kimi k3.1 Pro, Gemini 4 Argon, ERNIE, Mercury and more.
-- **TTS** — `POST /v1/audio/speech` with Gemini 3.8 Flash-Lite / Flash TTS, billed per 1,000 characters.
-- **Subscriptions** — Starter, Pro and Ultra with a daily paid-token quota, activation bonus and balance overflow after the quota.
-- **Real payments** — server-side PayPal capture (card funding disabled in the checkout UI) and Vietnamese bank transfer webhooks with live USD→VND conversion.
-- **Account system** — verified email/password signup, Google and GitHub OAuth, per-IP signup limits, disposable-email blocking.
-- **Dashboard** — real usage, token charts, API keys, plan, balance and payment history. No seeded or fake data.
-- **Admin console** — web `/admin.html` and a native Rust desktop app for users, plans, balances, bans, model prices and provider keys.
+- **Chat and reasoning** — Claude Opus/Sonnet, GPT-6, Grok 4.6, Gemini 4 Argon, Kimi, DeepSeek, GLM, ERNIE, Mistral and more.
+- **Vision** — send images to multimodal models with the standard `image_url` content part.
+- **Video-capable models** — Kimi K3.1 Pro, GLM 5.3 Flash, Qwen 3.7 and Gemini 4 Argon accept video input.
+- **Streaming** — token-by-token SSE on `/v1/chat/completions`.
+- **Text-to-speech** — `POST /v1/audio/speech` with Gemini 3.8 Flash-Lite / Flash TTS.
+- **One key, one bill** — no provider accounts, no SDK rewrites. Works with the OpenAI SDK and any OpenAI-compatible client.
+- **Live usage** — dashboard charts, API keys, balance, plans and payment history with real data only.
+
+---
+
+## Founding free plan
+
+The first **50 customer accounts** receive the free plan:
+
+- Access to every `$0.00` model.
+- No credit card, no expiry.
+- Live remaining seats: [`/api/free-seats`](https://novarouter.cc.cd/api/free-seats).
+
+After the 50 seats are claimed, new accounts are **pay-as-you-go**: add credit or choose a subscription to use the API. Existing free seats stay active.
+
+---
+
+## Models and pricing
+
+Prices are per **1M tokens** unless marked per 1,000 characters. `$0.00` rows are free on the founding plan.
+
+| Model | Provider | Context | Input | Output | Image | Video |
+|---|---|---:|---:|---:|:---:|:---:|
+| Claude Opus 5.5 | Anthropic | 1M | $3.20 | $16.00 | ✓ | — |
+| Claude Sonnet 5.5 | Anthropic | 1M | $1.80 | $9.00 | ✓ | — |
+| GPT-6 | OpenAI | 900K | $0.08 | $0.40 | ✓ | — |
+| GPT-5.6 | OpenAI | 900K | Free | Free | ✓ | — |
+| Grok 4.6 | xAI | 500K | $1.70 | $5.10 | ✓ | — |
+| DeepSeek V4.1 | DeepSeek | 1M | Free | Free | ✓ | — |
+| DeepSeek V4.1 1017 | DeepSeek | 1M | $0.005 | $0.24 | ✓ | — |
+| Kimi K3.1 Pro | Moonshot AI | 1M | $1.80 | $9.00 | ✓ | ✓ |
+| Mistral Large 4 | Mistral AI | 1M | Free | Free | ✓ | — |
+| Mercury 3 | Inception | 1M | $0.10 | $0.35 | — | — |
+| GLM 5.3 Flash | Z.ai | 1M | $0.03 | $0.07 | ✓ | ✓ |
+| Gemma 4 31B | Google | 256K | Free | Free | ✓ | — |
+| Qwen 3.7 | Alibaba | 1M | Free | Free | ✓ | ✓ |
+| Gemini 4 Argon | Google | 1M | $0.40 | $1.20 | ✓ | ✓ |
+| ERNIE-5.5-Flash | Baidu | 1M | $0.14 | $0.565 | — | — |
+| Gemini 3.8 Flash-Lite TTS | Google | — | — | $0.0055 / 1k chars | — | — |
+| Gemini 3.8 Flash TTS | Google | — | — | $0.0080 / 1k chars | — | — |
+| Gemini 2.5 Flash | Google | 1M | Free | Free | ✓ | — |
+
+The live catalogue with machine-readable capabilities is always at [`/v1/models`](https://novarouter.cc.cd/v1/models). Availability depends on upstream capacity; if a model is temporarily unavailable, retry or pick another model.
 
 ---
 
 ## Quick start
 
-Create an account at [novarouter.cc.cd/register.html](https://novarouter.cc.cd/register.html), copy the API key from the dashboard, then:
+1. [Create an account](https://novarouter.cc.cd/register.html) or sign in with Google/GitHub.
+2. Copy your API key from the [dashboard](https://novarouter.cc.cd/dashboard.html).
+3. Send a request:
 
 ```bash
 curl https://novarouter.cc.cd/v1/chat/completions \
@@ -44,7 +86,7 @@ curl https://novarouter.cc.cd/v1/chat/completions \
   }'
 ```
 
-Python (OpenAI SDK):
+Python:
 
 ```python
 from openai import OpenAI
@@ -57,6 +99,21 @@ print(client.chat.completions.create(
     model="gpt-6-luna",
     messages=[{"role": "user", "content": "Hello"}],
 ).choices[0].message.content)
+```
+
+Image input:
+
+```json
+{
+  "model": "gemini-4-argon",
+  "messages": [{
+    "role": "user",
+    "content": [
+      {"type": "text", "text": "Describe this image."},
+      {"type": "image_url", "image_url": {"url": "https://example.com/image.png"}}
+    ]
+  }]
+}
 ```
 
 Text-to-speech:
@@ -73,214 +130,65 @@ Full parameter tables, streaming, image input, TTS and rate limits: [docs.html](
 
 ---
 
-## Login setup (Google, GitHub and email)
+## Plans
 
-The site is at `https://novarouter.cc.cd`. OAuth callbacks are handled by the backend listener on port `8600`, proxied by nginx and the Cloudflare Pages edge.
+| Plan | Price | Daily paid-token quota | TTS / day | Activation credit |
+|---|---:|---:|---:|---:|
+| Founding free | $0 | Free models only | — | — |
+| Starter | $4.99 / 30 days | 1.5M | 20 | +$3 |
+| Pro | $12.99 / 30 days | 6M | 60 | +$5 |
+| Ultra | $29.99 / 30 days | 20M | 150 | +$12 |
 
-### 1. Google OAuth
-
-In [Google Cloud Console → Google Auth Platform → Clients](https://console.cloud.google.com/auth/clients):
-
-1. Create an OAuth client of type **Web application** (or edit the existing one).
-2. Add these **Authorized redirect URIs**:
-   - `https://novarouter.cc.cd/api/auth/oauth/google/callback`
-   - `https://8000-agq45l5c6sphv2zqkzyanpjymq.instabox.tech/api/auth/oauth/google/callback` (fallback origin)
-   - `http://127.0.0.1:8600/api/auth/oauth/google/callback` (local development)
-3. Save. No JavaScript origin is required for server-side OAuth.
-4. Put the client ID and secret in `backend/oauth_config.json`:
-
-```json
-{
-  "google": {
-    "client_id": "....apps.googleusercontent.com",
-    "client_secret": "...."
-  }
-}
-```
-
-Start the flow with `GET /api/oauth/google/start`; the callback redirects to `login.html?oauth_token=...`, the frontend exchanges the one-time token at `POST /api/oauth/exchange`, and the session lands on the dashboard.
-
-### 2. GitHub OAuth
-
-In [GitHub → Settings → Developer settings → OAuth Apps](https://github.com/settings/developers), create/edit an OAuth app:
-
-- **Homepage URL:** `https://novarouter.cc.cd`
-- **Authorization callback URLs:**
-  - `https://novarouter.cc.cd/api/auth/oauth/github/callback`
-  - `https://8000-agq45l5c6sphv2zqkzyanpjymq.instabox.tech/api/auth/oauth/github/callback`
-  - `http://127.0.0.1:8600/api/auth/oauth/github/callback`
-
-Then add the credentials:
-
-```json
-{
-  "github": {
-    "client_id": "Ov23li...",
-    "client_secret": "...."
-  }
-}
-```
-
-GitHub must return a **verified** email. Accounts younger than `NOVA_OAUTH_MIN_ACCOUNT_DAYS` (default **7 days**) can still sign in and pay, but do not receive a founding free seat.
-
-### 3. Email + password
-
-`POST /api/register` sends a 6-digit code, and `POST /api/verify` creates the account. Real SMTP is required in production. Create `backend/mail_config.json` (gitignored; template at `backend/mail_config.example.json`):
-
-```json
-{
-  "enabled": true,
-  "host": "smtp.your-provider.com",
-  "port": 465,
-  "user": "noreply@your-domain.com",
-  "pass": "smtp-password-or-api-key",
-  "from": "NovaCompute <noreply@your-domain.com>"
-}
-```
-
-Without SMTP, public signup returns `503 mail_not_configured`. The DEV code is off by default and is only honored for a direct `127.0.0.1` request with no proxy headers when `NOVA_DEV_MAIL=1`. Google/GitHub sign-in does not depend on SMTP.
-
-### 4. Environment
-
-On the Instabox host, `/etc/systemd/system/novacompute.service` contains:
-
-```
-Environment=NOVA_SITE_URL=https://novarouter.cc.cd
-Environment=NOVA_OAUTH_BASE=https://novarouter.cc.cd
-Environment=NOVA_PORT=8080
-Environment=NOVA_OAUTH_PORT=8600
-```
-
-`NOVA_OAUTH_BASE` is the public callback base; provider redirect URIs must match exactly. Restart after changing:
-
-```bash
-sudo systemctl daemon-reload
-sudo systemctl restart novacompute
-```
+Subscriptions are optional. Pay-as-you-go credit never expires and is billed per token from your balance. When a subscription quota runs out, usage continues from balance if credit is available.
 
 ---
 
-## Founding free seats (first 50 customers)
+## Sign in
 
-- New non-admin accounts receive `free_seat: true` while fewer than **50** seats are claimed.
-- `NOVA_FREE_CUSTOMER_LIMIT=50` controls the cap (`0` = unlimited, not recommended).
-- Seats are assigned at email verification / first OAuth signup, never to admin accounts.
-- After the cap, new accounts can still register, but a chat request with no free seat, no active plan and a $0 balance returns `402 free_capacity_reached` until they add credit or subscribe.
-- Existing accounts are backfilled in creation order when the backend starts.
-- Live state: `GET /api/free-seats` → `{ limit, claimed, remaining, open }`.
+- **Google** — one click, verified Google email.
+- **GitHub** — one click, verified GitHub email.
+- **Email + password** — available when SMTP is configured on the deployment; the code is sent to your mailbox.
 
-The register page and landing hero show the live remaining count. The API and dashboard explain the pay-as-you-go fallback.
+Google and GitHub accounts are regular customer accounts. The site administrator uses a separate admin account for `/admin.html`.
 
 ---
 
-## Anti-abuse: disposable email and fake credit
+## API surface
 
-No public signup system can honestly promise 100% prevention. NovaCompute uses layered controls and keeps the failure modes explicit:
-
-**Disposable/throwaway email**
-
-- Built-in seed list plus `backend/disposable_domains.txt` (10,000+ maintained domains, sourced from the community `disposable-email-domains` list).
-- Subdomain matching, throwaway-pattern detection, plus-address rejection, Gmail dot/`googlemail` canonicalization, and duplicate-family checks.
-- MX lookup through both Cloudflare and Google DNS-over-HTTPS. **No MX = blocked.** MX hosts that belong to a disposable provider are blocked too. DNS outage returns `503 dns_unavailable` instead of silently allowing the address.
-- Per-IP signup limits: 3/hour and 6/day, then a 24-hour IP ban. OAuth signups go through the same gate.
-- Google requires a verified email; GitHub requires a verified email and applies the account-age rule for free seats.
-- Pending codes expire in 10 minutes and are destroyed after 6 wrong attempts.
-
-**Fake credit / multi-account abuse**
-
-- `/api/topup` is dead (`410`). Credit only comes from a verified PayPal capture or a signed bank webhook.
-- PayPal: server-created order, server-side capture, USD amount check, `COMPLETED` capture status, and a **unique PayPal payer ID per NovaCompute account**. Missing payer identity is held for review.
-- Card/credit funding is disabled in the PayPal checkout UI; a PayPal account is required.
-- Bank webhook: bearer token compared in constant time, idempotent transaction IDs, VND currency/transfer-type checks, memo must match `NOVA TOPUP|STARTER|PRO|ULTRA <email>`, amount must match the plan, and a sender account can fund only one NovaCompute account when the bank payload exposes a sender field.
-- Payment velocity: new accounts are capped at $20 in the first 10 minutes, $100/day for the first 7 days, and 3 payment attempts per 10 minutes.
-- One activation bonus per account, not per renewal.
-- Free seats are capped at 50; free-tier requests are rate-limited per key (30 RPM / 500 per day for free, higher for paid tiers).
-
-**Known limits (be honest):** a PayPal merchant cannot see the card BIN inside a PayPal account, and a bank payload that omits the sender account cannot prove sender identity. Hard KYC (Stripe Radar, Seon, Sumsub, phone verification) is the only way to go beyond these controls. Never describe the current stack as "100% fraud-proof".
-
----
-
-## Architecture
-
-```
-Browser
-  │  https://novarouter.cc.cd
-  ▼
-Cloudflare Pages project "novarouter"  (novarouter-proxy/pages/_worker.js)
-  │  Host: 8000-<machine>.instabox.tech
-  ▼
-Instabox nginx :8000
-  ├─ /v1/*              → 127.0.0.1:8080  (Python API, SSE)
-  ├─ /api/auth/oauth/*  → 127.0.0.1:8600  (OAuth callback listener)
-  └─ /*                 → static frontend
-```
-
-- **DNS:** DNSHE `CNAME @ → novarouter.pages.dev` (TTL 600). Pages terminates TLS for the custom hostname; Instabox routes by Host, so a direct CNAME to the Instabox hostname would 404.
-- **Backend:** Python standard library only (`http.server`, `urllib`, JSON files, PBKDF2). No Flask/Django.
-- **Pages worker:** forwards method, path, query and body; streams the response; rewrites same-origin `Location` headers. See [`novarouter-proxy/README.md`](novarouter-proxy/README.md).
-- **Keeper:** `instabox-keeper/` is a Cloudflare Worker cron (`*/10 * * * *`) that wakes the free Instabox machine, checks `/api/health`, and restarts it before `maxRunMinutes` (currently 120).
-
----
-
-## Run locally
-
-```bash
-python backend/app.py          # API on :8080
-python -m http.server 8123 --directory novacompute   # static site on :8123
-```
-
-Open `http://127.0.0.1:8123`. The frontend automatically talks to `http://127.0.0.1:8080` on local ports and to the same origin in production. For the local DEV verification code, start the backend with `NOVA_DEV_MAIL=1` **and no proxy headers**; the flag defaults to off and is never honored behind nginx or a tunnel.
-
-Copy the example mail config before starting:
-
-```bash
-cp backend/mail_config.example.json backend/mail_config.json
-```
-
-Create `backend/oauth_config.json`, `backend/paypal_config.json` and `backend/payment_config.json` from the formats in the login and payment sections. They are gitignored.
-
-Create an admin:
-
-```bash
-python backend/create_admin.py admin@your-domain.com 'StrongPassword123!'
-```
-
-The admin account bypasses billing and has a higher rate tier. Do not commit `users_db.json`, OAuth/payment configs, provider key pools, or `mail_config.json`; they are gitignored.
-
----
-
-## Deploy
-
-**Current production:** Instabox free microVM + Cloudflare Pages edge proxy + keeper Worker. The site is live at [novarouter.cc.cd](https://novarouter.cc.cd).
-
-**VPS alternative:** `deploy/install.sh <domain>` installs nginx, systemd (`Restart=always`), certbot and the static site on Debian/Ubuntu. See [`deploy/README.md`](deploy/README.md).
-
-**Cloudflare free chat-only build:** `cloudflare-api/` contains a Worker + D1 chat port without auth/payments. Do not expose `/api/register` there; the full account system lives in the Python backend.
-
----
-
-## Repository layout
-
-| Path | Purpose |
+| Endpoint | Purpose |
 |---|---|
-| `novacompute/` | Static frontend (compiled Tailwind, vanilla JS) |
-| `backend/` | Python API gateway, auth, billing, payments, admin |
-| `backend/disposable_domains.txt` | Maintained disposable-email blocklist |
-| `novarouter-proxy/` | Cloudflare Pages edge proxy + fallback Worker |
-| `instabox-keeper/` | Cron Worker that keeps the Instabox machine alive |
-| `deploy/` | VPS systemd/nginx installer |
-| `rust-console/` | Native Rust admin desktop app |
-| `cloudflare-api/` | Free chat-only Worker + D1 build |
+| `POST /v1/chat/completions` | Chat, reasoning, vision and video input; streaming supported |
+| `POST /v1/audio/speech` | Gemini TTS, returns WAV |
+| `GET /v1/models` | Live model catalogue, prices and capabilities |
+| `GET /api/health` | Service health and free-seat count |
+| `GET /api/free-seats` | Founding free-seat availability |
+| `GET /api/me` | Account, plan, balance, keys and usage |
+| `GET /api/fx` | Live USD→VND rate for bank checkout |
+
+Rate limits apply per API key and tier; see the [docs](https://novarouter.cc.cd/docs.html#rate-limits). The playground is limited to 5 tries/day.
+
+---
+
+## Fair use and security
+
+- Real email verification and disposable-email blocking.
+- Per-IP signup limits, OAuth verification and a 50-seat free cap.
+- API keys are shown only after sign-in; rotate or delete them from the dashboard.
+- Payments: PayPal server-side capture and Vietnamese bank webhooks; no free-credit endpoint.
+- No seeded usage, fake balances or demo top-ups.
 
 ---
 
 ## Links
 
-- **Live site:** [https://novarouter.cc.cd](https://novarouter.cc.cd)
-- **Sign up:** [https://novarouter.cc.cd/register.html](https://novarouter.cc.cd/register.html)
+- **Website:** [https://novarouter.cc.cd](https://novarouter.cc.cd)
+- **Create account:** [https://novarouter.cc.cd/register.html](https://novarouter.cc.cd/register.html)
 - **Sign in:** [https://novarouter.cc.cd/login.html](https://novarouter.cc.cd/login.html)
+- **Dashboard:** [https://novarouter.cc.cd/dashboard.html](https://novarouter.cc.cd/dashboard.html)
 - **Docs:** [https://novarouter.cc.cd/docs.html](https://novarouter.cc.cd/docs.html)
-- **API health:** [https://novarouter.cc.cd/api/health](https://novarouter.cc.cd/api/health)
-- **Free-seat counter:** [https://novarouter.cc.cd/api/free-seats](https://novarouter.cc.cd/api/free-seats)
+- **Models:** [https://novarouter.cc.cd/v1/models](https://novarouter.cc.cd/v1/models)
+- **Free seats:** [https://novarouter.cc.cd/api/free-seats](https://novarouter.cc.cd/api/free-seats)
 
-Private repository: [hoanghaiminh2004-rgb/novacompute](https://github.com/hoanghaiminh2004-rgb/novacompute).
+---
+
+NovaCompute is an independent API platform. Model names and trademarks belong to their respective owners.

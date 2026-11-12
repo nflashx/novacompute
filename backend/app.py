@@ -296,21 +296,22 @@ MODELS = [
     {"id": "gpt-6-luna", "name": "GPT-6", "provider": "OpenAI", "context": "900K", "speed": 118, "input": 0.08, "output": 0.4, "image": True, "video": False, "category": "chat", "tag": "New", "note": ""},
     {"id": "gpt-5.6-luna", "name": "GPT-5.6", "provider": "OpenAI", "context": "900K", "speed": 130, "input": 0.0, "output": 0.0, "image": True, "video": False, "category": "chat", "tag": "Free", "note": ""},
     {"id": "grok-4.6", "name": "Grok 4.6", "provider": "xAI", "context": "500K", "speed": 150, "input": 1.7, "output": 5.1, "image": True, "video": False, "category": "chat", "tag": None, "note": ""},
-    {"id": "deepseek-v4.1-flash", "name": "DeepSeek V4.1", "provider": "DeepSeek", "context": "1M", "speed": 145, "input": 0.0, "output": 0.0, "image": True, "video": False, "category": "code", "tag": "Free", "note": ""},
-    {"id": "deepseek-v4.1-flash-1017", "name": "DeepSeek V4.1 1017", "provider": "DeepSeek", "context": "1M", "speed": 145, "input": 0.005, "output": 0.24, "image": True, "video": False, "category": "code", "tag": None, "note": ""},
+    {"id": "deepseek-v4.1-flash", "name": "DeepSeek V4.1", "provider": "DeepSeek", "context": "1M", "speed": 145, "input": 0.0, "output": 0.0, "image": True, "video": False, "category": "code", "tag": "Free", "note": "", "upstream_id": "deepseek-v4.1-flash-free"},
+    {"id": "deepseek-v4.1-flash-1017", "name": "DeepSeek V4.1 1017", "provider": "DeepSeek", "context": "1M", "speed": 145, "input": 0.005, "output": 0.24, "image": True, "video": False, "category": "code", "tag": None, "note": "", "upstream_id": "deepseek-v4.1-flash-1017-free"},
     {"id": "kimi-k3.1-pro", "name": "Kimi k3.1 Pro", "provider": "Moonshot AI", "context": "1M", "speed": 120, "input": 1.8, "output": 9.0, "image": True, "video": True, "category": "chat", "tag": None, "note": "", "upstream_id": "kimi-k3.1-pro-free"},
     {"id": "mistral-large-4", "name": "Mistral Large 4", "provider": "Mistral AI", "context": "1M", "speed": 98, "input": 0.0, "output": 0.0, "image": True, "video": False, "category": "chat", "tag": "Free", "note": ""},
     {"id": "mercury-3", "name": "Mercury 3", "provider": "Inception", "context": "1M", "speed": 1000, "input": 0.1, "output": 0.35, "image": False, "video": False, "category": "code", "tag": "Diffusion", "note": ""},
     {"id": "glm-5.3-flash", "name": "GLM 5.3 Flash", "provider": "Z.ai", "context": "1M", "speed": 240, "input": 0.03, "output": 0.07, "image": True, "video": True, "category": "chat", "tag": None, "note": ""},
-    {"id": "glm-5.3", "name": "GLM 5.3", "provider": "Z.ai", "context": "1M", "speed": 85, "input": 0.0, "output": 0.0, "image": False, "video": False, "category": "chat", "tag": "Free", "note": ""},
+    {"id": "gemma-4-31b", "name": "Gemma 4 31B", "provider": "Google", "context": "256K", "speed": 0, "input": 0.0, "output": 0.0, "image": True, "video": False, "category": "chat", "tag": "Free", "note": "Free multimodal · text + image", "upstream_id": "google/gemma-4-31b-it:free"},
     {"id": "qwen/qwen3.7-flash:free", "name": "Qwen 3.7", "provider": "Alibaba", "context": "1M", "speed": 130, "input": 0.0, "output": 0.0, "image": True, "video": True, "category": "chat", "tag": "Free", "note": ""},
     {"id": "gemini-4-argon", "name": "Gemini 4 Argon", "provider": "Google", "context": "1M", "speed": 110, "input": 0.4, "output": 1.2, "image": True, "video": True, "category": "chat", "tag": None, "note": "", "upstream_id": "gemini-4-argon-free"},
     {"id": "ernie-5.5-flash", "name": "ERNIE-5.5-Flash", "provider": "Baidu", "context": "1M", "speed": 0, "input": 0.14, "output": 0.565, "image": False, "video": False, "category": "chat", "tag": None, "note": "", "upstream_id": "baidu/ernie-5.5-flash-preview:free"},
     {"id": "gemini-3.8-flash-lite-tts", "name": "Gemini 3.8 Flash-Lite TTS", "provider": "Google", "context": "—", "speed": 0, "input": 0.0, "output": 0.0055, "image": False, "video": False, "category": "tts", "tag": "Sub", "note": "Free with subscription · up to 100 req/day", "price_unit": "1k_chars", "upstream_id": "google/gemini-3.8-flash-lite-tts:free"},
     {"id": "gemini-3.8-flash-tts", "name": "Gemini 3.8 Flash TTS", "provider": "Google", "context": "—", "speed": 0, "input": 0.0, "output": 0.008, "price_unit": "1k_chars", "image": False, "video": False, "category": "tts", "tag": "Sub", "note": "Free with subscription · up to 100 req/day", "upstream_id": "google/gemini-3.8-flash-tts:free"},
-    {"id": "omni-moderation", "name": "Omni Moderation", "provider": "OpenAI", "context": "—", "speed": 0, "input": 0.0, "output": 0.0, "image": True, "video": False, "category": "moderation", "tag": "Free", "note": "Moderation API · free", "upstream_id": "openai/omni-moderation"},
+    {"id": "gemini-2.5-flash-free", "name": "Gemini 2.5 Flash", "provider": "Google", "context": "1M", "speed": 0, "input": 0.0, "output": 0.0, "image": True, "video": False, "category": "chat", "tag": "Free", "note": "Free multimodal · text + image", "upstream_id": "google/gemini-2.5-flash:free"},
 ]
 PRICING = {m["id"]: (m["input"], m["output"]) for m in MODELS}
+BASE_MODEL_IDS = set(PRICING)
 MODEL_IDS = set(PRICING)
 
 # ================= SUBSCRIPTION PLANS =================
@@ -412,19 +413,27 @@ def plan_tts_used_today(user):
             continue
     return count
 
-# Map Model ID -> Provider (CHUẨN THEO FILE CŨ)
+# Map Model ID -> Provider. Keep this aligned with each provider's real
+# /v1/models catalogue; a wrong provider returns upstream 404/503.
 MODEL_PROVIDER_MAP = {
-    "grok-4.6": "exosai",
-    "mistral-large-4": "mistral",
-    "mercury-3": "inception",
+    "claude-opus-5.5": "bazaarlink",
+    "claude-sonnet-5.5": "bazaarlink",
     "gpt-6-luna": "furry",
     "gpt-5.6-luna": "furry",
+    "grok-4.6": "exosai",
+    "deepseek-v4.1-flash": "nightrouter",
+    "deepseek-v4.1-flash-1017": "nightrouter",
+    "kimi-k3.1-pro": "bazaarlink",
+    "mistral-large-4": "mistral",
+    "mercury-3": "inception",
+    "glm-5.3-flash": "bazaarlink",
+    "gemma-4-31b": "nagaai",
+    "gemini-2.5-flash-free": "nagaai",
     "qwen/qwen3.7-flash:free": "bazaarlink",
-    "gemini-4-argon": "nightrouter",
+    "gemini-4-argon": "bazaarlink",
     "ernie-5.5-flash": "nagaai",
     "gemini-3.8-flash-lite-tts": "nagaai",
     "gemini-3.8-flash-tts": "nagaai",
-    "omni-moderation": "nagaai",
 }
 DEFAULT_PROVIDER = "nightrouter"
 
@@ -456,13 +465,17 @@ def refresh_models():
                     custom = [m for m in data if isinstance(m, dict) and m.get("id")]
             except (OSError, json.JSONDecodeError) as exc:
                 print(f"[models] custom_models.json error: {exc}")
-        custom_ids = {m["id"] for m in custom}
-        merged = [m for m in BASE_MODELS if m["id"] not in custom_ids] + custom
+        custom_ids = {m["id"] for m in custom if not m.get("hidden")}
+        hidden_ids = {m["id"] for m in custom if m.get("hidden")}
+        merged = [m for m in BASE_MODELS if m["id"] not in custom_ids and m["id"] not in hidden_ids] + \
+                 [m for m in custom if not m.get("hidden")]
         MODELS = merged
         PRICING = {m["id"]: (float(m.get("input", 0) or 0), float(m.get("output", 0) or 0)) for m in merged}
         MODEL_IDS = set(PRICING)
         provider_map = dict(BASE_PROVIDER_MAP)
         for m in custom:
+            if m.get("hidden"):
+                continue
             upstream = str(m.get("upstream") or "").strip()
             if upstream in PROVIDERS:
                 provider_map[m["id"]] = upstream
@@ -588,6 +601,172 @@ def init_free_seats():
         if changed:
             save_users(db)
         print(f"[free-seats] {free_seat_stats(db)}")
+
+# ================= ADMIN LIVE CONTROLS (keys + models) =================
+def provider_keys_path(provider):
+    return PROVIDERS[provider]["keys_file"]
+
+def read_provider_keys_raw(provider):
+    path = provider_keys_path(provider)
+    try:
+        with open(path, "r", encoding="utf-8") as fh:
+            data = json.load(fh)
+        return data if isinstance(data, list) else []
+    except (OSError, json.JSONDecodeError):
+        return []
+
+def provider_keys_payload():
+    rows = []
+    for provider in PROVIDERS:
+        raw = read_provider_keys_raw(provider)
+        keys = []
+        for index, item in enumerate(raw):
+            value = item.get("api_key") if isinstance(item, dict) else item
+            if not isinstance(value, str) or not value:
+                continue
+            keys.append({
+                "index": index,
+                "masked": mask_key(value),
+                "status": item.get("status", "active") if isinstance(item, dict) else "active",
+            })
+        rows.append({"id": provider, "name": provider, "count": len(keys), "keys": keys})
+    return {"providers": rows, "updated_at": iso(now_utc())}
+
+def mutate_provider_keys(provider, action, key="", index=None):
+    if provider not in PROVIDERS:
+        raise ValueError("Unknown provider.")
+    raw = read_provider_keys_raw(provider)
+    if action == "add":
+        value = str(key or "").strip()
+        if len(value) < 8 or len(value) > 4096 or any(ch.isspace() for ch in value):
+            raise ValueError("API key must be 8–4096 characters with no whitespace.")
+        existing = {item.get("api_key") if isinstance(item, dict) else item for item in raw}
+        if value in existing:
+            raise ValueError("That API key is already in the pool.")
+        raw.append(value)
+    elif action == "delete":
+        try:
+            idx = int(index)
+        except (TypeError, ValueError):
+            raise ValueError("A valid key index is required.")
+        if idx < 0 or idx >= len(raw):
+            raise ValueError("Key index is out of range.")
+        raw.pop(idx)
+    else:
+        raise ValueError("Unknown key action.")
+    atomic_write(provider_keys_path(provider), raw)
+    return provider_keys_payload()
+
+def custom_models_raw():
+    try:
+        with open(CUSTOM_MODELS_FILE, "r", encoding="utf-8") as fh:
+            data = json.load(fh)
+        return data if isinstance(data, list) else []
+    except (OSError, json.JSONDecodeError):
+        return []
+
+def admin_models_payload():
+    refresh_models()
+    custom_ids = {m.get("id") for m in custom_models_raw() if not m.get("hidden")}
+    rows = []
+    for model in MODELS:
+        row = dict(model)
+        row["upstream"] = MODEL_PROVIDER_MAP.get(model["id"], "")
+        row["is_custom"] = model["id"] in custom_ids
+        row["owned_by"] = model.get("provider", "Custom")
+        row["speed_tps"] = model.get("speed", 0)
+        row["pricing"] = {
+            "input_per_1m": model.get("input", 0),
+            "output_per_1m": model.get("output", 0),
+        }
+        row["capabilities"] = {
+            "image": bool(model.get("image")),
+            "video": bool(model.get("video")),
+        }
+        rows.append(row)
+    return {
+        "models": rows,
+        "custom": custom_models_raw(),
+        "hidden": [m for m in custom_models_raw() if m.get("hidden")],
+        "providers": [{"id": key, "name": key} for key in PROVIDERS],
+        "base_count": len(BASE_MODELS),
+    }
+
+def normalize_admin_model(body):
+    raw = body.get("model") if isinstance(body.get("model"), dict) else body
+    model_id = str(raw.get("id", "")).strip()
+    name = str(raw.get("name", "")).strip()
+    if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._:/-]{0,80}", model_id):
+        raise ValueError("Model ID must be 1–81 characters: letters, numbers, . _ : / -")
+    if not name or len(name) > 120:
+        raise ValueError("Model name is required (max 120 characters).")
+    category = str(raw.get("category", "chat")).strip().lower()
+    if category not in ("chat", "code", "tts", "moderation"):
+        raise ValueError("Category must be chat, code, tts or moderation.")
+    upstream = str(raw.get("upstream", "")).strip()
+    if upstream and upstream not in PROVIDERS:
+        raise ValueError("Unknown upstream provider.")
+    if not upstream:
+        raise ValueError("Choose an upstream provider.")
+    def number(key, default=0.0, maximum=1000.0):
+        try:
+            value = float(raw.get(key, default) or 0)
+        except (TypeError, ValueError):
+            raise ValueError(f"{key} must be a number.")
+        if value < 0 or value > maximum:
+            raise ValueError(f"{key} is out of range.")
+        return value
+    entry = {
+        "id": model_id,
+        "name": name,
+        "provider": str(raw.get("provider", "Custom")).strip()[:80] or "Custom",
+        "context": str(raw.get("context", "—")).strip()[:40] or "—",
+        "speed": number("speed", 0, 10000),
+        "input": number("input", 0),
+        "output": number("output", 0),
+        "category": category,
+        "tag": (str(raw.get("tag")).strip()[:40] or None) if raw.get("tag") else None,
+        "note": str(raw.get("note", "")).strip()[:240],
+        "price_unit": str(raw.get("price_unit", "")).strip(),
+        "image": bool(raw.get("image")),
+        "video": bool(raw.get("video")),
+        "upstream": upstream,
+        "upstream_id": str(raw.get("upstream_id", "")).strip()[:160],
+    }
+    if entry["price_unit"] not in ("", "1k_chars"):
+        raise ValueError("price_unit must be empty or 1k_chars.")
+    return entry
+
+def save_admin_model(body):
+    entry = normalize_admin_model(body)
+    custom = custom_models_raw()
+    entry.pop("hidden", None)
+    replaced = False
+    for index, item in enumerate(custom):
+        if isinstance(item, dict) and item.get("id") == entry["id"]:
+            custom[index] = entry
+            replaced = True
+            break
+    if not replaced:
+        custom.append(entry)
+    atomic_write(CUSTOM_MODELS_FILE, custom)
+    _custom_state["mtime"] = None
+    refresh_models()
+    return admin_models_payload()
+
+def delete_admin_model(body):
+    model_id = str(body.get("id", "")).strip()
+    if not model_id:
+        raise ValueError("Model ID is required.")
+    mode = str(body.get("mode", "delete")).strip().lower()
+    custom = [m for m in custom_models_raw() if isinstance(m, dict)]
+    custom = [m for m in custom if m.get("id") != model_id]
+    if mode != "reset" and model_id in BASE_MODEL_IDS:
+        custom.append({"id": model_id, "hidden": True})
+    atomic_write(CUSTOM_MODELS_FILE, custom)
+    _custom_state["mtime"] = None
+    refresh_models()
+    return admin_models_payload()
 
 # ================= AUTH HELPERS (email / anti-abuse / OAuth) =================
 def load_json_cfg(path):
@@ -1074,6 +1253,55 @@ def message_text(message):
         return " ".join(str(p.get("text", "")) for p in content if isinstance(p, dict) and p.get("type") == "text")
     return ""
 
+def split_structured_content(content):
+    """Normalize provider content arrays (Mistral thinking) to OpenAI strings."""
+    if not isinstance(content, list):
+        return None, ""
+    text_parts = []
+    reasoning_parts = []
+    for part in content:
+        if not isinstance(part, dict):
+            continue
+        if part.get("type") == "text":
+            text_parts.append(str(part.get("text", "")))
+        elif part.get("type") == "thinking":
+            chunks = part.get("thinking")
+            if isinstance(chunks, list):
+                for chunk in chunks:
+                    if isinstance(chunk, dict) and chunk.get("type") == "text":
+                        reasoning_parts.append(str(chunk.get("text", "")))
+            elif part.get("text"):
+                reasoning_parts.append(str(part["text"]))
+    return "".join(text_parts), "".join(reasoning_parts)
+
+def normalize_completion_payload(data):
+    if not isinstance(data, dict):
+        return data
+    for choice in data.get("choices") or []:
+        message = choice.get("message") if isinstance(choice, dict) else None
+        if not isinstance(message, dict):
+            continue
+        text, reasoning = split_structured_content(message.get("content"))
+        if text is not None:
+            message["content"] = text
+            if reasoning:
+                message.setdefault("reasoning_content", reasoning)
+    return data
+
+def normalize_stream_event(event):
+    if not isinstance(event, dict):
+        return event
+    for choice in event.get("choices") or []:
+        delta = choice.get("delta") if isinstance(choice, dict) else None
+        if not isinstance(delta, dict):
+            continue
+        text, reasoning = split_structured_content(delta.get("content"))
+        if text is not None:
+            delta["content"] = text
+            if reasoning:
+                delta.setdefault("reasoning_content", reasoning)
+    return event
+
 def detect_reply_language(messages, accept_language=""):
     """Cheap language detection: strong script signals + word lists + client locale."""
     latest = ""
@@ -1251,6 +1479,9 @@ class NovaHandler(BaseHTTPRequestHandler):
         if path == "/api/admin/overview": self.handle_admin_overview(); return
         if path == "/api/admin/users": self.handle_admin_users(); return
         if path == "/api/admin/transactions": self.handle_admin_transactions(); return
+        if path == "/api/admin/provider-keys": self.handle_admin_provider_keys_get(); return
+        if path == "/api/admin/models": self.handle_admin_models_get(); return
+        if path == "/api/admin/payments": self.handle_admin_payments(); return
         if path.startswith("/api/oauth/") and path.endswith("/start"):
             self.handle_oauth_start(path.split("/")[3]); return
         if path.startswith("/api/auth/oauth/") and path.endswith("/callback"):
@@ -1270,6 +1501,8 @@ class NovaHandler(BaseHTTPRequestHandler):
         if path == "/api/payments/bank-webhook": self.handle_bank_webhook(); return
         if path == "/api/admin/user": self.handle_admin_user_update(); return
         if path == "/api/admin/user/delete": self.handle_admin_user_delete(); return
+        if path == "/api/admin/provider-keys": self.handle_admin_provider_keys_post(); return
+        if path == "/api/admin/models": self.handle_admin_models_post(); return
         if path == "/api/keys": self.handle_create_key(); return
         if path == "/api/topup":
             self.send_error_json(410, "invalid_request_error", "use_checkout", "Top-up requires a verified payment. Use PayPal or a bank transfer.")
@@ -1662,6 +1895,78 @@ class NovaHandler(BaseHTTPRequestHandler):
         rows.sort(key=lambda r: r.get("ts", 0), reverse=True)
         self.send_json(200, {"transactions": rows[:100]})
 
+    def handle_admin_provider_keys_get(self):
+        if not self.require_admin(): return
+        self.send_json(200, provider_keys_payload())
+
+    def handle_admin_provider_keys_post(self):
+        if not self.require_admin(): return
+        body = self.read_json_body() or {}
+        try:
+            payload = mutate_provider_keys(
+                str(body.get("provider", "")).strip(),
+                str(body.get("action", "")).strip().lower(),
+                body.get("key", ""),
+                body.get("index"),
+            )
+        except ValueError as exc:
+            return self.send_error_json(400, "invalid_request_error", "invalid_key_change", str(exc))
+        self.send_json(200, payload)
+
+    def handle_admin_models_get(self):
+        if not self.require_admin(): return
+        self.send_json(200, admin_models_payload())
+
+    def handle_admin_models_post(self):
+        if not self.require_admin(): return
+        body = self.read_json_body() or {}
+        action = str(body.get("action", "save")).strip().lower()
+        try:
+            if action == "delete":
+                payload = delete_admin_model(body)
+            elif action == "reset":
+                payload = delete_admin_model({**body, "mode": "reset"})
+            else:
+                payload = save_admin_model(body)
+        except ValueError as exc:
+            return self.send_error_json(400, "invalid_request_error", "invalid_model_change", str(exc))
+        self.send_json(200, payload)
+
+    def handle_admin_payments(self):
+        if not self.require_admin(): return
+        db = load_users()
+        emails = {u.get("id"): u.get("email") for u in db["users"]}
+        orders = []
+        for order_id, order in db.get("paypal_orders", {}).items():
+            orders.append({
+                "id": order_id,
+                "email": emails.get(order.get("user_id"), ""),
+                "purpose": order.get("purpose"),
+                "plan": order.get("plan"),
+                "amount": order.get("amount"),
+                "status": order.get("status"),
+                "ts": order.get("ts"),
+                "payer_id": (str(order.get("payer_id") or "")[:12] + "…") if order.get("payer_id") else "",
+            })
+        orders.sort(key=lambda row: row.get("ts") or 0, reverse=True)
+        bank = []
+        for txid, tx in db.get("bank_txns", {}).items():
+            bank.append({
+                "id": txid,
+                "email": tx.get("email", ""),
+                "status": tx.get("status"),
+                "amount_vnd": tx.get("amount_vnd"),
+                "usd": tx.get("usd"),
+                "ts": tx.get("ts"),
+                "sender_known": tx.get("sender_known"),
+            })
+        bank.sort(key=lambda row: row.get("ts") or 0, reverse=True)
+        self.send_json(200, {
+            "paypal_orders": orders[:100],
+            "bank_txns": bank[:100],
+            "counts": {"paypal_orders": len(orders), "bank_txns": len(bank)},
+        })
+
     def handle_admin_user_update(self):
         admin = self.require_admin()
         if not admin: return
@@ -1987,6 +2292,10 @@ class NovaHandler(BaseHTTPRequestHandler):
                     detail = ""
                     try: detail = exc.read().decode("utf-8", "replace")[:400]
                     except: pass
+                    print(f"[{provider_name}] model {model} rejected {exc.code}: {detail[:200]}")
+                    if exc.code in (402, 404) or "model_not_found" in detail.lower() or "not registered" in detail.lower():
+                        return self.send_error_json(503, "upstream_error", "model_unavailable",
+                                                    "This model is temporarily unavailable. Try another model.")
                     return self.send_error_json(502, "upstream_error", "upstream_rejected", f"Upstream HTTP {exc.code}: {detail}")
                 except Exception as exc:
                     last_exc = exc
@@ -2013,6 +2322,7 @@ class NovaHandler(BaseHTTPRequestHandler):
         prompt_tokens = int(usage.get("prompt_tokens") or 0); completion_tokens = int(usage.get("completion_tokens") or 0)
         cost = (prompt_tokens * bill_in + completion_tokens * bill_out) / 1_000_000
         record_usage(user["id"], key["id"], model, prompt_tokens, completion_tokens, latency, status="ok", cost=cost, client=client)
+        data = normalize_completion_payload(data)
         self.send_json(200, data)
 
     def relay_stream(self, upstream, user, key, model, price_in, price_out, started, client=""):
@@ -2023,21 +2333,32 @@ class NovaHandler(BaseHTTPRequestHandler):
         self.end_headers()
         collected_chars = 0; usage = None
         try:
+            buffer = ""
             while True:
                 chunk = upstream.read(2048)
                 if not chunk: break
-                text = chunk.decode("utf-8", "replace")
-                for line in text.splitlines():
-                    line = line.strip()
+                buffer += chunk.decode("utf-8", "replace")
+                while "\n" in buffer:
+                    line, buffer = buffer.split("\n", 1)
+                    line = line.rstrip("\r")
+                    out = line + "\n"
                     if line.startswith("data:"):
                         payload = line[5:].strip()
                         if payload and payload != "[DONE]":
                             try:
-                                event = json.loads(payload); usage = event.get("usage") or usage
+                                event = json.loads(payload)
+                                usage = event.get("usage") or usage
+                                event = normalize_stream_event(event)
                                 delta = (event.get("choices") or [{}])[0].get("delta") or {}
-                                collected_chars += len(delta.get("content") or "")
-                            except: pass
-                self.wfile.write(chunk); self.wfile.flush()
+                                content = delta.get("content")
+                                if isinstance(content, str):
+                                    collected_chars += len(content)
+                                out = "data: " + json.dumps(event, ensure_ascii=False, separators=(",", ":")) + "\n"
+                            except Exception:
+                                pass
+                    self.wfile.write(out.encode("utf-8")); self.wfile.flush()
+            if buffer:
+                self.wfile.write(buffer.encode("utf-8")); self.wfile.flush()
         except (BrokenPipeError, ConnectionResetError): print("[stream] client disconnected early", flush=True)
         finally: upstream.close()
         latency = int((time.time() - started) * 1000)
