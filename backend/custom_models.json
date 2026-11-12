@@ -264,5 +264,22 @@
     "video": false,
     "upstream": "dreamprompting",
     "upstream_id": "google/gemini-3.1-flash-lite"
+  },
+  {
+    "id": "qwen-3.8-max-free",
+    "name": "Qwen 3.8 Max",
+    "provider": "Alibaba",
+    "context": "\u2014",
+    "speed": 0,
+    "input": 0.0,
+    "output": 0.0,
+    "category": "chat",
+    "tag": "Free",
+    "note": "Free tier \u00b7 rate limited",
+    "price_unit": "",
+    "image": false,
+    "video": false,
+    "upstream": "crowllm",
+    "upstream_id": "qwen-3.8-max:free"
   }
 ]
