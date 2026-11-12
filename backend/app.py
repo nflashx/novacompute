@@ -1509,6 +1509,7 @@ class NovaHandler(BaseHTTPRequestHandler):
             return
         if path == "/api/profile": self.handle_profile(); return
         if path == "/v1/audio/speech": self.handle_speech(); return
+        if path == "/v1/moderations": self.handle_moderations(); return
         self.send_error_json(404, "not_found", "not_found", f"No route for POST {path}")
 
     def do_DELETE(self):
@@ -2182,6 +2183,59 @@ class NovaHandler(BaseHTTPRequestHandler):
                     break
         return self.send_error_json(502, "upstream_error", "tts_failed", f"All TTS keys failed. Last error: {str(last_exc)}")
 
+    def handle_moderations(self):
+        refresh_models()
+        _db, user, key = self.authenticate()
+        if not user: return self.send_error_json(401, "authentication_error", "invalid_api_key", "Missing or invalid API key.")
+        if (not user.get("is_admin") and not user.get("free_seat")
+                and not plan_active(user) and user.get("balance", 0.0) <= 0):
+            return self.send_error_json(402, "insufficient_balance_error", "free_capacity_reached",
+                                        "The first 50 free seats are taken. Add credit or subscribe to use the API.")
+        if not self.enforce_rate_limit(user, key): return
+        body = self.read_json_body()
+        if body is None: return self.send_error_json(400, "invalid_request_error", "invalid_json", "Request body must be valid JSON.")
+        model = str(body.get("model", "")).strip()
+        entry = MODEL_LOOKUP.get(model)
+        if not entry or entry.get("category") != "moderation":
+            return self.send_error_json(400, "invalid_request_error", "invalid_model", f"'{model}' is not a moderation model.")
+        provider_name = MODEL_PROVIDER_MAP.get(model, DEFAULT_PROVIDER)
+        provider_info = PROVIDERS.get(provider_name)
+        if not provider_info:
+            return self.send_error_json(500, "configuration_error", "provider_missing", f"Provider '{provider_name}' not configured.")
+        keys = load_keys_from_file(provider_info["keys_file"], provider_info.get("fallback_key"))
+        if not keys:
+            return self.send_error_json(503, "configuration_error", "upstream_not_configured", f"No keys found for provider '{provider_name}'.")
+        upstream_model = entry.get("upstream_id") or model
+        payload = dict(body); payload["model"] = upstream_model
+        url = provider_info["url"].replace("/chat/completions", "/moderations")
+        started = time.time()
+        request = urllib.request.Request(
+            url, data=json_bytes(payload),
+            headers={"Authorization": f"Bearer {keys[0]}", "Content-Type": "application/json",
+                     "Accept": "application/json", "User-Agent": UPSTREAM_UA},
+            method="POST",
+        )
+        try:
+            with urllib.request.urlopen(request, timeout=UPSTREAM_TIMEOUT) as upstream:
+                raw = upstream.read()
+            data = json.loads(raw.decode("utf-8"))
+        except urllib.error.HTTPError as exc:
+            detail = ""
+            try: detail = exc.read().decode("utf-8", "replace")[:300]
+            except Exception: pass
+            if exc.code in (402, 404) or "model_not_found" in detail.lower():
+                return self.send_error_json(503, "upstream_error", "model_unavailable",
+                                            "This moderation model is temporarily unavailable. Try another model.")
+            return self.send_error_json(502, "upstream_error", "upstream_rejected", f"Upstream HTTP {exc.code}: {detail}")
+        except Exception as exc:
+            print(f"[moderation] {model}: {exc}")
+            return self.send_error_json(502, "upstream_error", "upstream_unavailable", "Moderation provider is unavailable. Try again.")
+        latency = int((time.time() - started) * 1000)
+        usage = (data.get("usage") or {}) if isinstance(data, dict) else {}
+        record_usage(user["id"], key["id"], model, int(usage.get("prompt_tokens") or 0),
+                     int(usage.get("completion_tokens") or 0), latency, status="ok", cost=0.0, client="moderation")
+        self.send_json(200, data)
+
     def handle_chat_completions(self):
         refresh_models()
         _db, user, key = self.authenticate()
@@ -2202,6 +2256,9 @@ class NovaHandler(BaseHTTPRequestHandler):
                                             f"Try limit reached ({limit}/day). Use your API key for production traffic.")
         model = str(body.get("model", "")).strip()
         if model not in MODEL_IDS: return self.send_error_json(400, "invalid_request_error", "invalid_model", f"Unknown model '{model}'.")
+        if (MODEL_LOOKUP.get(model) or {}).get("category") == "moderation":
+            return self.send_error_json(400, "invalid_request_error", "use_moderation_endpoint",
+                                        "This model uses /v1/moderations, not /v1/chat/completions.")
         
         messages = body.get("messages")
         if not isinstance(messages, list) or not messages: return self.send_error_json(400, "invalid_request_error", "invalid_messages", "'messages' must be a non-empty array.")

@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>NovaCompute — One API for the World's Best AI Models</title>
-  <meta name="description" content="NovaCompute — one OpenAI-compatible API for 18 frontier AI models. Provider failover, streaming responses, pay-as-you-go billing." />
+  <meta name="description" content="NovaCompute — one OpenAI-compatible API for frontier AI models. Provider failover, streaming responses, pay-as-you-go billing." />
   <meta name="theme-color" content="#05070e" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='24' y2='24' gradientUnits='userSpaceOnUse'%3E%3Cstop stop-color='%23a78bfa'/%3E%3Cstop offset='1' stop-color='%2322d3ee'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M12 1.5l2.6 7.9 7.9 2.6-7.9 2.6L12 22.5l-2.6-7.9-7.9-2.6 7.9-2.6L12 1.5z' fill='url(%23g)'/%3E%3C/svg%3E" />
 
@@ -51,7 +51,7 @@
           </h1>
 
           <p class="reveal reveal-d2 mt-6 max-w-xl text-base leading-relaxed text-slate-400 sm:text-lg">
-            One OpenAI-compatible endpoint for 18 frontier models. Provider failover, streaming
+            One OpenAI-compatible endpoint for frontier AI models. Provider failover, streaming
             responses and per-token billing — so you ship AI features,
             not infrastructure.
           </p>
@@ -70,11 +70,11 @@
           <!-- Stats -->
           <dl class="reveal reveal-d3 mt-14 grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-4">
             <div class="border-l border-white/10 pl-4">
-              <dd class="font-display text-2xl font-bold text-white"><span class="stat-value" data-target="18">0</span></dd>
+              <dd class="font-display text-2xl font-bold text-white"><span class="stat-value" data-target="18" data-stat="models">0</span></dd>
               <dt class="mt-1 text-xs text-slate-500">Frontier models</dt>
             </div>
             <div class="border-l border-white/10 pl-4">
-              <dd class="font-display text-2xl font-bold text-white"><span class="stat-value" data-target="6">0</span></dd>
+              <dd class="font-display text-2xl font-bold text-white"><span class="stat-value" data-target="6" data-stat="free">0</span></dd>
               <dt class="mt-1 text-xs text-slate-500">Free models</dt>
             </div>
             <div class="border-l border-white/10 pl-4">
@@ -316,7 +316,7 @@ stream = client.chat.completions.<span class="tok-fn">create</span>(
               Start building <span class="text-gradient">in minutes</span>
             </h2>
             <p class="mx-auto mt-4 max-w-xl leading-relaxed text-slate-400">
-              Grab an API key, send your first request and stream tokens from 18 models.
+              Grab an API key, send your first request and stream tokens from the live model catalogue.
               Founding free plan for the first 50 customers — no credit card required.
             </p>
             <div class="mt-9 flex flex-wrap items-center justify-center gap-4">
@@ -340,6 +340,6 @@ stream = client.chat.completions.<span class="tok-fn">create</span>(
   <script src="assets/js/config.js?v=1" defer></script>
   <script src="assets/js/api.js?v=27" defer></script>
   <script src="assets/js/models-data.js?v=30" defer></script>
-  <script src="assets/js/landing.js?v=28" defer></script>
+  <script src="assets/js/landing.js?v=29" defer></script>
 </body>
 </html>

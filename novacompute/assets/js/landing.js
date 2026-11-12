@@ -52,9 +52,21 @@
 
     /* Swap in the live catalogue from GET /v1/models (fallback stays if offline) */
     if (window.fetchModels) {
-      window.fetchModels().then(() => {
+      window.fetchModels().then((list) => {
         render(currentFilter);
         applySourceNote();
+        const models = Array.isArray(list) ? list : [];
+        if (models.length) {
+          const free = models.filter((m) => Number(m.input) === 0 && Number(m.output) === 0).length;
+          document.querySelectorAll('[data-stat="models"]').forEach((el) => {
+            el.dataset.target = String(models.length);
+            el.textContent = String(models.length);
+          });
+          document.querySelectorAll('[data-stat="free"]').forEach((el) => {
+            el.dataset.target = String(free);
+            el.textContent = String(free);
+          });
+        }
       });
     }
   }

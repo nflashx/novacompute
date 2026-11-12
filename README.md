@@ -10,7 +10,7 @@
 
 **Dashboard:** [https://novarouter.cc.cd/dashboard.html](https://novarouter.cc.cd/dashboard.html)
 
-NovaCompute gives you one OpenAI-compatible endpoint for 18 frontier models. Create an account, get an API key, and send your first request in under a minute. The first **50 customer accounts** get the founding free plan; after that, access is pay-as-you-go or subscription.
+NovaCompute gives you one OpenAI-compatible endpoint for 30 models — 25 of them free. Create an account, get an API key, and send your first request in under a minute. The first **50 customer accounts** get the founding free plan; after that, access is pay-as-you-go or subscription.
 
 No credit card is required to claim a founding free seat.
 
@@ -23,6 +23,7 @@ No credit card is required to claim a founding free seat.
 - **Video-capable models** — Kimi K3.1 Pro, GLM 5.3 Flash, Qwen 3.7 and Gemini 4 Argon accept video input.
 - **Streaming** — token-by-token SSE on `/v1/chat/completions`.
 - **Text-to-speech** — `POST /v1/audio/speech` with Gemini 3.8 Flash-Lite / Flash TTS.
+- **Moderation** — Omni Moderation through `POST /v1/moderations`.
 - **One key, one bill** — no provider accounts, no SDK rewrites. Works with the OpenAI SDK and any OpenAI-compatible client.
 - **Live usage** — dashboard charts, API keys, balance, plans and payment history with real data only.
 
@@ -42,28 +43,21 @@ After the 50 seats are claimed, new accounts are **pay-as-you-go**: add credit o
 
 ## Models and pricing
 
-Prices are per **1M tokens** unless marked per 1,000 characters. `$0.00` rows are free on the founding plan.
+The live catalogue currently has **30 models: 25 free, 15 with image input and 1 with video input**. Prices are per **1M tokens** unless marked per 1,000 characters.
 
-| Model | Provider | Context | Input | Output | Image | Video |
-|---|---|---:|---:|---:|:---:|:---:|
-| Claude Opus 5.5 | Anthropic | 1M | $3.20 | $16.00 | ✓ | — |
-| Claude Sonnet 5.5 | Anthropic | 1M | $1.80 | $9.00 | ✓ | — |
-| GPT-6 | OpenAI | 900K | $0.08 | $0.40 | ✓ | — |
-| GPT-5.6 | OpenAI | 900K | Free | Free | ✓ | — |
-| Grok 4.6 | xAI | 500K | $1.70 | $5.10 | ✓ | — |
-| DeepSeek V4.1 | DeepSeek | 1M | Free | Free | ✓ | — |
-| DeepSeek V4.1 1017 | DeepSeek | 1M | $0.005 | $0.24 | ✓ | — |
-| Kimi K3.1 Pro | Moonshot AI | 1M | $1.80 | $9.00 | ✓ | ✓ |
-| Mistral Large 4 | Mistral AI | 1M | Free | Free | ✓ | — |
-| Mercury 3 | Inception | 1M | $0.10 | $0.35 | — | — |
-| GLM 5.3 Flash | Z.ai | 1M | $0.03 | $0.07 | ✓ | ✓ |
-| Gemma 4 31B | Google | 256K | Free | Free | ✓ | — |
-| Qwen 3.7 | Alibaba | 1M | Free | Free | ✓ | ✓ |
-| Gemini 4 Argon | Google | 1M | $0.40 | $1.20 | ✓ | ✓ |
-| ERNIE-5.5-Flash | Baidu | 1M | $0.14 | $0.565 | — | — |
-| Gemini 3.8 Flash-Lite TTS | Google | — | — | $0.0055 / 1k chars | — | — |
-| Gemini 3.8 Flash TTS | Google | — | — | $0.0080 / 1k chars | — | — |
-| Gemini 2.5 Flash | Google | 1M | Free | Free | ✓ | — |
+**Free ($0.00):** GPT-5.6, DeepSeek V4.1, DeepSeek V4.1 1017, DeepSeek V4 Flash, DeepSeek V4 Flash 0731, DeepSeek V4 Flash Vision, DeepSeek V4 Pro, DeepSeek V4 Pro 0813, Mistral Large 4, Gemma 4 31B, Gemma 4 26B A4B, Qwen 3.7, Gemini 2.5 Flash, Glyph Cluster, ERNIE-5.5-Flash, LFM3 1.7B, Flint, Nemotron 3.5 Super VL, Nemotron 3.5 Lightning, Nemotron 3 Ultra, Nemotron 3 Nano Omni, Dots3 Note Preview, LFM2.5 2.6B, North Mini Code.
+
+**Moderation:** Omni Moderation is free through `POST /v1/moderations` (not chat completions).
+
+**Paid:**
+
+| Model | Input / 1M | Output / 1M |
+|---|---:|---:|
+| GPT-6 | $0.08 | $0.40 |
+| Grok 4.6 | $1.70 | $5.10 |
+| Mercury 3 | $0.10 | $0.35 |
+
+**Text-to-speech:** Gemini 3.8 Flash-Lite TTS at $0.0055 / 1k chars and Gemini 3.8 Flash TTS at $0.0080 / 1k chars via `POST /v1/audio/speech`.
 
 The live catalogue with machine-readable capabilities is always at [`/v1/models`](https://novarouter.cc.cd/v1/models). Availability depends on upstream capacity; if a model is temporarily unavailable, retry or pick another model.
 
@@ -158,6 +152,7 @@ Google and GitHub accounts are regular customer accounts. The site administrator
 | Endpoint | Purpose |
 |---|---|
 | `POST /v1/chat/completions` | Chat, reasoning, vision and video input; streaming supported |
+| `POST /v1/moderations` | Omni Moderation via the moderation API |
 | `POST /v1/audio/speech` | Gemini TTS, returns WAV |
 | `GET /v1/models` | Live model catalogue, prices and capabilities |
 | `GET /api/health` | Service health and free-seat count |
