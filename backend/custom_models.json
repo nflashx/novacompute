@@ -281,5 +281,23 @@
     "video": false,
     "upstream": "crowllm",
     "upstream_id": "qwen-3.8-max:free"
+  },
+  {
+    "id": "kimi-k3",
+    "name": "Kimi K3",
+    "provider": "Moonshot AI",
+    "context": "1M",
+    "speed": 245,
+    "input": 0.0,
+    "output": 0.0,
+    "price_per_request": 0.02,
+    "category": "code",
+    "tag": "New",
+    "note": "Per request \u00b7 vision & video",
+    "price_unit": "request",
+    "image": true,
+    "video": true,
+    "upstream": "crowllm",
+    "upstream_id": "runpod/kimi-k3"
   }
 ]

@@ -96,7 +96,8 @@
     const input = parseFloat(pricing.input_per_1m !== undefined ? pricing.input_per_1m : raw.input) || 0;
     const output = parseFloat(pricing.output_per_1m !== undefined ? pricing.output_per_1m : raw.output) || 0;
     const snapshot = FALLBACK_BY_ID[raw.id] || {};
-    const isFree = input === 0 && output === 0;
+    const requestPrice = parseFloat(raw.price_per_request !== undefined ? raw.price_per_request : snapshot.price_per_request) || 0;
+    const isFree = input === 0 && output === 0 && requestPrice === 0;
     const tag = raw.tag !== undefined && raw.tag !== null
       ? raw.tag
       : (isFree ? 'Free' : (snapshot.tag || null));
@@ -109,6 +110,7 @@
       speed: Number(raw.speed_tps !== undefined ? raw.speed_tps : (raw.speed !== undefined ? raw.speed : snapshot.speed)) || 0,
       input,
       output,
+      price_per_request: requestPrice,
       tag,
       category: raw.category || snapshot.category || (/deepseek|mercury/i.test(String(raw.id)) ? 'code' : 'chat'),
       image: Boolean(raw.capabilities ? raw.capabilities.image : (raw.image !== undefined ? raw.image : snapshot.image)),
@@ -212,10 +214,12 @@
             ${m.image ? MEDIA_BADGES.image : ''}${m.video ? MEDIA_BADGES.video : ''}${!m.image && !m.video ? '<span class="text-xs text-slate-600">—</span>' : ''}
           </div>
         </td>
-        <td class="whitespace-nowrap px-4 py-4 text-right">${m.category === 'tts' ? '<span class="text-slate-500">—</span>' : priceCell(m.input)}</td>
+        <td class="whitespace-nowrap px-4 py-4 text-right">${m.price_unit === 'request'
+          ? `<span class="whitespace-nowrap font-mono text-slate-200">$${Number(m.price_per_request || 0).toFixed(2)}</span><span class="text-[10px] text-slate-500"> / request</span>`
+          : (m.category === 'tts' ? '<span class="text-slate-500">—</span>' : priceCell(m.input))}</td>
         <td class="whitespace-nowrap px-4 py-4 text-right">${m.price_unit === '1k_chars'
           ? `<span class="whitespace-nowrap font-mono text-slate-200">$${m.output.toFixed(4)}</span><span class="text-[10px] text-slate-500"> / 1k chars</span>`
-          : priceCell(m.output)}</td>
+          : (m.price_unit === 'request' ? '<span class="text-slate-500">—</span>' : priceCell(m.output))}</td>
         <td class="px-6 py-4 text-right">
           ${canTry
             ? `<a href="playground.html?model=${encodeURIComponent(m.id)}"
@@ -237,7 +241,7 @@
 
   /** Render rows split into a Free table section and a Paid section. */
   window.renderModelRowsGrouped = function renderModelRowsGrouped(list) {
-    const isFree = (m) => m.input === 0 && m.output === 0;
+    const isFree = (m) => m.input === 0 && m.output === 0 && Number(m.price_per_request || 0) === 0;
     const free = list.filter(isFree);
     const paid = list.filter((m) => !isFree(m));
     let html = '';
@@ -247,7 +251,7 @@
     }
     if (paid.length) {
       const onlyTts = paid.every((m) => m.category === 'tts');
-      html += groupHeader(onlyTts ? 'TTS models · per 1k characters' : 'Paid models · per 1M tokens', 'paid');
+      html += groupHeader(onlyTts ? 'TTS models · per 1k characters' : 'Paid models · token or per-request pricing', 'paid');
       html += paid.map(renderModelRow).join('');
     }
     return html;

@@ -323,6 +323,7 @@ MODELS = [
     {"id": "gemini-2.5-flash-free", "name": "Gemini 2.5 Flash", "provider": "Google", "context": "1M", "speed": 0, "input": 0.0, "output": 0.0, "image": True, "video": False, "category": "chat", "tag": "Free", "note": "Free multimodal · text + image", "upstream_id": "google/gemini-2.5-flash:free"},
 ]
 PRICING = {m["id"]: (m["input"], m["output"]) for m in MODELS}
+REQUEST_PRICES = {m["id"]: float(m.get("price_per_request", 0) or 0) for m in MODELS}
 BASE_MODEL_IDS = set(PRICING)
 MODEL_IDS = set(PRICING)
 
@@ -458,7 +459,7 @@ MODEL_LOOKUP = {m["id"]: m for m in MODELS}
 _custom_state = {"mtime": None}
 
 def refresh_models():
-    global MODELS, PRICING, MODEL_IDS, MODEL_PROVIDER_MAP, MODEL_LOOKUP
+    global MODELS, PRICING, REQUEST_PRICES, MODEL_IDS, MODEL_PROVIDER_MAP, MODEL_LOOKUP
     try:
         mtime = os.path.getmtime(CUSTOM_MODELS_FILE)
     except OSError:
@@ -483,6 +484,7 @@ def refresh_models():
                  [m for m in custom if not m.get("hidden")]
         MODELS = merged
         PRICING = {m["id"]: (float(m.get("input", 0) or 0), float(m.get("output", 0) or 0)) for m in merged}
+        REQUEST_PRICES = {m["id"]: float(m.get("price_per_request", 0) or 0) for m in merged}
         MODEL_IDS = set(PRICING)
         provider_map = dict(BASE_PROVIDER_MAP)
         for m in custom:
@@ -736,6 +738,7 @@ def normalize_admin_model(body):
         "speed": number("speed", 0, 10000),
         "input": number("input", 0),
         "output": number("output", 0),
+        "price_per_request": number("price_per_request", 0, 1000),
         "category": category,
         "tag": (str(raw.get("tag")).strip()[:40] or None) if raw.get("tag") else None,
         "note": str(raw.get("note", "")).strip()[:240],
@@ -745,8 +748,10 @@ def normalize_admin_model(body):
         "upstream": upstream,
         "upstream_id": str(raw.get("upstream_id", "")).strip()[:160],
     }
-    if entry["price_unit"] not in ("", "1k_chars"):
-        raise ValueError("price_unit must be empty or 1k_chars.")
+    if entry["price_per_request"] > 0:
+        entry["price_unit"] = "request"
+    if entry["price_unit"] not in ("", "1k_chars", "request"):
+        raise ValueError("price_unit must be empty, 1k_chars or request.")
     return entry
 
 def save_admin_model(body):
@@ -1481,7 +1486,7 @@ class NovaHandler(BaseHTTPRequestHandler):
             self.send_json(200, {"status": "ok", "service": "nova-backend", "keys_loaded": total_keys, "models": len(MODELS), "free_seats": free_seat_stats(), "time": iso(now_utc())})
             return
         if path == "/v1/models":
-            self.send_json(200, {"object": "list", "data": [{"id": m["id"], "object": "model", "owned_by": m.get("provider", "Custom"), "name": m.get("name", m["id"]), "context": m.get("context", "—"), "speed_tps": m.get("speed", 0), "pricing": {"input_per_1m": m.get("input", 0), "output_per_1m": m.get("output", 0)}, "capabilities": {"image": bool(m.get("image")), "video": bool(m.get("video"))}, "category": m.get("category", "chat"), "tag": m.get("tag"), "note": m.get("note", ""), "price_unit": m.get("price_unit"), "quota_multiplier": QUOTA_MULTIPLIERS.get(m["id"], 1)} for m in MODELS]})
+            self.send_json(200, {"object": "list", "data": [{"id": m["id"], "object": "model", "owned_by": m.get("provider", "Custom"), "name": m.get("name", m["id"]), "context": m.get("context", "—"), "speed_tps": m.get("speed", 0), "pricing": {"input_per_1m": m.get("input", 0), "output_per_1m": m.get("output", 0)}, "price_per_request": REQUEST_PRICES.get(m["id"], 0), "capabilities": {"image": bool(m.get("image")), "video": bool(m.get("video"))}, "category": m.get("category", "chat"), "tag": m.get("tag"), "note": m.get("note", ""), "price_unit": m.get("price_unit"), "quota_multiplier": QUOTA_MULTIPLIERS.get(m["id"], 1)} for m in MODELS]})
             return
         if path == "/api/me": self.handle_me(); return
         if path == "/api/free-seats":
@@ -2292,10 +2297,11 @@ class NovaHandler(BaseHTTPRequestHandler):
         upstream_model = (MODEL_LOOKUP.get(model) or {}).get("upstream_id") or model
         
         price_in, price_out = PRICING[model]
-        is_paid = (price_in or price_out) > 0
+        request_price = float(REQUEST_PRICES.get(model, 0) or 0)
+        is_paid = (price_in or price_out or request_price) > 0
         is_admin = bool(user.get("is_admin"))
         active_plan = plan_active(user)
-        plan_covered = bool(is_paid and active_plan)
+        plan_covered = bool(is_paid and active_plan and request_price <= 0)
         if is_paid and not is_admin:
             if plan_covered:
                 quota = PLAN_QUOTA.get(user.get("plan"), 0)
@@ -2303,9 +2309,12 @@ class NovaHandler(BaseHTTPRequestHandler):
                     if user.get("balance", 0) <= 0:
                         return self.send_error_json(429, "rate_limit_error", "sub_quota_reached", "Daily subscription quota reached. Top up or wait for the 00:00 UTC reset.")
                     plan_covered = False
-            elif user.get("balance", 0) <= 0:
-                return self.send_error_json(402, "insufficient_balance_error", "insufficient_balance", "Balance exhausted.")
+            else:
+                balance = float(user.get("balance", 0) or 0)
+                if balance <= 0 or (request_price and balance + 1e-9 < request_price):
+                    return self.send_error_json(402, "insufficient_balance_error", "insufficient_balance", "Balance exhausted.")
         bill_in, bill_out = (0, 0) if (plan_covered or is_admin) else (price_in, price_out)
+        bill_request = 0.0 if (plan_covered or is_admin) else request_price
 
         provider_name = MODEL_PROVIDER_MAP.get(model, DEFAULT_PROVIDER)
         provider_info = PROVIDERS.get(provider_name)
@@ -2380,7 +2389,7 @@ class NovaHandler(BaseHTTPRequestHandler):
         if not upstream:
             return self.send_error_json(502, "upstream_error", "all_keys_failed", f"All keys for {provider_name} failed. Last error: {str(last_exc)}")
 
-        if stream: return self.relay_stream(upstream, user, key, model, bill_in, bill_out, started, client)
+        if stream: return self.relay_stream(upstream, user, key, model, bill_in, bill_out, bill_request, started, client)
 
         try:
             raw = upstream.read(); data = json.loads(raw.decode("utf-8"))
@@ -2389,12 +2398,12 @@ class NovaHandler(BaseHTTPRequestHandler):
 
         latency = int((time.time() - started) * 1000); usage = data.get("usage") or {}
         prompt_tokens = int(usage.get("prompt_tokens") or 0); completion_tokens = int(usage.get("completion_tokens") or 0)
-        cost = (prompt_tokens * bill_in + completion_tokens * bill_out) / 1_000_000
+        cost = bill_request if bill_request else (prompt_tokens * bill_in + completion_tokens * bill_out) / 1_000_000
         record_usage(user["id"], key["id"], model, prompt_tokens, completion_tokens, latency, status="ok", cost=cost, client=client)
         data = normalize_completion_payload(data)
         self.send_json(200, data)
 
-    def relay_stream(self, upstream, user, key, model, price_in, price_out, started, client=""):
+    def relay_stream(self, upstream, user, key, model, price_in, price_out, request_price, started, client=""):
         self.send_response(200)
         self.send_header("Content-Type", "text/event-stream; charset=utf-8")
         self.send_header("Cache-Control", "no-cache")
@@ -2435,7 +2444,7 @@ class NovaHandler(BaseHTTPRequestHandler):
             prompt_tokens = int(usage.get("prompt_tokens") or 0); completion_tokens = int(usage.get("completion_tokens") or 0)
         else:
             prompt_tokens = 0; completion_tokens = max(1, collected_chars // 4)
-        cost = (prompt_tokens * price_in + completion_tokens * price_out) / 1_000_000
+        cost = request_price if request_price else (prompt_tokens * price_in + completion_tokens * price_out) / 1_000_000
         record_usage(user["id"], key["id"], model, prompt_tokens, completion_tokens, latency, status="ok", cost=cost, client=client)
 
 class OAuthCallbackHandler(BaseHTTPRequestHandler):

@@ -15,7 +15,7 @@
   if (filterWrap && tbody && window.renderModelRow) {
     let currentFilter = 'all';
 
-    const isFree = (m) => m.input === 0 && m.output === 0;
+    const isFree = (m) => m.input === 0 && m.output === 0 && Number(m.price_per_request || 0) === 0;
     const render = (filter) => {
       const rows = window.NOVA_MODELS.filter((m) =>
         filter === 'all' ? true :
@@ -57,7 +57,7 @@
         applySourceNote();
         const models = Array.isArray(list) ? list : [];
         if (models.length) {
-          const free = models.filter((m) => Number(m.input) === 0 && Number(m.output) === 0).length;
+          const free = models.filter((m) => Number(m.input) === 0 && Number(m.output) === 0 && Number(m.price_per_request || 0) === 0).length;
           document.querySelectorAll('[data-stat="models"]').forEach((el) => {
             el.dataset.target = String(models.length);
             el.textContent = String(models.length);

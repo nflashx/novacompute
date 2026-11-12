@@ -95,6 +95,7 @@ struct ModelForm {
     speed: f64,
     input: f64,
     output: f64,
+    price_per_request: f64,
     category: String,
     upstream: String,
     upstream_id: String,
@@ -380,6 +381,7 @@ impl App {
             "speed": f.speed,
             "input": f.input,
             "output": f.output,
+            "price_per_request": f.price_per_request,
             "category": if f.category.trim().is_empty() { "chat" } else { f.category.trim() },
             "tag": if f.tag.trim().is_empty() { Value::Null } else { json!(f.tag.trim()) },
             "note": f.note.trim(),
@@ -874,6 +876,7 @@ impl App {
         let free_count = self.models.iter().filter(|m| {
             m["pricing"]["input_per_1m"].as_f64().unwrap_or(1.0) == 0.0
                 && m["pricing"]["output_per_1m"].as_f64().unwrap_or(1.0) == 0.0
+                && m["price_per_request"].as_f64().unwrap_or(0.0) == 0.0
         }).count();
         let image_count = self.models.iter().filter(|m| m["capabilities"]["image"].as_bool().unwrap_or(false)).count();
         let video_count = self.models.iter().filter(|m| m["capabilities"]["video"].as_bool().unwrap_or(false)).count();
@@ -936,13 +939,20 @@ impl App {
                                     ui.label(egui::RichText::new(if upstream.is_empty() { "—" } else { upstream }).size(10.0).color(MUTED));
                                 });
                                 ui.vertical(|ui| {
-                                    ui.monospace(money(m["pricing"]["input_per_1m"].as_f64().unwrap_or(0.0)));
-                                    ui.monospace(egui::RichText::new(money(m["pricing"]["output_per_1m"].as_f64().unwrap_or(0.0))).color(MUTED));
+                                    let request_price = m["price_per_request"].as_f64().unwrap_or(0.0);
+                                    if request_price > 0.0 {
+                                        ui.monospace(format!("${:.2} / req", request_price));
+                                        ui.monospace(egui::RichText::new("—").color(MUTED));
+                                    } else {
+                                        ui.monospace(money(m["pricing"]["input_per_1m"].as_f64().unwrap_or(0.0)));
+                                        ui.monospace(egui::RichText::new(money(m["pricing"]["output_per_1m"].as_f64().unwrap_or(0.0))).color(MUTED));
+                                    }
                                 });
                                 ui.label(m["category"].as_str().unwrap_or("chat"));
                                 ui.horizontal(|ui| {
                                     if m["pricing"]["input_per_1m"].as_f64().unwrap_or(1.0) == 0.0
-                                        && m["pricing"]["output_per_1m"].as_f64().unwrap_or(1.0) == 0.0 {
+                                        && m["pricing"]["output_per_1m"].as_f64().unwrap_or(1.0) == 0.0
+                                        && m["price_per_request"].as_f64().unwrap_or(0.0) == 0.0 {
                                         pill(ui, "FREE", GREEN);
                                     }
                                     if m["capabilities"]["image"].as_bool().unwrap_or(false) { pill(ui, "IMG", ACCENT); }
@@ -972,6 +982,7 @@ impl App {
                 speed: m["speed_tps"].as_f64().unwrap_or(0.0),
                 input: m["pricing"]["input_per_1m"].as_f64().unwrap_or(0.0),
                 output: m["pricing"]["output_per_1m"].as_f64().unwrap_or(0.0),
+                price_per_request: m["price_per_request"].as_f64().unwrap_or(0.0),
                 category: m["category"].as_str().unwrap_or("chat").to_string(),
                 upstream: m["upstream"].as_str().unwrap_or("").to_string(),
                 upstream_id: m["upstream_id"].as_str().unwrap_or("").to_string(),
@@ -1044,10 +1055,13 @@ impl App {
                     field_label(ui, "Output / 1M");
                     ui.add(egui::DragValue::new(&mut self.model_form.output).speed(0.001).range(0.0..=1000.0));
                     ui.end_row();
+                    field_label(ui, "Price / request");
+                    ui.add(egui::DragValue::new(&mut self.model_form.price_per_request).speed(0.001).range(0.0..=1000.0).prefix("$"));
+                    field_label(ui, "Price unit");
+                    ui.add(egui::TextEdit::singleline(&mut self.model_form.price_unit).desired_width(230.0).hint_text("1k_chars or request"));
+                    ui.end_row();
                     field_label(ui, "Speed tok/s");
                     ui.add(egui::DragValue::new(&mut self.model_form.speed).speed(1.0).range(0.0..=10000.0));
-                    field_label(ui, "Price unit");
-                    ui.add(egui::TextEdit::singleline(&mut self.model_form.price_unit).desired_width(230.0).hint_text("1k_chars for TTS"));
                     ui.end_row();
                     field_label(ui, "Note");
                     ui.add(egui::TextEdit::singleline(&mut self.model_form.note).desired_width(520.0).hint_text("Customer-facing note"));
@@ -1231,6 +1245,7 @@ fn model_form_from(m: &Value) -> ModelForm {
         speed: m["speed"].as_f64().unwrap_or(0.0),
         input: m["input"].as_f64().unwrap_or(0.0),
         output: m["output"].as_f64().unwrap_or(0.0),
+        price_per_request: m["price_per_request"].as_f64().unwrap_or(0.0),
         category: m["category"].as_str().unwrap_or("chat").to_string(),
         upstream: m["upstream"].as_str().unwrap_or("").to_string(),
         upstream_id: m["upstream_id"].as_str().unwrap_or("").to_string(),
