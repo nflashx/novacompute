@@ -16,6 +16,27 @@
     window.novaParticles(document.getElementById('auth-particles'));
   }
 
+  /* Founding free-seat counter (register page). */
+  const seatNodes = document.querySelectorAll('[data-free-seat-remaining]');
+  if (seatNodes.length && window.novaApi) {
+    window.novaApi('/api/free-seats', { auth: false }).then((res) => {
+      if (!res.ok || !res.data || !res.data.limit) {
+        seatNodes.forEach((el) => { el.textContent = 'availability unavailable — try again'; });
+        return;
+      }
+      const remaining = Number(res.data.remaining || 0);
+      seatNodes.forEach((el) => {
+        el.textContent = remaining > 0
+          ? `${remaining} of ${res.data.limit} free seats left`
+          : `all ${res.data.limit} free seats are taken — new accounts are pay-as-you-go`;
+      });
+      const note = document.getElementById('free-seat-note');
+      if (note && remaining <= 0) {
+        note.className = 'mt-4 rounded-lg border border-amber-400/25 bg-amber-400/[0.07] p-3 text-center text-xs leading-relaxed text-amber-200/80';
+      }
+    }).catch(() => {});
+  }
+
   document.querySelectorAll('[data-toggle-password]').forEach((btn) => {
     btn.addEventListener('click', () => {
       const input = document.getElementById(btn.dataset.togglePassword);
@@ -35,6 +56,7 @@
       api_key: data.api_key,
       balance: data.balance,
       is_admin: !!(data.user && data.user.is_admin),
+      free_seat: !!(data.user && data.user.free_seat),
     });
     window.novaToast(message || 'Signed in — loading your dashboard…');
     setTimeout(() => { window.location.href = 'dashboard.html'; }, 320);

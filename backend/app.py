@@ -46,8 +46,15 @@ CODE_TTL = 600
 FAKE_MAIL_LIMIT = 3
 FAKE_MAIL_BASE = 600
 FAKE_MAIL_MAX = 86400
+# Founding offer: only the first N non-admin customers get the free plan.
+# 0 disables the cap (not recommended). Existing customers are backfilled at boot.
+FREE_CUSTOMER_LIMIT = max(0, int(os.getenv("NOVA_FREE_CUSTOMER_LIMIT", "50")))
+# GitHub accounts younger than this are not eligible for a free seat.
+# Google's userinfo endpoint does not expose account age.
+OAUTH_MIN_ACCOUNT_DAYS = max(0, int(os.getenv("NOVA_OAUTH_MIN_ACCOUNT_DAYS", "7")))
 
-DISPOSABLE_DOMAINS = {
+DISPOSABLE_FILE = os.path.join(BASE_DIR, "disposable_domains.txt")
+BUILTIN_DISPOSABLE_DOMAINS = {
     "mailinator.com", "10minutemail.com", "10minutemail.net", "guerrillamail.com", "guerrillamail.net",
     "guerrillamail.org", "sharklasers.com", "grr.la", "yopmail.com", "yopmail.net", "trashmail.com",
     "trashmail.net", "trash-mail.com", "tempmail.com", "temp-mail.org", "tempmailo.com", "tempmail.dev",
@@ -67,6 +74,21 @@ DISPOSABLE_DOMAINS = {
     "mail-temporaire.fr", "moncourrier.fr.nf", "monmail.fr.nf", "discardmail.com", "spambog.de",
     "example.com", "example.org", "example.net", "test.com", "localhost", "invalid", "local",
 }
+
+def load_disposable_domains():
+    """Built-in seed + the maintained community blocklist (10k+ domains)."""
+    domains = set(BUILTIN_DISPOSABLE_DOMAINS)
+    try:
+        with open(DISPOSABLE_FILE, "r", encoding="utf-8") as fh:
+            for line in fh:
+                value = line.strip().lower()
+                if value and not value.startswith("#"):
+                    domains.add(value)
+    except OSError:
+        pass
+    return domains
+
+DISPOSABLE_DOMAINS = load_disposable_domains()
 DISPOSABLE_PATTERNS = re.compile(
     r"^(temp|trash|fake|throwaway|disposable|10minute|burner|junk|spam|onetime|one-time)[\w.-]*", re.I)
 
@@ -80,8 +102,17 @@ def email_family(email):
     return local + "@" + domain
 
 def mail_allowed(email):
-    domain = email.rsplit("@", 1)[-1].lower() if "@" in email else ""
-    if not domain or domain in DISPOSABLE_DOMAINS or any(domain.endswith("." + d) for d in DISPOSABLE_DOMAINS):
+    if any(ord(ch) < 32 for ch in email):
+        return False, "Invalid characters in email address."
+    domain = email.rsplit("@", 1)[-1].strip().lower().rstrip(".") if "@" in email else ""
+    try:
+        domain = domain.encode("idna").decode("ascii")
+    except UnicodeError:
+        return False, "This email domain is not valid."
+    if (not domain or len(domain) > 253 or ".." in domain or domain.startswith(".")
+            or re.fullmatch(r"[\d.]+", domain) or ":" in domain):
+        return False, "This email domain is not valid."
+    if domain in DISPOSABLE_DOMAINS or any(domain.endswith("." + d) for d in DISPOSABLE_DOMAINS):
         return False, "Disposable / temporary email domains are not allowed. Use a real mailbox."
     if domain.endswith((".test", ".invalid", ".localhost", ".local")):
         return False, "This email domain cannot receive mail. Use a real mailbox."
@@ -89,18 +120,60 @@ def mail_allowed(email):
         return False, "This looks like a throwaway email domain. Use a real mailbox."
     return True, ""
 
-def domain_has_mx(domain):
-    """Ask Cloudflare DNS-over-HTTPS for MX/A records. Fails open on network errors."""
-    for rtype in ("MX", "A"):
+MAIL_DOMAIN_CACHE = {}
+MAIL_DOMAIN_LOCK = threading.Lock()
+
+def _dns_json(resolver, domain, rtype):
+    if resolver == "google":
+        url = "https://dns.google/resolve?" + urlencode({"name": domain, "type": rtype})
+    else:
+        url = "https://cloudflare-dns.com/dns-query?" + urlencode({"name": domain, "type": rtype})
+    req = urllib.request.Request(url, headers={"Accept": "application/dns-json", "User-Agent": "NovaCompute/1.0"})
+    with urllib.request.urlopen(req, timeout=4) as resp:
+        return json.loads(resp.read().decode("utf-8"))
+
+def domain_mail_status(domain):
+    """Return (status, mx_hosts): ok / no_mx / error.
+
+    Both Cloudflare and Google DoH are tried. A DNS outage is reported as
+    `error` (the caller returns 503); it is never treated as a valid mailbox.
+    """
+    domain = (domain or "").strip().lower().rstrip(".")
+    now = time.time()
+    with MAIL_DOMAIN_LOCK:
+        cached = MAIL_DOMAIN_CACHE.get(domain)
+        if cached and now - cached[0] < 600:
+            return cached[1], cached[2]
+    mx_hosts = []
+    answered = False
+    for resolver in ("cloudflare", "google"):
         try:
-            url = "https://cloudflare-dns.com/dns-query?" + urlencode({"name": domain, "type": rtype})
-            req = urllib.request.Request(url, headers={"Accept": "application/dns-json", "User-Agent": "NovaCompute/1.0"})
-            with urllib.request.urlopen(req, timeout=4) as resp:
-                data = json.loads(resp.read().decode("utf-8"))
-            if int(data.get("Status", 0)) == 0 and data.get("Answer"):
-                return True
+            data = _dns_json(resolver, domain, "MX")
+            answered = True
+            if int(data.get("Status", 2)) not in (0, 3):
+                continue
+            for answer in data.get("Answer") or []:
+                if int(answer.get("type", 0)) != 15:
+                    continue
+                host = str(answer.get("data", "")).split()[-1].rstrip(".").lower()
+                if host and host not in mx_hosts:
+                    mx_hosts.append(host)
         except Exception as exc:
-            print(f"[signup] DNS check skipped for {domain}: {exc}")
+            print(f"[signup] DNS {resolver} failed for {domain}: {exc}")
+    if mx_hosts:
+        result = ("ok", mx_hosts)
+    elif answered:
+        result = ("no_mx", [])
+    else:
+        result = ("error", [])
+    with MAIL_DOMAIN_LOCK:
+        MAIL_DOMAIN_CACHE[domain] = (now, result[0], result[1])
+    return result
+
+def mx_is_disposable(mx_hosts):
+    for host in mx_hosts:
+        host = host.rstrip(".")
+        if host in DISPOSABLE_DOMAINS or any(host.endswith("." + d) for d in DISPOSABLE_DOMAINS):
             return True
     return False
 
@@ -383,6 +456,62 @@ def family_taken(db, email):
 def public_key(key):
     return {"id": key["id"], "name": key.get("name", "Key"), "key": key["key"], "created_at": key.get("created_at"), "last_used": key.get("last_used"), "status": key.get("status", "active")}
 
+# ================= FOUNDING FREE SEATS =================
+def free_seat_count(db):
+    return sum(1 for u in db.get("users", []) if u.get("free_seat") and not u.get("is_admin"))
+
+def free_seat_stats(db=None):
+    db = db or load_users()
+    claimed = free_seat_count(db)
+    if FREE_CUSTOMER_LIMIT <= 0:
+        return {"limit": 0, "claimed": claimed, "remaining": None, "open": True}
+    remaining = max(0, FREE_CUSTOMER_LIMIT - claimed)
+    return {"limit": FREE_CUSTOMER_LIMIT, "claimed": claimed, "remaining": remaining, "open": remaining > 0}
+
+def assign_free_seat(db, user, allow=False):
+    """Give a founding free seat only while the cap has room.
+
+    `allow=False` is used for untrusted OAuth accounts (new GitHub accounts):
+    they can still pay, but cannot consume a founding seat.
+    """
+    if user.get("is_admin"):
+        user["free_seat"] = False
+        return False
+    if not allow or not free_seat_stats(db)["open"]:
+        user["free_seat"] = False
+        return False
+    user["free_seat"] = True
+    return True
+
+def init_free_seats():
+    """Backfill existing accounts once, in creation order, up to the cap."""
+    with DB_LOCK:
+        db = load_users()
+        changed = False
+        customers = sorted(
+            [u for u in db.get("users", []) if not u.get("is_admin")],
+            key=lambda u: str(u.get("created_at") or ""),
+        )
+        claimed = sum(1 for u in customers if u.get("free_seat") is True)
+        for user in customers:
+            if "free_seat" in user:
+                continue
+            user["free_seat"] = FREE_CUSTOMER_LIMIT <= 0 or claimed < FREE_CUSTOMER_LIMIT
+            if user["free_seat"]:
+                claimed += 1
+            changed = True
+        for user in db.get("users", []):
+            if user.get("is_admin") and "free_seat" not in user:
+                user["free_seat"] = False
+                changed = True
+            if ("activation_bonus_granted" not in user
+                    and any(t.get("type") == "bonus" for t in user.get("transactions", []))):
+                user["activation_bonus_granted"] = True
+                changed = True
+        if changed:
+            save_users(db)
+        print(f"[free-seats] {free_seat_stats(db)}")
+
 # ================= AUTH HELPERS (email / anti-abuse / OAuth) =================
 def load_json_cfg(path):
     try:
@@ -397,6 +526,27 @@ def client_ip(handler):
     if ip in ("::1", "::ffff:127.0.0.1"):
         return "127.0.0.1"
     return ip
+
+def signup_ip_guard(db, ip):
+    """Return (status, code, message) when this network may not create accounts."""
+    if fake_mail_blocked(db, ip):
+        return 429, "email_blocked", "Too many disposable-email attempts from this network. Try again later."
+    if ip_is_banned(db, ip):
+        return 403, "ip_banned", "This network is temporarily blocked from creating accounts."
+    hits = prune_ip(db, ip)
+    per_hour = sum(1 for t in hits if time.time() - t < SIGNUP_WINDOW)
+    if len(hits) >= SIGNUP_DAILY:
+        db["banned_ips"].append({"ip": ip, "until": time.time() + IP_BAN_SECONDS, "reason": "mass signup"})
+        save_users(db)
+        return 403, "ip_banned", "Too many accounts from this network. Blocked for 24 hours."
+    if per_hour >= SIGNUP_LIMIT:
+        return 429, "signup_limit", "Too many accounts from this network. Try again later."
+    return None
+
+def record_signup_ip(db, ip):
+    hits = prune_ip(db, ip)
+    hits.append(time.time())
+    db["ip_signups"][ip] = hits
 
 def send_mail(to, subject, html_body, text_body=""):
     cfg = load_json_cfg(MAIL_CONFIG_FILE)
@@ -529,7 +679,7 @@ def oauth_profile(provider, code):
                              {"Authorization": "Bearer " + tok["access_token"]})
         if not info.get("email_verified", True):
             raise ValueError("Your Google email is not verified.")
-        return info.get("email"), info.get("name") or info.get("email")
+        return info.get("email"), info.get("name") or info.get("email"), {"trusted": True, "age_days": None}
     tok = http_post_json("https://github.com/login/oauth/access_token", {
         "code": code, "client_id": c["client_id"], "client_secret": c["client_secret"],
         "redirect_uri": redirect_uri,
@@ -543,9 +693,16 @@ def oauth_profile(provider, code):
     primary = next((e for e in verified if e.get("primary")), verified[0] if verified else None)
     if not primary:
         raise ValueError("Your GitHub account has no verified email.")
-    return primary["email"], info.get("name") or info.get("login")
+    age_days = None
+    try:
+        created = datetime.fromisoformat(str(info.get("created_at", "")).replace("Z", "+00:00"))
+        age_days = (now_utc() - created).days
+    except (TypeError, ValueError):
+        pass
+    trusted = OAUTH_MIN_ACCOUNT_DAYS <= 0 or (age_days is not None and age_days >= OAUTH_MIN_ACCOUNT_DAYS)
+    return primary["email"], info.get("name") or info.get("login"), {"trusted": trusted, "age_days": age_days}
 
-def oauth_session_token(provider, query):
+def oauth_session_token(provider, query, ip=""):
     state = (query.get("state") or [""])[0]
     with OAUTH_LOCK:
         entry = OAUTH_STATE.pop(state, None)
@@ -554,7 +711,7 @@ def oauth_session_token(provider, query):
     code = (query.get("code") or [""])[0]
     if not code:
         raise ValueError("OAuth provider returned no code.")
-    email, name = oauth_profile(provider, code)
+    email, name, profile_meta = oauth_profile(provider, code)
     if not email:
         raise ValueError("Could not read your email from the provider.")
     email = email.strip().lower()
@@ -562,6 +719,9 @@ def oauth_session_token(provider, query):
         db = load_users()
         user = find_user_by_email(db, email)
         if not user:
+            guard = signup_ip_guard(db, ip) if ip else None
+            if guard:
+                raise ValueError(guard[2])
             salt, digest = hash_password(secrets.token_urlsafe(24))
             user = {
                 "id": "usr_" + secrets.token_hex(8), "name": name or email.split("@")[0],
@@ -572,10 +732,15 @@ def oauth_session_token(provider, query):
                               "last_used": None, "status": "active"}],
                 "usage": [], "transactions": [], "verified": True, "provider": provider, "plan": "free",
             }
+            assign_free_seat(db, user, allow=bool(profile_meta.get("trusted", True)))
             db["users"].append(user)
+            if ip:
+                record_signup_ip(db, ip)
         else:
             user["verified"] = True
             user.setdefault("provider", provider)
+            if "free_seat" not in user:
+                assign_free_seat(db, user, allow=True)
             if not user.get("api_keys"):
                 user["api_keys"] = [{"id": "key_" + secrets.token_hex(6), "name": "Default",
                                      "key": new_api_key(), "created_at": iso(now_utc()),
@@ -736,12 +901,13 @@ def apply_payment(user, purpose, amount, plan, method, reference):
             "method": method, "amount": round(float(amount), 2), "reference": reference,
         })
         bonus = float(plan_def.get("bonus", 0) or 0)
-        if bonus > 0:
+        if bonus > 0 and not user.get("activation_bonus_granted"):
             user["balance"] = round(user.get("balance", 0.0) + bonus, 6)
             user["transactions"].append({
                 "ts": now_ts + 1, "type": "bonus", "description": f"{plan_def['name']} bonus credit",
                 "method": "Subscription bonus", "amount": bonus, "reference": reference,
             })
+            user["activation_bonus_granted"] = True
     else:
         raise ValueError("Unknown payment purpose.")
     user["transactions"] = user.get("transactions", [])[-200:]
@@ -771,6 +937,11 @@ def paypal_capture_order(user, order_id):
     unit = (result.get("purchase_units") or [{}])[0]
     capture = ((unit.get("payments") or {}).get("captures") or [{}])[0]
     paid = float((capture.get("amount") or {}).get("value", 0))
+    currency = str((capture.get("amount") or {}).get("currency_code", "")).upper()
+    if currency and currency != "USD":
+        raise ValueError("Paid currency does not match the order.")
+    if str(capture.get("status", "COMPLETED")).upper() != "COMPLETED":
+        raise ValueError("PayPal capture was not completed.")
     if abs(paid - float(meta["amount"])) > 0.011:
         raise ValueError("Paid amount does not match the order.")
 
@@ -783,7 +954,13 @@ def paypal_capture_order(user, order_id):
         if meta.get("status") == "captured":
             return {"status": "already_captured", "balance": target.get("balance", 0.0), "plan": target.get("plan", "free")}
         payer_id = (result.get("payer") or {}).get("payer_id", "") or payer_id
-        linked = db.get("paypal_payers", {}).get(payer_id) if payer_id else None
+        if not payer_id:
+            meta["status"] = "review"
+            meta["reason"] = "missing_payer_id"
+            db["paypal_orders"][order_id] = meta
+            save_users(db)
+            raise ValueError("Payment captured but held for review: PayPal payer identity is missing.")
+        linked = db.get("paypal_payers", {}).get(payer_id)
         if linked and linked != target["id"]:
             meta["status"] = "review"
             meta["payer_id"] = payer_id
@@ -972,12 +1149,15 @@ class NovaHandler(BaseHTTPRequestHandler):
             for p_name, p_info in PROVIDERS.items():
                 total_keys += len(load_keys_from_file(p_info["keys_file"], p_info.get("fallback_key")))
             
-            self.send_json(200, {"status": "ok", "service": "nova-backend", "keys_loaded": total_keys, "models": len(MODELS), "time": iso(now_utc())})
+            self.send_json(200, {"status": "ok", "service": "nova-backend", "keys_loaded": total_keys, "models": len(MODELS), "free_seats": free_seat_stats(), "time": iso(now_utc())})
             return
         if path == "/v1/models":
             self.send_json(200, {"object": "list", "data": [{"id": m["id"], "object": "model", "owned_by": m.get("provider", "Custom"), "name": m.get("name", m["id"]), "context": m.get("context", "—"), "speed_tps": m.get("speed", 0), "pricing": {"input_per_1m": m.get("input", 0), "output_per_1m": m.get("output", 0)}, "capabilities": {"image": bool(m.get("image")), "video": bool(m.get("video"))}, "category": m.get("category", "chat"), "tag": m.get("tag"), "note": m.get("note", ""), "price_unit": m.get("price_unit"), "quota_multiplier": QUOTA_MULTIPLIERS.get(m["id"], 1)} for m in MODELS]})
             return
         if path == "/api/me": self.handle_me(); return
+        if path == "/api/free-seats":
+            self.send_json(200, free_seat_stats())
+            return
         if path == "/api/fx": self.handle_fx(); return
         if path == "/api/admin/overview": self.handle_admin_overview(); return
         if path == "/api/admin/users": self.handle_admin_users(); return
@@ -1022,7 +1202,7 @@ class NovaHandler(BaseHTTPRequestHandler):
 
     def handle_oauth_callback(self, provider):
         try:
-            token = oauth_session_token(provider, parse_qs(urlparse(self.path).query))
+            token = oauth_session_token(provider, parse_qs(urlparse(self.path).query), client_ip(self))
             target = f"{SITE_URL}/login.html?oauth_token={token}"
         except ValueError as exc:
             target = f"{SITE_URL}/login.html?oauth_error={urlencode({'m': str(exc)})[2:]}"
@@ -1048,7 +1228,7 @@ class NovaHandler(BaseHTTPRequestHandler):
             db["oauth_sessions"].pop(token, None); save_users(db)
             active_keys = [k for k in user.get("api_keys", []) if k.get("status", "active") == "active"]
             if not active_keys: return self.send_error_json(403, "authentication_error", "no_active_key", "This account has no active API keys.")
-        self.send_json(200, {"user": {"name": user["name"], "email": user["email"], "created_at": user.get("created_at"), "is_admin": bool(user.get("is_admin"))}, "api_key": active_keys[0]["key"], "balance": round(user.get("balance", 0.0), 6)})
+        self.send_json(200, {"user": {"name": user["name"], "email": user["email"], "created_at": user.get("created_at"), "is_admin": bool(user.get("is_admin")), "free_seat": bool(user.get("free_seat"))}, "api_key": active_keys[0]["key"], "balance": round(user.get("balance", 0.0), 6)})
 
     def handle_paypal_create(self):
         _db, user, _key = self.authenticate()
@@ -1086,7 +1266,8 @@ class NovaHandler(BaseHTTPRequestHandler):
     def handle_bank_webhook(self):
         cfg = load_json_cfg(PAYMENT_CONFIG_FILE) or {}
         secret = os.getenv("NOVA_BANK_WEBHOOK_SECRET") or cfg.get("webhook_token") or ""
-        if not secret or self.headers.get("Authorization", "") != "Bearer " + secret:
+        supplied = self.headers.get("Authorization", "")
+        if not secret or not secrets.compare_digest(supplied, "Bearer " + secret):
             return self.send_error_json(401, "authentication_error", "invalid_webhook_token", "Invalid bank webhook token.")
         body = self.read_json_body() or {}
         events = body.get("data") if isinstance(body.get("data"), list) else [body]
@@ -1101,10 +1282,18 @@ class NovaHandler(BaseHTTPRequestHandler):
             try: amount_vnd = float(event.get("transferAmount") or event.get("amount") or 0)
             except (TypeError, ValueError): amount_vnd = 0
             content = str(event.get("content") or event.get("description") or "")
+            transfer_type = str(event.get("transferType") or event.get("type") or "").strip().lower()
+            currency = str(event.get("currency") or event.get("currencyCode") or "VND").strip().upper()
             if not txid or amount_vnd <= 0: continue
             with DB_LOCK:
                 db = load_users()
                 if txid in db["bank_txns"]: continue
+                if transfer_type in ("out", "outgoing", "debit", "withdrawal"):
+                    db["bank_txns"][txid] = {"ts": int(time.time()), "status": "outgoing_ignored", "amount_vnd": amount_vnd}
+                    save_users(db); continue
+                if currency and currency not in ("VND", "VNĐ"):
+                    db["bank_txns"][txid] = {"ts": int(time.time()), "status": "currency_mismatch", "currency": currency, "amount_vnd": amount_vnd}
+                    save_users(db); continue
                 match = re.search(r"NOVA[\s\-_]+(TOPUP|STARTER|PRO|ULTRA)[\s\-_]+([^\s]+@[^\s]+)", content, re.I)
                 if not match:
                     db["bank_txns"][txid] = {"ts": int(time.time()), "status": "unmatched", "amount_vnd": amount_vnd, "content": content[:200]}
@@ -1116,7 +1305,14 @@ class NovaHandler(BaseHTTPRequestHandler):
                 if not user:
                     db["bank_txns"][txid] = {"ts": int(time.time()), "status": "user_missing", "email": email, "amount_vnd": amount_vnd}
                     save_users(db); continue
-                sender = str(event.get("accountNumber") or event.get("senderAccount") or event.get("senderAccountNumber") or "").strip()
+                # accountNumber is the receiving merchant account in SePay, not
+                # the payer. Only use explicit sender fields, otherwise leave it
+                # empty rather than falsely linking every transfer to one user.
+                sender = ""
+                for field in ("senderAccountNumber", "senderAccount", "fromAccountNumber",
+                              "counterAccountNumber", "originAccountNumber", "transferFrom", "payerAccount"):
+                    sender = str(event.get(field) or "").strip()
+                    if sender: break
                 if sender and db.get("bank_senders", {}).get(sender) not in (None, user["id"]):
                     db["bank_txns"][txid] = {"ts": int(time.time()), "status": "sender_linked", "email": email, "sender": sender}
                     save_users(db); continue
@@ -1132,7 +1328,7 @@ class NovaHandler(BaseHTTPRequestHandler):
                     else:
                         apply_payment(user, "topup", usd, None, "Bank transfer", txid)
                         if sender: db["bank_senders"][sender] = user["id"]
-                        db["bank_txns"][txid] = {"ts": int(time.time()), "status": "credited", "email": email, "usd": usd, "amount_vnd": amount_vnd}
+                        db["bank_txns"][txid] = {"ts": int(time.time()), "status": "credited", "email": email, "usd": usd, "amount_vnd": amount_vnd, "sender": sender, "sender_known": bool(sender)}
                         processed += 1; matched += 1
                 else:
                     plan = kind.lower()
@@ -1143,7 +1339,7 @@ class NovaHandler(BaseHTTPRequestHandler):
                     else:
                         apply_payment(user, "sub", plan_def["price"], plan, "Bank transfer", txid)
                         if sender: db["bank_senders"][sender] = user["id"]
-                        db["bank_txns"][txid] = {"ts": int(time.time()), "status": "activated", "email": email, "plan": plan, "amount_vnd": amount_vnd}
+                        db["bank_txns"][txid] = {"ts": int(time.time()), "status": "activated", "email": email, "plan": plan, "amount_vnd": amount_vnd, "sender": sender, "sender_known": bool(sender)}
                         processed += 1; matched += 1
                 db["bank_txns"] = dict(list(db["bank_txns"].items())[-1000:])
                 save_users(db)
@@ -1160,30 +1356,31 @@ class NovaHandler(BaseHTTPRequestHandler):
             return self.send_error_json(400, "invalid_request_error", "alias_not_allowed", "Plus-addressing is not allowed. Use your base email address.")
         if len(password) < 8: return self.send_error_json(400, "invalid_request_error", "weak_password", "Password must be at least 8 characters.")
 
-        db = load_users()
-        if fake_mail_blocked(db, ip):
-            return self.send_error_json(429, "rate_limit_error", "email_blocked", "Too many disposable-email attempts from this network. Try again later.")
-        if ip_is_banned(db, ip):
-            return self.send_error_json(403, "authentication_error", "ip_banned", "This network is temporarily blocked from creating accounts.")
-        hits = prune_ip(db, ip)
-        per_hour = sum(1 for t in hits if time.time() - t < SIGNUP_WINDOW)
-        if per_hour >= SIGNUP_LIMIT:
-            if per_hour >= SIGNUP_DAILY:
-                db["banned_ips"].append({"ip": ip, "until": time.time() + IP_BAN_SECONDS, "reason": "mass signup"})
-                save_users(db)
-                return self.send_error_json(403, "authentication_error", "ip_banned", "Too many accounts from this network. Blocked for 24 hours.")
-            return self.send_error_json(429, "rate_limit_error", "signup_limit", "Too many accounts from this network. Try again later.")
-        if find_user_by_email(db, email):
-            return self.send_error_json(409, "invalid_request_error", "email_taken", "An account with this email already exists.")
-        if family_taken(db, email):
-            return self.send_error_json(409, "invalid_request_error", "email_taken", "An account with this email (or a Gmail variant) already exists.")
+        with DB_LOCK:
+            db = load_users()
+            guard = signup_ip_guard(db, ip)
+            if guard:
+                status, code_name, message = guard
+                err_type = "rate_limit_error" if status == 429 else "authentication_error"
+                return self.send_error_json(status, err_type, code_name, message)
+            if find_user_by_email(db, email):
+                return self.send_error_json(409, "invalid_request_error", "email_taken", "An account with this email already exists.")
+            if family_taken(db, email):
+                return self.send_error_json(409, "invalid_request_error", "email_taken", "An account with this email (or a Gmail variant) already exists.")
         ok, why = mail_allowed(email)
         if not ok:
             fake_mail_hit(self)
             return self.send_error_json(400, "invalid_request_error", "disposable_email", why)
-        if not domain_has_mx(email.rsplit("@", 1)[-1]):
+        domain = email.rsplit("@", 1)[-1].strip().lower().rstrip(".")
+        mail_status, mx_hosts = domain_mail_status(domain)
+        if mail_status == "error":
+            return self.send_error_json(503, "configuration_error", "dns_unavailable", "Email verification is temporarily unavailable. Try again in a minute.")
+        if mail_status != "ok":
             fake_mail_hit(self)
-            return self.send_error_json(400, "invalid_request_error", "no_mail_server", "This email domain cannot receive mail. Use a real mailbox.")
+            return self.send_error_json(400, "invalid_request_error", "no_mail_server", "This email domain has no mail server. Use a real mailbox.")
+        if mx_is_disposable(mx_hosts):
+            fake_mail_hit(self)
+            return self.send_error_json(400, "invalid_request_error", "disposable_email", "This email domain uses a disposable mail provider. Use a real mailbox.")
 
         code = f"{secrets.randbelow(1000000):06d}"
         sent = send_code_email(email, code)
@@ -1201,9 +1398,10 @@ class NovaHandler(BaseHTTPRequestHandler):
                 "password_salt": salt, "password_hash": digest, "expires": now_ts + CODE_TTL,
                 "attempts": 0, "ip": ip, "sent": sent, "ts": now_ts, "last_sent": now_ts,
             }
-            hits = prune_ip(db, ip); hits.append(now_ts); db["ip_signups"][ip] = hits
+            record_signup_ip(db, ip)
             save_users(db)
-        self.send_json(200, {"pending": True, "email": email, "sent": sent, "dev_code": code if not sent else None})
+            seat_stats = free_seat_stats(db)
+        self.send_json(200, {"pending": True, "email": email, "sent": sent, "dev_code": code if not sent else None, "free_seats": seat_stats})
 
     def handle_verify(self):
         body = self.read_json_body() or {}
@@ -1235,10 +1433,11 @@ class NovaHandler(BaseHTTPRequestHandler):
                               "created_at": iso(now_utc()), "last_used": None, "status": "active"}],
                 "usage": [], "transactions": [], "verified": True, "provider": "email", "plan": "free",
             }
+            assign_free_seat(db, user, allow=True)
             db["users"].append(user)
             db["pending"].pop(email, None)
             save_users(db)
-        self.send_json(201, {"user": {"name": user["name"], "email": email, "created_at": user["created_at"]}, "api_key": api_key, "balance": 0.0})
+        self.send_json(201, {"user": {"name": user["name"], "email": email, "created_at": user["created_at"], "free_seat": bool(user.get("free_seat"))}, "api_key": api_key, "balance": 0.0})
 
     def handle_resend(self):
         body = self.read_json_body() or {}
@@ -1282,7 +1481,7 @@ class NovaHandler(BaseHTTPRequestHandler):
             db["failed_logins"].pop(email, None); save_users(db)
             active_keys = [k for k in user.get("api_keys", []) if k.get("status", "active") == "active"]
             if not active_keys: return self.send_error_json(403, "authentication_error", "no_active_key", "This account has no active API keys.")
-        self.send_json(200, {"user": {"name": user["name"], "email": user["email"], "created_at": user.get("created_at"), "is_admin": bool(user.get("is_admin"))}, "api_key": active_keys[0]["key"], "balance": round(user.get("balance", 0.0), 6)})
+        self.send_json(200, {"user": {"name": user["name"], "email": user["email"], "created_at": user.get("created_at"), "is_admin": bool(user.get("is_admin")), "free_seat": bool(user.get("free_seat"))}, "api_key": active_keys[0]["key"], "balance": round(user.get("balance", 0.0), 6)})
 
     def handle_me(self):
         _db, user, key = self.authenticate()
@@ -1290,7 +1489,7 @@ class NovaHandler(BaseHTTPRequestHandler):
         agg = usage_aggregates(user)
         active_plan = plan_active(user)
         plan = user.get("plan") if active_plan else "free"
-        self.send_json(200, {"user": {"name": user.get("name"), "email": user.get("email"), "company": user.get("company", ""), "created_at": user.get("created_at"), "verified": user.get("verified", True), "provider": user.get("provider", "email"), "is_admin": bool(user.get("is_admin"))}, "balance": round(user.get("balance", 0.0), 6), "plan": plan, "plan_name": PLANS.get(plan, {}).get("name", "Pay-as-you-go"), "plan_expires": user.get("plan_expires") if active_plan else None, "daily_quota": PLAN_QUOTA.get(plan, 0), "plan_bonus": PLANS.get(plan, {}).get("bonus", 0), "daily_tts": PLANS.get(plan, {}).get("tts", 0), "quota_used_today": plan_tokens_used_today(user) if active_plan else 0, "api_keys": [public_key(k) for k in user.get("api_keys", []) if k.get("status", "active") == "active"], "request_key_id": key["id"], "stats": agg["stats"], "daily": agg["daily"], "by_model": agg["by_model"], "recent": agg["recent"], "transactions": transactions(user)})
+        self.send_json(200, {"user": {"name": user.get("name"), "email": user.get("email"), "company": user.get("company", ""), "created_at": user.get("created_at"), "verified": user.get("verified", True), "provider": user.get("provider", "email"), "is_admin": bool(user.get("is_admin")), "free_seat": bool(user.get("free_seat"))}, "free_seat": bool(user.get("free_seat")), "free_seats": free_seat_stats(), "balance": round(user.get("balance", 0.0), 6), "plan": plan, "plan_name": PLANS.get(plan, {}).get("name", "Pay-as-you-go"), "plan_expires": user.get("plan_expires") if active_plan else None, "daily_quota": PLAN_QUOTA.get(plan, 0), "plan_bonus": PLANS.get(plan, {}).get("bonus", 0), "daily_tts": PLANS.get(plan, {}).get("tts", 0), "quota_used_today": plan_tokens_used_today(user) if active_plan else 0, "api_keys": [public_key(k) for k in user.get("api_keys", []) if k.get("status", "active") == "active"], "request_key_id": key["id"], "stats": agg["stats"], "daily": agg["daily"], "by_model": agg["by_model"], "recent": agg["recent"], "transactions": transactions(user)})
 
     def require_admin(self):
         _db, user, _key = self.authenticate()
@@ -1329,6 +1528,7 @@ class NovaHandler(BaseHTTPRequestHandler):
             "tokens_today": tokens_today,
             "provider_keys": keys_loaded,
             "models": len(MODELS),
+            "free_seats": free_seat_stats(db),
         })
 
     def handle_admin_users(self):
@@ -1349,6 +1549,7 @@ class NovaHandler(BaseHTTPRequestHandler):
                 "tokens": tokens,
                 "last_used": last,
                 "is_admin": bool(user.get("is_admin")),
+                "free_seat": bool(user.get("free_seat")),
                 "banned": bool(user.get("banned")),
                 "created_at": user.get("created_at"),
             })
@@ -1591,6 +1792,10 @@ class NovaHandler(BaseHTTPRequestHandler):
         refresh_models()
         _db, user, key = self.authenticate()
         if not user: return self.send_error_json(401, "authentication_error", "invalid_api_key", "Missing or invalid API key.")
+        if (not user.get("is_admin") and not user.get("free_seat")
+                and not plan_active(user) and user.get("balance", 0.0) <= 0):
+            return self.send_error_json(402, "insufficient_balance_error", "free_capacity_reached",
+                                        "The first 50 free seats are taken. Add credit or subscribe to use the API.")
         if not self.enforce_rate_limit(user, key): return
         body = self.read_json_body()
         if body is None: return self.send_error_json(400, "invalid_request_error", "invalid_json", "Request body must be valid JSON.")
@@ -1761,7 +1966,7 @@ class OAuthCallbackHandler(BaseHTTPRequestHandler):
         if path.startswith("/api/auth/oauth/") and path.endswith("/callback"):
             provider = path.split("/")[4]
             try:
-                token = oauth_session_token(provider, parse_qs(urlparse(self.path).query))
+                token = oauth_session_token(provider, parse_qs(urlparse(self.path).query), client_ip(self))
                 target = f"{SITE_URL}/login.html?oauth_token={token}"
             except ValueError as exc:
                 target = f"{SITE_URL}/login.html?oauth_error={urlencode({'m': str(exc)})[2:]}"
@@ -1795,7 +2000,9 @@ def main():
         print(f" Provider : {p_name} | Keys: {len(keys)}")
     print(f" OAuth    : google={'yes' if oauth_cfg('google') else 'no'} github={'yes' if oauth_cfg('github') else 'no'}")
     print(f" SMTP     : {'configured' if (load_json_cfg(MAIL_CONFIG_FILE) or {}).get('enabled') else 'DEV MODE (code printed)'}")
+    print(f" Free     : first {FREE_CUSTOMER_LIMIT or 'unlimited'} customers")
     print("=" * 62)
+    init_free_seats()
     start_oauth_callback_server()
     server = ThreadingHTTPServer(("127.0.0.1", PORT), NovaHandler)
     try: server.serve_forever()

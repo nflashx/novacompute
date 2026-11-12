@@ -248,12 +248,20 @@
       barEl.className = `h-full rounded-full transition-[width] duration-500 ${used >= quota ? 'bg-red-400' : 'bg-gradient-to-r from-violet-500 to-cyan-400'}`;
       noteEl.textContent = `Resets daily at 00:00 UTC${me.plan_expires ? ` · renews ${new Date(me.plan_expires).toLocaleDateString()}` : ''}. Free models do not consume this quota.`;
     } else {
-      planEl.textContent = 'Pay-as-you-go — no daily token cap';
       numEl.textContent = `${used.toLocaleString()} tokens today`;
       barEl.style.width = '0%';
       barEl.className = 'h-full rounded-full bg-gradient-to-r from-violet-500 to-cyan-400';
       if (trackEl) trackEl.style.display = 'none';
-      noteEl.textContent = 'Usage is billed from your balance at the model rates. Subscribe for a daily paid-token quota.';
+      if (me.free_seat) {
+        planEl.textContent = 'Founding free seat — free models available';
+        noteEl.textContent = 'Your free seat includes the $0 models. Paid models are billed from your balance or a Sub.';
+      } else if (Number(me.balance || 0) > 0) {
+        planEl.textContent = 'Pay-as-you-go — no daily token cap';
+        noteEl.textContent = 'Usage is billed from your balance at the model rates. Subscribe for a daily paid-token quota.';
+      } else {
+        planEl.textContent = 'Pay-as-you-go — free seats are full';
+        noteEl.textContent = 'The first 50 free seats are taken. Add credit or subscribe to use the API.';
+      }
     }
   }
 
@@ -272,9 +280,15 @@
       const until = me.plan_expires ? new Date(me.plan_expires).toLocaleDateString() : '—';
       const bonus = Number(me.plan_bonus || 0);
       noteEl.textContent = `≈ ${tokensShort(me.daily_quota * 30)} tokens/month · active until ${until}${bonus ? ` · +$${bonus} bonus credit` : ''} · ${me.daily_tts || 0} TTS requests/day · activated automatically after payment.`;
-    } else {
+    } else if (me.free_seat) {
+      planEl.textContent = 'Founding free plan';
+      noteEl.textContent = 'Free seat: $0 models are included. Paid models are billed from balance or a Sub; add credit any time.';
+    } else if (Number(me.balance || 0) > 0) {
       planEl.textContent = 'Pay-as-you-go';
-      noteEl.textContent = 'No monthly token quota — paid models are billed from your balance. Subscribe for a daily quota.';
+      noteEl.textContent = 'No monthly token quota — paid models are billed from your balance; $0 models stay free. Subscribe for a daily quota.';
+    } else {
+      planEl.textContent = 'Pay-as-you-go — free seats are full';
+      noteEl.textContent = 'The first 50 free seats are taken. Add credit or subscribe to use the API.';
     }
   }
 

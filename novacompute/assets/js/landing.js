@@ -148,4 +148,18 @@
     }, { threshold: 0.5 });
     counters.forEach((el) => countObserver.observe(el));
   }
+
+  /* ---------- Founding free-seat counter ---------- */
+  const seatBadge = document.querySelector('[data-free-seat-badge]');
+  if (seatBadge && window.novaApi) {
+    window.novaApi('/api/free-seats', { auth: false }).then((res) => {
+      if (!res.ok || !res.data || !res.data.limit) return;
+      const remaining = Number(res.data.remaining);
+      if (remaining > 0) {
+        seatBadge.textContent = `Founding free plan — ${remaining} of ${res.data.limit} seats left`;
+      } else {
+        seatBadge.textContent = 'Founding free seats are full — new accounts are pay-as-you-go';
+      }
+    }).catch(() => {});
+  }
 })();
