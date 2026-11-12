@@ -147,7 +147,7 @@ Subscriptions are optional. Pay-as-you-go credit never expires and is billed per
 
 - **Google** — one click, verified Google email.
 - **GitHub** — one click, verified GitHub email.
-- **Email + password** — available when SMTP is configured on the deployment; the code is sent to your mailbox.
+- **Email + password** — available when SMTP is configured; the code is sent to your mailbox.
 
 Google and GitHub accounts are regular customer accounts. The site administrator uses a separate admin account for `/admin.html`.
 
