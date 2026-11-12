@@ -138,7 +138,7 @@ GitHub must return a **verified** email. Accounts younger than `NOVA_OAUTH_MIN_A
 }
 ```
 
-Without SMTP, public signup returns `503 mail_not_configured`; the DEV code is only exposed on a direct loopback connection. Google/GitHub sign-in does not depend on SMTP.
+Without SMTP, public signup returns `503 mail_not_configured`. The DEV code is off by default and is only honored for a direct `127.0.0.1` request with no proxy headers when `NOVA_DEV_MAIL=1`. Google/GitHub sign-in does not depend on SMTP.
 
 ### 4. Environment
 
@@ -229,7 +229,7 @@ python backend/app.py          # API on :8080
 python -m http.server 8123 --directory novacompute   # static site on :8123
 ```
 
-Open `http://127.0.0.1:8123`. The frontend automatically talks to `http://127.0.0.1:8080` on local ports and to the same origin in production.
+Open `http://127.0.0.1:8123`. The frontend automatically talks to `http://127.0.0.1:8080` on local ports and to the same origin in production. For the local DEV verification code, start the backend with `NOVA_DEV_MAIL=1` **and no proxy headers**; the flag defaults to off and is never honored behind nginx or a tunnel.
 
 Copy the example mail config before starting:
 

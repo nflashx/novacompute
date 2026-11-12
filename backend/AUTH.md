@@ -28,11 +28,11 @@ a Gmail App Password (Google Account → Security → App passwords):
 
 Restart `python backend/app.py`.
 
-Without SMTP, the backend runs in **DEV mode**: the code is printed to the server
-console and returned to the page only for a direct loopback connection
-(`127.0.0.1`/`::1`). A public request gets `503 mail_not_configured` instead, so
-you cannot accidentally ship open e-mail verification. Set `NOVA_DEV_MAIL=0` to
-disable the DEV fallback even locally.
+Without SMTP, the backend keeps the DEV fallback **off** (`NOVA_DEV_MAIL=0`).
+For local development only, start with `NOVA_DEV_MAIL=1`; the code is printed
+to the server console and returned to the page only for a direct loopback
+request with no proxy headers. nginx and tunnels connect from `127.0.0.1`, so
+they are explicitly rejected; public requests get `503 mail_not_configured`.
 
 ## Google / GitHub OAuth
 

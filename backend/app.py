@@ -9,6 +9,8 @@ import random
 import re
 import secrets
 import smtplib
+import socket
+import struct
 import threading
 import time
 import urllib.error
@@ -123,20 +125,96 @@ def mail_allowed(email):
 MAIL_DOMAIN_CACHE = {}
 MAIL_DOMAIN_LOCK = threading.Lock()
 
-def _dns_json(resolver, domain, rtype):
-    if resolver == "google":
-        url = "https://dns.google/resolve?" + urlencode({"name": domain, "type": rtype})
-    else:
-        url = "https://cloudflare-dns.com/dns-query?" + urlencode({"name": domain, "type": rtype})
-    req = urllib.request.Request(url, headers={"Accept": "application/dns-json", "User-Agent": "NovaCompute/1.0"})
-    with urllib.request.urlopen(req, timeout=4) as resp:
-        return json.loads(resp.read().decode("utf-8"))
+def _dns_encode_name(domain):
+    out = b""
+    for label in domain.rstrip(".").split("."):
+        raw = label.encode("idna")
+        if not raw or len(raw) > 63:
+            raise ValueError("invalid DNS label")
+        out += bytes([len(raw)]) + raw
+    return out + b"\x00"
+
+def _dns_read_name(data, offset):
+    labels = []
+    end = None
+    jumps = 0
+    while True:
+        if offset >= len(data):
+            raise ValueError("truncated DNS name")
+        length = data[offset]
+        if length & 0xC0 == 0xC0:
+            if offset + 1 >= len(data):
+                raise ValueError("truncated DNS pointer")
+            pointer = ((length & 0x3F) << 8) | data[offset + 1]
+            if end is None:
+                end = offset + 2
+            offset = pointer
+            jumps += 1
+            if jumps > 20:
+                raise ValueError("DNS pointer loop")
+        elif length == 0:
+            offset += 1
+            if end is None:
+                end = offset
+            break
+        else:
+            offset += 1
+            if offset + length > len(data):
+                raise ValueError("truncated DNS label")
+            labels.append(data[offset:offset + length].decode("ascii", "replace"))
+            offset += length
+    return ".".join(labels), (end if end is not None else offset)
+
+def _dns_mx_query(domain, server):
+    """Minimal UDP MX query. None = NXDOMAIN, [] = no MX, list = MX hosts."""
+    query_id = secrets.randbelow(65536)
+    packet = struct.pack("!HHHHHH", query_id, 0x0100, 1, 0, 0, 0)
+    packet += _dns_encode_name(domain) + struct.pack("!HH", 15, 1)
+    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
+        sock.settimeout(3)
+        sock.sendto(packet, (server, 53))
+        data, addr = sock.recvfrom(4096)
+    if addr[0] != server or len(data) < 12:
+        raise ValueError("bad DNS response")
+    rid, flags, qdcount, ancount, _nscount, _arcount = struct.unpack("!HHHHHH", data[:12])
+    if rid != query_id:
+        raise ValueError("DNS id mismatch")
+    if flags & 0x0200:
+        raise ValueError("truncated DNS response")
+    rcode = flags & 0x000F
+    if rcode == 3:
+        return None
+    if rcode != 0:
+        raise ValueError(f"DNS rcode {rcode}")
+    offset = 12
+    for _ in range(qdcount):
+        _, offset = _dns_read_name(data, offset)
+        offset += 4
+    mx = []
+    for _ in range(ancount):
+        _, offset = _dns_read_name(data, offset)
+        if offset + 10 > len(data):
+            break
+        rtype, _rclass, _ttl, rdlen = struct.unpack("!HHIH", data[offset:offset + 10])
+        offset += 10
+        rdata_end = offset + rdlen
+        if rdata_end > len(data):
+            break
+        if rtype == 15 and rdlen >= 3:
+            host, _ = _dns_read_name(data, offset + 2)
+            host = host.rstrip(".").lower()
+            if host:
+                mx.append(host)
+        offset = rdata_end
+    return mx
 
 def domain_mail_status(domain):
     """Return (status, mx_hosts): ok / no_mx / error.
 
-    Both Cloudflare and Google DoH are tried. A DNS outage is reported as
-    `error` (the caller returns 503); it is never treated as a valid mailbox.
+    Uses plain DNS MX queries to public resolvers. DoH endpoints are blocked on
+    some hosting networks, so this does not depend on cloudflare-dns.com or
+    dns.google being resolvable. A DNS outage returns `error` (caller -> 503);
+    it is never treated as a valid mailbox.
     """
     domain = (domain or "").strip().lower().rstrip(".")
     now = time.time()
@@ -145,24 +223,23 @@ def domain_mail_status(domain):
         if cached and now - cached[0] < 600:
             return cached[1], cached[2]
     mx_hosts = []
-    answered = False
-    for resolver in ("cloudflare", "google"):
+    saw_answer = False
+    for server in ("1.1.1.1", "8.8.8.8", "9.9.9.9"):
         try:
-            data = _dns_json(resolver, domain, "MX")
-            answered = True
-            if int(data.get("Status", 2)) not in (0, 3):
-                continue
-            for answer in data.get("Answer") or []:
-                if int(answer.get("type", 0)) != 15:
-                    continue
-                host = str(answer.get("data", "")).split()[-1].rstrip(".").lower()
-                if host and host not in mx_hosts:
-                    mx_hosts.append(host)
+            hosts = _dns_mx_query(domain, server)
         except Exception as exc:
-            print(f"[signup] DNS {resolver} failed for {domain}: {exc}")
+            print(f"[signup] DNS {server} failed for {domain}: {exc}")
+            continue
+        if hosts is None:
+            saw_answer = True
+            break
+        saw_answer = True
+        if hosts:
+            mx_hosts = hosts
+            break
     if mx_hosts:
         result = ("ok", mx_hosts)
-    elif answered:
+    elif saw_answer:
         result = ("no_mx", [])
     else:
         result = ("error", [])
@@ -588,9 +665,21 @@ def send_code_email(to, code):
                      f"Your NovaCompute verification code: {code} (expires in 10 minutes)")
 
 def dev_mail_allowed(handler):
-    """DEV code is only exposed on a direct loopback connection, never via X-Forwarded-For."""
+    """DEV code only for a direct loopback request, never through a proxy.
+
+    Production nginx also connects from 127.0.0.1, so the proxy headers and
+    public Host must both be absent. `NOVA_DEV_MAIL` defaults to off.
+    """
+    if os.getenv("NOVA_DEV_MAIL", "0") != "1":
+        return False
     addr = handler.client_address[0] if handler.client_address else ""
-    return addr in ("127.0.0.1", "::1", "::ffff:127.0.0.1") and os.getenv("NOVA_DEV_MAIL", "1") != "0"
+    if addr not in ("127.0.0.1", "::1", "::ffff:127.0.0.1"):
+        return False
+    for header in ("X-Forwarded-For", "X-Real-IP", "CF-Connecting-IP", "X-Forwarded-Proto", "Forwarded"):
+        if handler.headers.get(header):
+            return False
+    host = (handler.headers.get("Host", "") or "").split(":")[0].strip().lower()
+    return host in ("127.0.0.1", "localhost", "::1")
 
 def prune_ip(db, ip):
     hits = [t for t in db["ip_signups"].get(ip, []) if time.time() - t < 86400]
