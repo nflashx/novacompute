@@ -1,0 +1,13 @@
+# Standalone Worker fallback (workers.dev).
+# Production novarouter.cc.cd is served by the Pages project "novarouter"
+# from pages/_worker.js; see README.md.
+name = "novarouter-proxy"
+main = "src/index.js"
+compatibility_date = "2026-11-01"
+
+[vars]
+ORIGIN = "https://8000-agq45l5c6sphv2zqkzyanpjymq.instabox.tech"
+
+# A Worker route/custom domain would need novarouter.cc.cd to be a Cloudflare
+# zone, which Free does not allow for a subdomain. The Pages custom domain
+# (CNAME at DNSHE) is the supported path.

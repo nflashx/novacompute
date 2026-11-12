@@ -44,3 +44,8 @@ rust-console/console_config.json
 # Instabox keeper wrangler cache
 instabox-keeper/.wrangler/
 instabox-keeper/node_modules/
+
+# novarouter.cc.cd edge proxy
+novarouter-proxy/.wrangler/
+novarouter-proxy/node_modules/
+instabox-openapi.json
