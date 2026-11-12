@@ -243,22 +243,5 @@
     "video": false,
     "upstream": "airforce",
     "upstream_id": "kimi-k2.7-code"
-  },
-  {
-    "id": "llama-instant",
-    "name": "Meta Llama Instant",
-    "provider": "Meta",
-    "context": "4K",
-    "speed": 0,
-    "input": 0.0,
-    "output": 0.0,
-    "category": "chat",
-    "tag": "Free",
-    "note": "Fast free Llama \u00b7 4K output",
-    "price_unit": "",
-    "image": false,
-    "video": false,
-    "upstream": "airforce",
-    "upstream_id": "llama-instant"
   }
 ]
