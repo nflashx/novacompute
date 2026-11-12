@@ -48,7 +48,10 @@
     (window.NOVA_MODELS || []).filter((m) => ['chat', 'code', 'tts'].includes(m.category)).forEach((m) => {
       const opt = document.createElement('option');
       opt.value = m.id;
-      const price = m.input === 0 ? 'Free' : `$${m.input.toFixed(2)}/$${m.output.toFixed(2)}`;
+      const requestPrice = Number(m.price_per_request || 0);
+      const price = requestPrice > 0
+        ? `$${requestPrice.toFixed(requestPrice < 0.01 ? 4 : 2)}`
+        : (m.input === 0 ? 'Free' : `$${m.input.toFixed(2)}/$${m.output.toFixed(2)}`);
       opt.textContent = `${m.name} — ${price}`;
       MODEL_SELECT.appendChild(opt);
     });
@@ -80,8 +83,9 @@
     set('id', m.id);
     set('context', m.context);
     set('speed', `${m.speed >= 1000 ? '1000+' : m.speed} tok/s`);
-    set('input', m.input === 0 ? 'Free' : `$${m.input.toFixed(2)}`);
-    set('output', m.output === 0 ? 'Free' : `$${m.output.toFixed(2)}`);
+    const requestPrice = Number(m.price_per_request || 0);
+    set('input', requestPrice > 0 ? `$${requestPrice.toFixed(requestPrice < 0.01 ? 4 : 2)}` : (m.input === 0 ? 'Free' : `$${m.input.toFixed(2)}`));
+    set('output', requestPrice > 0 ? '—' : (m.output === 0 ? 'Free' : `$${m.output.toFixed(2)}`));
 
     const badge = INFO_BOX.querySelector('[data-info="badge"]');
     if (m.tag && window.NOVA_TAG_STYLES[m.tag]) {
@@ -252,6 +256,8 @@
     const decoder = new TextDecoder();
     let buffer = '';
     let full = '';
+    let reasoning = '';
+    let streamError = '';
     let usage = null;
 
     try {
@@ -269,7 +275,12 @@
           try {
             const event = JSON.parse(payload);
             if (event.usage) usage = event.usage;
+            if (event.error) {
+              streamError = event.error?.message || event.error?.code || JSON.stringify(event.error);
+            }
             const delta = event.choices?.[0]?.delta?.content || '';
+            const think = event.choices?.[0]?.delta?.reasoning_content || '';
+            if (think) reasoning += think;
             if (delta) {
               full += delta;
               body.textContent = full;
@@ -282,8 +293,20 @@
       body.textContent = full + '\n\n⚠ The stream was interrupted.';
     }
 
-    if (full) history.push({ role: 'assistant', content: full });
-    else history.pop();
+    const transient = /temporarily unavailable|exceeded token rate limit|rate limit|overloaded/i.test(full);
+    if (streamError || transient || (!full && !reasoning)) {
+      const message = streamError || full || 'The model returned an empty response. Try again or pick another model.';
+      body.textContent = `⚠ ${message}`;
+      history.pop();
+      full = '';
+    } else if (!full && reasoning) {
+      body.textContent = `⚠ Only reasoning was returned; no final answer.
+
+${reasoning.slice(0, 2000)}`;
+      history.pop();
+    } else {
+      history.push({ role: 'assistant', content: full });
+    }
 
     const seconds = ((performance.now() - started) / 1000).toFixed(1);
     const tokensOut = usage ? usage.completion_tokens : Math.max(1, Math.round(full.length / 4));

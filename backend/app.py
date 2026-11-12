@@ -1375,7 +1375,7 @@ def detect_reply_language(messages, accept_language=""):
     if re.search(r"[ăâđêôơư]", text): scores["Vietnamese"] += 4
     if re.search(r"[¿¡ñ]", text): scores["Spanish"] += 4
     words = {
-        "Vietnamese": ["chào", "bạn", "tôi", "mình", "cảm ơn", "không", "được", "giúp", "như thế nào", "là gì", "tiếng việt", "ở đâu", "với", "cho tôi"],
+        "Vietnamese": ["alo", "alô", "chào", "bạn", "tôi", "mình", "cảm ơn", "không", "được", "giúp", "như thế nào", "là gì", "tiếng việt", "ở đâu", "với", "cho tôi"],
         "English": ["the", "is", "are", "what", "where", "when", "why", "how", "who", "you", "your", "please", "hello", "hi", "thanks", "from", "this", "that", "can", "does"],
         "Spanish": ["hola", "qué", "como", "cómo", "dónde", "gracias", "puedo", "ayudarte", "eres", "por favor", "estás"],
         "French": ["bonjour", "comment", "pourquoi", "merci", "vous", "je", "où", "avec", "être"],
@@ -2458,6 +2458,12 @@ class NovaHandler(BaseHTTPRequestHandler):
         # Maritaca S5 only accepts the default temperature; drop a custom value
         # instead of letting the whole request fail with HTTP 400.
         if provider_name == "maritaca" and "temperature" in payload:
+            try:
+                if abs(float(payload["temperature"]) - 1.0) > 1e-9:
+                    payload.pop("temperature", None)
+            except (TypeError, ValueError):
+                payload.pop("temperature", None)
+        if provider_name == "aibridge" and model.startswith("kimi") and "temperature" in payload:
             try:
                 if abs(float(payload["temperature"]) - 1.0) > 1e-9:
                     payload.pop("temperature", None)
