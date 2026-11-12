@@ -40,3 +40,7 @@ backend/payment_config.json
 # Rust console build
 rust-console/target/
 rust-console/console_config.json
+
+# Instabox keeper wrangler cache
+instabox-keeper/.wrangler/
+instabox-keeper/node_modules/
