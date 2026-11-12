@@ -200,14 +200,15 @@ console.<span class="tok-fn">log</span>(response.choices[<span class="tok-cmd">0
               </thead>
               <tbody class="divide-y divide-white/[0.04] text-slate-400">
                 <tr><td class="px-5 py-3">Coding + vision</td><td class="px-4 py-3 font-mono text-xs text-slate-200">kimi-k3</td><td class="px-5 py-3">1M context · IMG + VID · $0.05/request</td></tr>
-                <tr><td class="px-5 py-3">General chat</td><td class="px-4 py-3 font-mono text-xs text-slate-200">gpt-6-luna</td><td class="px-5 py-3">900K context · IMG · $0.08 / $0.40 per 1M</td></tr>
-                <tr><td class="px-5 py-3">Diffusion</td><td class="px-4 py-3 font-mono text-xs text-slate-200">mercury-3</td><td class="px-5 py-3">$0.10 in / $0.35 out per 1M</td></tr>
+                <tr><td class="px-5 py-3">General chat</td><td class="px-4 py-3 font-mono text-xs text-slate-200">gpt-6-luna</td><td class="px-5 py-3">$0.00 · 900K context · IMG</td></tr>
+                <tr><td class="px-5 py-3">Diffusion</td><td class="px-4 py-3 font-mono text-xs text-slate-200">mercury-3</td><td class="px-5 py-3">$0.00 · diffusion model</td></tr>
                 <tr><td class="px-5 py-3">Free multimodal</td><td class="px-4 py-3 font-mono text-xs text-slate-200">qwen/qwen3.7-flash:free</td><td class="px-5 py-3">$0.00 · 1M context · IMG</td></tr>
-                <tr><td class="px-5 py-3">Free text</td><td class="px-4 py-3 font-mono text-xs text-slate-200">minimax-m3.1-flash-free</td><td class="px-5 py-3">$0.00 · 42K context · text only</td></tr>
+                <tr><td class="px-5 py-3">Paid text</td><td class="px-4 py-3 font-mono text-xs text-slate-200">minimax-m3.1-flash</td><td class="px-5 py-3">$0.02 / $0.08 per 1M · 42K context · text only</td></tr>
                 <tr><td class="px-5 py-3">Free vision</td><td class="px-4 py-3 font-mono text-xs text-slate-200">gemini-3.1-flash-lite</td><td class="px-5 py-3">$0.00 · IMG · verified image input</td></tr>
-                <tr><td class="px-5 py-3">Free long text</td><td class="px-4 py-3 font-mono text-xs text-slate-200">s5-free</td><td class="px-5 py-3">$0.00 · 1M context · text only · limited-time free</td></tr>
-                <tr><td class="px-5 py-3">Preview · Korean/English</td><td class="px-4 py-3 font-mono text-xs text-slate-200">k-exaone-2.5</td><td class="px-5 py-3">512K context · text only · 1 req/s upstream</td></tr>
-                <tr><td class="px-5 py-3">Typed decision</td><td class="px-4 py-3 font-mono text-xs text-slate-200">openjev-0.1</td><td class="px-5 py-3">Separate endpoint · <code class="font-mono text-xs">/v1/systemone</code></td></tr>
+                <tr><td class="px-5 py-3">Long text</td><td class="px-4 py-3 font-mono text-xs text-slate-200">s5</td><td class="px-5 py-3">$0.10 / $0.40 per 1M · 1M context · text only</td></tr>
+                <tr><td class="px-5 py-3">Preview · Korean/English</td><td class="px-4 py-3 font-mono text-xs text-slate-200">k-exaone-2.5</td><td class="px-5 py-3">$0.20 / $0.80 per 1M · 512K context · 1 req/s upstream</td></tr>
+                <tr><td class="px-5 py-3">Typed decision</td><td class="px-4 py-3 font-mono text-xs text-slate-200">openjev-0.1</td><td class="px-5 py-3">$0.002 / request · <code class="font-mono text-xs">/v1/systemone</code></td></tr>
+                <tr><td class="px-5 py-3">Free decision</td><td class="px-4 py-3 font-mono text-xs text-slate-200">verdict-1.4</td><td class="px-5 py-3">$0.00 · <code class="font-mono text-xs">/v1/systemone</code></td></tr>
                 <tr><td class="px-5 py-3">Speech</td><td class="px-4 py-3 font-mono text-xs text-slate-200">gemini-3.8-flash-tts</td><td class="px-5 py-3">Use <a href="#text-to-speech" class="text-violet-300 hover:text-violet-200">/v1/audio/speech</a></td></tr>
               </tbody>
             </table>
@@ -588,7 +589,7 @@ audio.<span class="tok-fn">play</span>();</code></pre>
   <script src="assets/js/effects.js?v=26" defer></script>
   <script src="assets/js/config.js?v=1" defer></script>
   <script src="assets/js/api.js?v=27" defer></script>
-  <script src="assets/js/models-data.js?v=38" defer></script>
+  <script src="assets/js/models-data.js?v=39" defer></script>
   <script src="assets/js/docs.js?v=34" defer></script>
 </body>
 </html>

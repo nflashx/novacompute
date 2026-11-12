@@ -75,7 +75,7 @@
       <div class="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h2 class="font-display text-2xl font-bold text-white">Decision catalogue</h2>
-          <p class="mt-2 text-sm text-slate-400">Free models from Codiv. Limits are per request; <span class="font-mono text-xs">/ q</span> means per question.</p>
+          <p class="mt-2 text-sm text-slate-400">Codiv decision models. Limits are per request; <span class="font-mono text-xs">/ q</span> means per question. OpenJev and JevK5 are billed per request; Verdict and CLM are free.</p>
         </div>
         <a href="https://codiv.ai/docs" target="_blank" rel="noopener" class="btn-ghost rounded-lg px-4 py-2.5 text-sm font-medium text-slate-200">Codiv docs ↗</a>
       </div>
@@ -107,7 +107,7 @@
   <script src="assets/js/effects.js?v=26" defer></script>
   <script src="assets/js/config.js?v=1" defer></script>
   <script src="assets/js/api.js?v=27" defer></script>
-  <script src="assets/js/models-data.js?v=38" defer></script>
+  <script src="assets/js/models-data.js?v=39" defer></script>
   <script defer>
     document.addEventListener('DOMContentLoaded', function () {
       const body = document.getElementById('decision-rows');
@@ -118,7 +118,12 @@
           body.innerHTML = '<tr><td colspan="5" class="px-6 py-10 text-center text-sm text-slate-500">Decision models are temporarily unavailable.</td></tr>';
           return;
         }
-        body.innerHTML = rows.map((m) => `
+        body.innerHTML = rows.map((m) => {
+          const reqPrice = Number(m.price_per_request || 0);
+          const price = reqPrice > 0
+            ? `<span class="whitespace-nowrap font-mono text-slate-200">$${reqPrice.toFixed(reqPrice < 0.01 ? 4 : 2)}</span><span class="text-[10px] text-slate-500"> / request</span>`
+            : '<span class="font-medium text-emerald-400">Free</span>';
+          return `
           <tr class="transition-colors hover:bg-white/[0.02]">
             <td class="px-6 py-4">
               <p class="font-medium text-white">${m.name}</p>
@@ -127,8 +132,9 @@
             <td class="px-4 py-4 font-mono text-xs text-cyan-300">${m.id}</td>
             <td class="px-4 py-4 text-xs text-slate-400">${m.context || '—'}</td>
             <td class="px-4 py-4 text-xs text-slate-400">${m.image ? 'Text + image' : 'Text'}</td>
-            <td class="px-4 py-4"><span class="font-medium text-emerald-400">Free</span></td>
-          </tr>`).join('');
+            <td class="px-4 py-4">${price}</td>
+          </tr>`;
+        }).join('');
       };
       if (window.fetchModels) {
         window.fetchModels().then(render);

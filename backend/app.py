@@ -2321,6 +2321,11 @@ class NovaHandler(BaseHTTPRequestHandler):
         entry = MODEL_LOOKUP.get(model)
         if not entry or entry.get("category") != "decision":
             return self.send_error_json(400, "invalid_request_error", "invalid_model", f"'{model}' is not a decision model.")
+        request_price = float(REQUEST_PRICES.get(model, 0) or 0)
+        if request_price > 0 and not user.get("is_admin"):
+            balance = float(user.get("balance", 0) or 0)
+            if balance + 1e-9 < request_price:
+                return self.send_error_json(402, "insufficient_balance_error", "insufficient_balance", "Balance exhausted.")
         provider_name = MODEL_PROVIDER_MAP.get(model, DEFAULT_PROVIDER)
         provider_info = PROVIDERS.get(provider_name)
         if not provider_info:
@@ -2347,7 +2352,8 @@ class NovaHandler(BaseHTTPRequestHandler):
         latency = int((time.time() - started) * 1000)
         usage = (data.get("usage") or {}) if isinstance(data, dict) else {}
         record_usage(user["id"], key["id"], model, int(usage.get("input_tokens") or 0),
-                     int(usage.get("output_tokens") or 0), latency, status="ok", cost=0.0, client="systemone")
+                     int(usage.get("output_tokens") or 0), latency, status="ok",
+                     cost=(0.0 if user.get("is_admin") else request_price), client="systemone")
         self.send_json(200, data)
 
     def handle_chat_completions(self):
