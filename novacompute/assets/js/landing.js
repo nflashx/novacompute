@@ -32,7 +32,7 @@
       const note = document.getElementById('models-note');
       if (!note) return;
       note.textContent = window.NOVA_MODELS_SOURCE === 'live'
-        ? 'Prices are per 1M tokens unless marked per request. Speed is measured end-to-end. · catalogue synced live · failed 429/5xx requests retry automatically'
+        ? 'Prices are per 1M tokens unless marked per request. Speed is measured end-to-end; sorted fastest first. · catalogue synced live · failed 429/5xx requests retry automatically'
         : 'Prices are per 1M tokens unless marked per request. Speed is measured end-to-end. · backend offline — showing cached catalogue';
     };
 

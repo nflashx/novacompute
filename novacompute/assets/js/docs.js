@@ -60,7 +60,8 @@
 
   function renderModelTable(models) {
     if (!modelRows) return;
-    modelRows.innerHTML = models.map((m) => {
+    const bySpeed = (a, b) => (Number(b.speed) || 0) - (Number(a.speed) || 0) || String(a.name).localeCompare(String(b.name));
+    modelRows.innerHTML = models.slice().sort(bySpeed).map((m) => {
       const isFree = m.input === 0 && m.output === 0 && Number(m.price_per_request || 0) === 0;
       const isTts = m.category === 'tts';
       const isRequest = m.price_unit === 'request';
@@ -102,6 +103,7 @@
           <p class="mt-0.5 text-[10px] text-slate-500">${m.context || '—'} context</p>
         </td>
         <td class="px-3 py-3"><div class="flex items-center gap-1">${media}</div></td>
+        <td class="px-3 py-3 text-right font-mono text-xs">${m.speed > 0 ? `${m.speed} tok/s` : '—'}</td>
         <td class="px-3 py-3 text-right">${input}</td>
         <td class="px-4 py-3 text-right">${output}</td>
       </tr>`;

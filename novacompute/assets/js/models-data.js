@@ -259,8 +259,9 @@
   window.renderModelRowsGrouped = function renderModelRowsGrouped(list) {
     const isFree = (m) => m.input === 0 && m.output === 0 && Number(m.price_per_request || 0) === 0;
     const chat = list.filter((m) => m.category !== 'decision');
-    const free = chat.filter(isFree);
-    const paid = chat.filter((m) => !isFree(m));
+    const bySpeed = (a, b) => (Number(b.speed) || 0) - (Number(a.speed) || 0) || String(a.name).localeCompare(String(b.name));
+    const free = chat.filter(isFree).sort(bySpeed);
+    const paid = chat.filter((m) => !isFree(m)).sort(bySpeed);
     let html = '';
     if (free.length) {
       html += groupHeader('Free models · $0.00', 'free');

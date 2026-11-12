@@ -21,7 +21,7 @@ const GREEN: egui::Color32 = egui::Color32::from_rgb(52, 211, 153);
 const AMBER: egui::Color32 = egui::Color32::from_rgb(251, 191, 36);
 const RED: egui::Color32 = egui::Color32::from_rgb(251, 113, 133);
 
-const PROVIDERS: [(&str, &str); 16] = [
+const PROVIDERS: [(&str, &str); 17] = [
     ("nightrouter", "NightRouter"),
     ("exosai", "ExosAI"),
     ("mistral", "Mistral"),
@@ -38,9 +38,10 @@ const PROVIDERS: [(&str, &str); 16] = [
     ("codiv", "Codiv"),
     ("maritaca", "Maritaca"),
     ("exaone", "ExaOne"),
+    ("blaze", "BlazeAPI"),
 ];
 
-const PROVIDER_LINKS: [(&str, &str); 16] = [
+const PROVIDER_LINKS: [(&str, &str); 17] = [
     ("nightrouter", "https://nightrouter.ai"),
     ("exosai", "https://api.exosai.tech"),
     ("mistral", "https://console.mistral.ai"),
@@ -57,6 +58,7 @@ const PROVIDER_LINKS: [(&str, &str); 16] = [
     ("codiv", "https://codiv.ai/dashboard"),
     ("maritaca", "https://plataforma.maritaca.ai"),
     ("exaone", "https://docs.exaone.ai/ko/docs/overview"),
+    ("blaze", "https://blazeapi.org/models"),
 ];
 
 fn provider_link(id: &str) -> Option<&'static str> {

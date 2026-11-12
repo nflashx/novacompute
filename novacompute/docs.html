@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="assets/css/tailwind.css?v=8" />
+  <link rel="stylesheet" href="assets/css/tailwind.css?v=9" />
   <link rel="stylesheet" href="assets/css/main.css?v=27" />
 </head>
 
@@ -439,12 +439,13 @@ audio.<span class="tok-fn">play</span>();</code></pre>
             show accepted media input.
           </p>
           <div class="mt-5 overflow-x-auto rounded-xl border border-white/[0.06]">
-            <table class="w-full min-w-[640px] text-left text-sm">
+            <table class="w-full min-w-[760px] text-left text-sm">
               <thead>
                 <tr class="border-b border-white/[0.06] bg-white/[0.02] text-[11px] uppercase tracking-wider text-slate-500">
                   <th class="px-4 py-3 font-medium">Model</th>
                   <th class="px-3 py-3 font-medium">API ID · context</th>
                   <th class="px-3 py-3 font-medium">Media</th>
+                  <th class="px-3 py-3 text-right font-medium">Output speed</th>
                   <th class="whitespace-nowrap px-3 py-3 font-medium text-right">Input / 1M</th>
                   <th class="whitespace-nowrap px-4 py-3 font-medium text-right">Output / 1M</th>
                 </tr>
@@ -452,7 +453,7 @@ audio.<span class="tok-fn">play</span>();</code></pre>
               <tbody id="docs-model-rows" class="divide-y divide-white/[0.04] text-slate-400"></tbody>
             </table>
           </div>
-          <p class="mt-3 text-xs text-slate-500">Prices are per 1M tokens unless marked per 1,000 characters. Free models cost $0.00.</p>
+          <p class="mt-3 text-xs text-slate-500">Prices are per 1M tokens unless marked per 1,000 characters. Free models cost $0.00. Sorted fastest first.</p>
           <div class="mt-4 rounded-xl border border-violet-400/20 bg-violet-500/[0.06] p-4 text-xs leading-relaxed text-slate-400">
             <p><strong class="text-slate-200">Typed decisions:</strong> Codiv models answer classification and probability questions rather than free-form chat. They live on a separate endpoint — see <a href="decision.html" class="text-violet-300 hover:text-violet-200">Decision models</a> and <code class="font-mono text-xs">POST /v1/systemone</code>.</p>
           </div>
@@ -589,7 +590,7 @@ audio.<span class="tok-fn">play</span>();</code></pre>
   <script src="assets/js/effects.js?v=26" defer></script>
   <script src="assets/js/config.js?v=1" defer></script>
   <script src="assets/js/api.js?v=27" defer></script>
-  <script src="assets/js/models-data.js?v=39" defer></script>
-  <script src="assets/js/docs.js?v=34" defer></script>
+  <script src="assets/js/models-data.js?v=40" defer></script>
+  <script src="assets/js/docs.js?v=36" defer></script>
 </body>
 </html>

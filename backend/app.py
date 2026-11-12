@@ -323,6 +323,10 @@ PROVIDERS = {
         "url": "https://api.exaone.ai/v1/chat/completions",
         "keys_file": os.path.join(BASE_DIR, "exaone_keys.json"),
     },
+    "blaze": {
+        "url": "https://api.blazeapi.org/paid/v1/chat/completions",
+        "keys_file": os.path.join(BASE_DIR, "blaze_keys.json"),
+    },
 }
 
 # ================= DANH SÁCH MODEL & GIÁ =================
