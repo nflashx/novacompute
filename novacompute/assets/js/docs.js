@@ -68,7 +68,7 @@
       const input = isTts
         ? '<span class="text-slate-600">—</span>'
         : isRequest
-          ? `<span class="font-mono text-slate-200">$${Number(m.price_per_request || 0).toFixed(2)}</span><span class="text-[10px] text-slate-500"> / req</span>`
+          ? `<span class="font-mono text-slate-200" title="Billed per request">$${Number(m.price_per_request || 0).toFixed(2)}</span>`
           : isFree
             ? '<span class="font-medium text-emerald-400">Free</span>'
             : `<span class="font-mono text-slate-200">$${m.input.toFixed(2)}</span>`;

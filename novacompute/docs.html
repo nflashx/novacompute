@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="assets/css/tailwind.css?v=9" />
+  <link rel="stylesheet" href="assets/css/tailwind.css?v=10" />
   <link rel="stylesheet" href="assets/css/main.css?v=27" />
 </head>
 
@@ -203,9 +203,9 @@ console.<span class="tok-fn">log</span>(response.choices[<span class="tok-cmd">0
                 <tr><td class="px-5 py-3">General chat</td><td class="px-4 py-3 font-mono text-xs text-slate-200">gpt-6-luna</td><td class="px-5 py-3">$0.00 · 900K context · IMG</td></tr>
                 <tr><td class="px-5 py-3">Diffusion</td><td class="px-4 py-3 font-mono text-xs text-slate-200">mercury-3</td><td class="px-5 py-3">$0.00 · diffusion model</td></tr>
                 <tr><td class="px-5 py-3">Free multimodal</td><td class="px-4 py-3 font-mono text-xs text-slate-200">qwen/qwen3.7-flash:free</td><td class="px-5 py-3">$0.00 · 1M context · IMG</td></tr>
-                <tr><td class="px-5 py-3">Paid text</td><td class="px-4 py-3 font-mono text-xs text-slate-200">minimax-m3.1-flash</td><td class="px-5 py-3">$0.02 / $0.08 per 1M · 42K context · text only</td></tr>
+                <tr><td class="px-5 py-3">Free text</td><td class="px-4 py-3 font-mono text-xs text-slate-200">minimax-m3.1-flash</td><td class="px-5 py-3">$0.00 · 4K context · BlazeAPI free tier</td></tr>
                 <tr><td class="px-5 py-3">Free vision</td><td class="px-4 py-3 font-mono text-xs text-slate-200">gemini-3.1-flash-lite</td><td class="px-5 py-3">$0.00 · IMG · verified image input</td></tr>
-                <tr><td class="px-5 py-3">Long text</td><td class="px-4 py-3 font-mono text-xs text-slate-200">s5</td><td class="px-5 py-3">$0.10 / $0.40 per 1M · 1M context · text only</td></tr>
+                <tr><td class="px-5 py-3">S5 PRO · long text</td><td class="px-4 py-3 font-mono text-xs text-slate-200">s5</td><td class="px-5 py-3">$0.10 / $0.40 per 1M · 1M context · text only</td></tr>
                 <tr><td class="px-5 py-3">Preview · Korean/English</td><td class="px-4 py-3 font-mono text-xs text-slate-200">k-exaone-2.5</td><td class="px-5 py-3">$0.20 / $0.80 per 1M · 512K context · 1 req/s upstream</td></tr>
                 <tr><td class="px-5 py-3">Typed decision</td><td class="px-4 py-3 font-mono text-xs text-slate-200">openjev-0.1</td><td class="px-5 py-3">$0.002 / request · <code class="font-mono text-xs">/v1/systemone</code></td></tr>
                 <tr><td class="px-5 py-3">Free decision</td><td class="px-4 py-3 font-mono text-xs text-slate-200">verdict-1.4</td><td class="px-5 py-3">$0.00 · <code class="font-mono text-xs">/v1/systemone</code></td></tr>
@@ -453,7 +453,7 @@ audio.<span class="tok-fn">play</span>();</code></pre>
               <tbody id="docs-model-rows" class="divide-y divide-white/[0.04] text-slate-400"></tbody>
             </table>
           </div>
-          <p class="mt-3 text-xs text-slate-500">Prices are per 1M tokens unless marked per 1,000 characters. Free models cost $0.00. Sorted fastest first.</p>
+          <p class="mt-3 text-xs text-slate-500">Prices are per 1M tokens unless marked per 1,000 characters. Free models cost $0.00. Kimi K3 is billed per request. Sorted fastest first.</p>
           <div class="mt-4 rounded-xl border border-violet-400/20 bg-violet-500/[0.06] p-4 text-xs leading-relaxed text-slate-400">
             <p><strong class="text-slate-200">Typed decisions:</strong> Codiv models answer classification and probability questions rather than free-form chat. They live on a separate endpoint — see <a href="decision.html" class="text-violet-300 hover:text-violet-200">Decision models</a> and <code class="font-mono text-xs">POST /v1/systemone</code>.</p>
           </div>
@@ -590,7 +590,7 @@ audio.<span class="tok-fn">play</span>();</code></pre>
   <script src="assets/js/effects.js?v=26" defer></script>
   <script src="assets/js/config.js?v=1" defer></script>
   <script src="assets/js/api.js?v=27" defer></script>
-  <script src="assets/js/models-data.js?v=40" defer></script>
-  <script src="assets/js/docs.js?v=36" defer></script>
+  <script src="assets/js/models-data.js?v=41" defer></script>
+  <script src="assets/js/docs.js?v=37" defer></script>
 </body>
 </html>

@@ -287,10 +287,6 @@ PROVIDERS = {
         "url": "https://api.naga.ac/v1/chat/completions",
         "keys_file": os.path.join(BASE_DIR, "nagaai_keys.json"),
     },
-    "airforce": {
-        "url": "https://api.airforce/v1/chat/completions",
-        "keys_file": os.path.join(BASE_DIR, "airforce_keys.json"),
-    },
     "dreamprompting": {
         "url": "https://dreamprompting.com/api/v1/chat/completions",
         "keys_file": os.path.join(BASE_DIR, "dreamprompting_keys.json"),
@@ -327,6 +323,25 @@ PROVIDERS = {
         "url": "https://api.blazeapi.org/paid/v1/chat/completions",
         "keys_file": os.path.join(BASE_DIR, "blaze_keys.json"),
     },
+}
+
+PROVIDER_NOTES = {
+    "nightrouter": "Tool got",
+    "exosai": "Thủ công",
+    "mistral": "Thủ công",
+    "inception": "Thủ công",
+    "furry": "Not",
+    "bazaarlink": "Thủ công",
+    "nagaai": "Thủ công",
+    "dreamprompting": "Hold — chưa đụng, chưa dùng API",
+    "crowllm": "Thủ công",
+    "aibridge": "Thủ công",
+    "routeway": "Thủ công",
+    "raon": "Thủ công",
+    "codiv": "Thủ công",
+    "maritaca": "Thủ công",
+    "exaone": "Thủ công",
+    "blaze": "Hold — test free chậm",
 }
 
 # ================= DANH SÁCH MODEL & GIÁ =================
@@ -671,7 +686,7 @@ def provider_keys_payload():
                 "masked": mask_key(value),
                 "status": item.get("status", "active") if isinstance(item, dict) else "active",
             })
-        rows.append({"id": provider, "name": provider, "count": len(keys), "keys": keys})
+        rows.append({"id": provider, "name": provider, "note": PROVIDER_NOTES.get(provider, ""), "count": len(keys), "keys": keys})
     return {"providers": rows, "updated_at": iso(now_utc())}
 
 def mutate_provider_keys(provider, action, key="", index=None):

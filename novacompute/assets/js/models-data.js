@@ -45,13 +45,13 @@
     { id: "kimi-k3", name: "Kimi K3", provider: "Moonshot AI", color: "#8b5cf6", context: "1M", speed: 42.11, input: 0.0, output: 0.0, price_per_request: 0.05, tag: "New", category: "code", image: true, video: true, note: "Per request · vision & video", price_unit: "request", quota_multiplier: 1 },
     { id: "glm-4-plus", name: "GLM-4 Plus", provider: "Zhipu", color: "#0ea5e9", context: "—", speed: 62.12, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: false, video: false, note: "Free · basic coding", quota_multiplier: 1 },
     { id: "glm-4-air", name: "GLM-4 Air", provider: "Zhipu", color: "#0ea5e9", context: "—", speed: 60.11, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: false, video: false, note: "Free · basic coding", quota_multiplier: 1 },
-    { id: "minimax-m3.1-flash", name: "MiniMax M3.1 Flash", provider: "MiniMax", color: "#f59e0b", context: "42K", speed: 0, input: 0.02, output: 0.08, tag: "New", category: "chat", image: false, video: false, note: "Paid · text only", quota_multiplier: 1 },
+    { id: "minimax-m3.1-flash", name: "MiniMax M3.1 Flash", provider: "MiniMax", color: "#f59e0b", context: "4K", speed: 4, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: false, video: false, note: "Free · 4K · BlazeAPI", quota_multiplier: 1 },
     { id: "raon-1-mini", name: "Raon-1 Mini", provider: "Krafton AI", color: "#22d3ee", context: "262K", speed: 117.12, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: false, video: false, note: "Free tier · text only", quota_multiplier: 1 },
     { id: "openjev-0.1", name: "OpenJev Decision", provider: "Codiv", color: "#a78bfa", context: "65K", speed: 0, input: 0.0, output: 0.0, price_per_request: 0.002, tag: "New", category: "decision", image: true, video: false, note: "Paid per request · typed decision", price_unit: "request", quota_multiplier: 1 },
     { id: "verdict-1.4", name: "Verdict Classifier", provider: "Codiv", color: "#a78bfa", context: "512 / q", speed: 0, input: 0.0, output: 0.0, tag: "Free", category: "decision", image: false, video: false, note: "Free · typed decision · /v1/systemone", quota_multiplier: 1 },
     { id: "clm-0.1", name: "CLM Router", provider: "Codiv", color: "#a78bfa", context: "2K / q", speed: 0, input: 0.0, output: 0.0, tag: "Free", category: "decision", image: false, video: false, note: "Free · typed decision · /v1/systemone", quota_multiplier: 1 },
     { id: "jevk5-0.3", name: "JevK5 Fast", provider: "Codiv", color: "#a78bfa", context: "16K", speed: 0, input: 0.0, output: 0.0, price_per_request: 0.001, tag: "New", category: "decision", image: false, video: false, note: "Paid per request · typed decision", price_unit: "request", quota_multiplier: 1 },
-    { id: "s5", name: "S5", provider: "Maritaca AI", color: "#16a34a", context: "1M", speed: 10.53, input: 0.1, output: 0.4, tag: "New", category: "chat", image: false, video: false, note: "Paid · text only", quota_multiplier: 1 },
+    { id: "s5", name: "S5 PRO", provider: "Maritaca AI", color: "#16a34a", context: "1M", speed: 10.53, input: 0.1, output: 0.4, tag: "New", category: "chat", image: false, video: false, note: "PRO · text only", quota_multiplier: 1 },
     { id: "k-exaone-2.5", name: "K-EXAONE 2.5", provider: "LG AI Research", color: "#c026d3", context: "512K", speed: 8.16, input: 0.2, output: 0.8, tag: "New", category: "chat", image: false, video: false, note: "Paid preview · 512K", quota_multiplier: 1 },
     { id: "gpt-5.6-sol", name: "GPT-5.6 Sol", provider: "OpenAI", color: "#10a37f", context: "—", speed: 21.87, input: 0.04, output: 0.16, tag: "New", category: "chat", image: false, video: false, note: "Paid · fast route", quota_multiplier: 1 },
     { id: "gpt-6-luna", name: "GPT-6", provider: "OpenAI", color: "#10a37f", context: "900K", speed: 18, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: true, video: false, note: "Free · image input", quota_multiplier: 8 },
@@ -231,7 +231,7 @@
           </div>
         </td>
         <td class="whitespace-nowrap px-4 py-4 text-right">${m.price_unit === 'request'
-          ? `<span class="whitespace-nowrap font-mono text-slate-200">$${Number(m.price_per_request || 0).toFixed(2)}</span><span class="text-[10px] text-slate-500"> / request</span>`
+          ? `<span class="whitespace-nowrap font-mono text-slate-200" title="Billed per request">$${Number(m.price_per_request || 0).toFixed(2)}</span>`
           : (m.category === 'tts' ? '<span class="text-slate-500">—</span>' : priceCell(m.input))}</td>
         <td class="whitespace-nowrap px-4 py-4 text-right">${m.price_unit === '1k_chars'
           ? `<span class="whitespace-nowrap font-mono text-slate-200">$${m.output.toFixed(4)}</span><span class="text-[10px] text-slate-500"> / 1k chars</span>`
@@ -260,8 +260,10 @@
     const isFree = (m) => m.input === 0 && m.output === 0 && Number(m.price_per_request || 0) === 0;
     const chat = list.filter((m) => m.category !== 'decision');
     const bySpeed = (a, b) => (Number(b.speed) || 0) - (Number(a.speed) || 0) || String(a.name).localeCompare(String(b.name));
+    const paidPrice = (m) => Number(m.price_per_request || 0) || Number(m.input || 0);
+    const byPrice = (a, b) => paidPrice(b) - paidPrice(a) || bySpeed(a, b);
     const free = chat.filter(isFree).sort(bySpeed);
-    const paid = chat.filter((m) => !isFree(m)).sort(bySpeed);
+    const paid = chat.filter((m) => !isFree(m)).sort(byPrice);
     let html = '';
     if (free.length) {
       html += groupHeader('Free models · $0.00', 'free');

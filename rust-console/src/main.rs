@@ -21,7 +21,7 @@ const GREEN: egui::Color32 = egui::Color32::from_rgb(52, 211, 153);
 const AMBER: egui::Color32 = egui::Color32::from_rgb(251, 191, 36);
 const RED: egui::Color32 = egui::Color32::from_rgb(251, 113, 133);
 
-const PROVIDERS: [(&str, &str); 17] = [
+const PROVIDERS: [(&str, &str); 16] = [
     ("nightrouter", "NightRouter"),
     ("exosai", "ExosAI"),
     ("mistral", "Mistral"),
@@ -29,7 +29,6 @@ const PROVIDERS: [(&str, &str); 17] = [
     ("furry", "Furry"),
     ("bazaarlink", "BazaarLink"),
     ("nagaai", "NagaAI"),
-    ("airforce", "ApiAirforce"),
     ("dreamprompting", "DreamPrompting"),
     ("crowllm", "CrowLLM"),
     ("aibridge", "AIBridge"),
@@ -41,7 +40,7 @@ const PROVIDERS: [(&str, &str); 17] = [
     ("blaze", "BlazeAPI"),
 ];
 
-const PROVIDER_LINKS: [(&str, &str); 17] = [
+const PROVIDER_LINKS: [(&str, &str); 16] = [
     ("nightrouter", "https://nightrouter.ai"),
     ("exosai", "https://api.exosai.tech"),
     ("mistral", "https://console.mistral.ai"),
@@ -49,7 +48,6 @@ const PROVIDER_LINKS: [(&str, &str); 17] = [
     ("furry", "https://ai.furry.edu.gr"),
     ("bazaarlink", "https://bazaarlink.ai"),
     ("nagaai", "https://naga.ac"),
-    ("airforce", "https://api.airforce"),
     ("dreamprompting", "https://dreamprompting.com"),
     ("crowllm", "https://crowllm.com"),
     ("aibridge", "https://aibridge-api.com/dashboard.html"),
@@ -61,8 +59,31 @@ const PROVIDER_LINKS: [(&str, &str); 17] = [
     ("blaze", "https://blazeapi.org/models"),
 ];
 
+const PROVIDER_NOTES: [(&str, &str); 16] = [
+    ("nightrouter", "Tool got"),
+    ("exosai", "Thủ công"),
+    ("mistral", "Thủ công"),
+    ("inception", "Thủ công"),
+    ("furry", "Not"),
+    ("bazaarlink", "Thủ công"),
+    ("nagaai", "Thủ công"),
+    ("dreamprompting", "Hold — chưa đụng, chưa dùng API"),
+    ("crowllm", "Thủ công"),
+    ("aibridge", "Thủ công"),
+    ("routeway", "Thủ công"),
+    ("raon", "Thủ công"),
+    ("codiv", "Thủ công"),
+    ("maritaca", "Thủ công"),
+    ("exaone", "Thủ công"),
+    ("blaze", "Hold — test free chậm"),
+];
+
 fn provider_link(id: &str) -> Option<&'static str> {
     PROVIDER_LINKS.iter().find(|(key, _)| *key == id).map(|(_, url)| *url)
+}
+
+fn provider_note(id: &str) -> &'static str {
+    PROVIDER_NOTES.iter().find(|(key, _)| *key == id).map(|(_, note)| *note).unwrap_or("")
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -859,6 +880,11 @@ impl App {
                     ui.horizontal(|ui| {
                         ui.label(egui::RichText::new(title).size(16.0).strong().color(TEXT));
                         pill(ui, &format!("{} KEYS", keys.len()), if keys.is_empty() { RED } else { GREEN });
+                        let note = provider_note(id);
+                        if !note.is_empty() {
+                            let tone = if note == "Not" { RED } else if note.to_lowercase().contains("hold") { AMBER } else { MUTED };
+                            ui.label(egui::RichText::new(note).size(11.0).color(tone));
+                        }
                         ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                             ui.label(egui::RichText::new(id).size(11.0).monospace().color(MUTED));
                             if let Some(url) = provider_link(id) {
@@ -973,6 +999,10 @@ impl App {
                                     ui.label(egui::RichText::new(if upstream.is_empty() { "—" } else { upstream }).size(10.0).color(MUTED));
                                     if let Some(url) = provider_link(upstream) {
                                         ui.hyperlink_to("Provider ↗", url);
+                                    }
+                                    let note = provider_note(upstream);
+                                    if !note.is_empty() {
+                                        ui.label(egui::RichText::new(note).size(9.0).color(MUTED));
                                     }
                                 });
                                 ui.vertical(|ui| {

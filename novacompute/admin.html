@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="assets/css/tailwind.css?v=9" />
+  <link rel="stylesheet" href="assets/css/tailwind.css?v=10" />
   <link rel="stylesheet" href="assets/css/main.css?v=27" />
 </head>
 
@@ -34,6 +34,14 @@
     </div>
 
     <div id="admin-stats" class="relative mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4"></div>
+
+    <section class="relative mt-8">
+      <div class="reveal">
+        <h2 class="font-display text-lg font-semibold text-white">Provider notes</h2>
+        <p class="mt-1 text-xs text-slate-500">Operational status for each upstream. Internal only.</p>
+      </div>
+      <div id="admin-provider-notes" class="relative mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3"></div>
+    </section>
 
     <section class="relative mt-8">
       <div class="reveal flex items-end justify-between">
@@ -97,6 +105,6 @@
   <script src="assets/js/effects.js?v=26" defer></script>
   <script src="assets/js/config.js?v=1" defer></script>
   <script src="assets/js/api.js?v=27" defer></script>
-  <script src="assets/js/admin.js?v=1" defer></script>
+  <script src="assets/js/admin.js?v=2" defer></script>
 </body>
 </html>

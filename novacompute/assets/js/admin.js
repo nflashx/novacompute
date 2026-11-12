@@ -41,6 +41,7 @@
   const statsEl = document.getElementById('admin-stats');
   const usersEl = document.getElementById('admin-users');
   const txEl = document.getElementById('admin-transactions');
+  const providersEl = document.getElementById('admin-provider-notes');
 
   function renderStats(data) {
     if (!statsEl) return;
@@ -56,6 +57,25 @@
         <p class="mt-2 font-display text-3xl font-bold text-white">${value}</p>
         <p class="mt-3 text-xs text-slate-500">${note}</p>
       </div>`).join('');
+  }
+
+
+  function renderProviders(rows) {
+    if (!providersEl) return;
+    providersEl.innerHTML = (rows || []).map((p) => {
+      const note = String(p.note || '—');
+      const tone = note === 'Not' ? 'text-rose-300 border-rose-400/20 bg-rose-500/[0.06]'
+        : note.toLowerCase().includes('hold') ? 'text-amber-300 border-amber-400/20 bg-amber-500/[0.06]'
+        : note === 'Tool got' ? 'text-emerald-300 border-emerald-400/20 bg-emerald-500/[0.06]'
+        : 'text-slate-300 border-white/10 bg-white/[0.02]';
+      return `<div class="rounded-xl border ${tone} p-4">
+        <div class="flex items-start justify-between gap-3">
+          <div><p class="text-sm font-semibold text-white">${esc(p.name || p.id)}</p><p class="mt-0.5 font-mono text-[10px] text-slate-500">${esc(p.id)}</p></div>
+          <span class="shrink-0 rounded-full border border-white/10 px-2 py-0.5 text-[10px] text-slate-400">${Number(p.count || 0)} keys</span>
+        </div>
+        <p class="mt-3 text-xs leading-relaxed">${esc(note)}</p>
+      </div>`;
+    }).join('');
   }
 
   function planOptions(current) {
@@ -144,10 +164,11 @@
   }
 
   async function loadAdmin() {
-    const [overview, users, txs] = await Promise.all([
+    const [overview, users, txs, providerKeys] = await Promise.all([
       window.novaApi('/api/admin/overview'),
       window.novaApi('/api/admin/users'),
       window.novaApi('/api/admin/transactions'),
+      window.novaApi('/api/admin/provider-keys'),
     ]);
     if (!overview.ok || !users.ok || !txs.ok) {
       if (overview.status === 403) {
@@ -161,6 +182,7 @@
     renderStats(overview.data);
     renderUsers(users.data.users || []);
     renderTransactions(txs.data.transactions || []);
+    if (providerKeys && providerKeys.ok) renderProviders(providerKeys.data.providers || []);
   }
 
   const refresh = document.getElementById('admin-refresh');
