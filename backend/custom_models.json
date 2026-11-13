@@ -256,7 +256,8 @@
     "note": "Paid · vision",
     "price_unit": "",
     "upstream": "nightrouter",
-    "upstream_id": "gemini-4-argon-free"
+    "upstream_id": "gemini-4-argon-free",
+    "hidden": true
   },
   {
     "id": "glm-5.3-flash",
