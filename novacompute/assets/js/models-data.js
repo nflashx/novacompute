@@ -27,7 +27,7 @@
     { id: "qwen/qwen3.7-flash:free", name: "Qwen 3.7", provider: "Alibaba", color: "#6366f1", context: "1M", speed: 41.42, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: true, video: false, note: "Free · image input", quota_multiplier: 1 },
     { id: "gemini-3.8-flash-lite-tts", name: "Gemini 3.8 Flash-Lite TTS", provider: "Google", color: "#4285f4", context: "N/A", speed: 0, input: 0.0, output: 0.0055, tag: "Sub", category: "tts", image: false, video: false, note: "Free with subscription · up to 100 req/day", price_unit: "1k_chars", quota_multiplier: 1 },
     { id: "gemini-3.8-flash-tts", name: "Gemini 3.8 Flash TTS", provider: "Google", color: "#4285f4", context: "N/A", speed: 0, input: 0.0, output: 0.008, tag: "Sub", category: "tts", image: false, video: false, note: "Free with subscription · up to 100 req/day", price_unit: "1k_chars", quota_multiplier: 1 },
-    { id: "deepseek-v4-flash-0731", name: "DeepSeek V4 Flash 0731", provider: "DeepSeek", color: "#4d6bfe", context: "1M", speed: 0, input: 0.01, output: 0.05, tag: "New", category: "chat", image: false, video: false, note: "Paid · text only", quota_multiplier: 1 },
+    { id: "deepseek-v4-flash-0731", name: "DeepSeek V4 Flash 0731", provider: "DeepSeek", color: "#4d6bfe", context: "1M", speed: 26.67, input: 0.01, output: 0.05, tag: "New", category: "chat", image: false, video: false, note: "Paid · text only", quota_multiplier: 1 },
     { id: "deepseek-v4-flash-free", name: "DeepSeek V4 Flash", provider: "DeepSeek", color: "#4d6bfe", context: "1M", speed: 57.14, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: true, video: false, note: "Free · vision", quota_multiplier: 1 },
     { id: "deepseek-v4-flash-vision-free", name: "DeepSeek V4 Flash Vision", provider: "DeepSeek", color: "#4d6bfe", context: "1M", speed: 45.9, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: true, video: false, note: "Free · vision", quota_multiplier: 1 },
     { id: "deepseek-v4-pro-0813", name: "DeepSeek V4 Pro 0813", provider: "DeepSeek", color: "#4d6bfe", context: "1M", speed: 24.35, input: 0.03, output: 0.12, tag: "New", category: "chat", image: true, video: false, note: "Paid · vision", quota_multiplier: 1 },
@@ -194,7 +194,7 @@
   function priceCell(value) {
     return value === 0
       ? '<span class="font-medium text-emerald-400">Free</span>'
-      : `<span class="font-mono text-slate-200">$${value.toFixed(2)}</span>`;
+      : `<span class="font-mono text-slate-200">$${value.toFixed(value > 0 && value < 0.01 ? 3 : 2)}</span>`;
   }
 
   function tagCell(tag) {

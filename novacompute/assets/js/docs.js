@@ -93,14 +93,14 @@
           ? `<span class="font-mono text-slate-200" title="Billed per request">$${Number(m.price_per_request || 0).toFixed(2)}</span>`
           : isFree
             ? '<span class="font-medium text-emerald-400">Free</span>'
-            : `<span class="font-mono text-slate-200">$${m.input.toFixed(2)}</span>`;
+            : `<span class="font-mono text-slate-200">$${m.input.toFixed(m.input > 0 && m.input < 0.01 ? 3 : 2)}</span>`;
       const output = isTts
         ? `<span class="whitespace-nowrap font-mono text-slate-200">$${m.output.toFixed(4)}</span><span class="text-[10px] text-slate-500"> / 1k chars</span>`
         : isRequest
           ? '<span class="text-slate-600">—</span>'
           : isFree
             ? '<span class="font-medium text-emerald-400">Free</span>'
-            : `<span class="font-mono text-slate-200">$${m.output.toFixed(2)}</span>`;
+            : `<span class="font-mono text-slate-200">$${m.output.toFixed(m.output > 0 && m.output < 0.01 ? 3 : 2)}</span>`;
       const media = [
         m.image ? '<span class="rounded bg-cyan-500/10 px-1.5 py-0.5 font-mono text-[10px] text-cyan-300">IMG</span>' : '',
         m.video ? '<span class="rounded bg-fuchsia-500/10 px-1.5 py-0.5 font-mono text-[10px] text-fuchsia-300">VID</span>' : '',

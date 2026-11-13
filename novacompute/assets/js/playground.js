@@ -84,8 +84,8 @@
     set('context', m.context);
     set('speed', `${m.speed >= 1000 ? '1000+' : m.speed} tok/s`);
     const requestPrice = Number(m.price_per_request || 0);
-    set('input', requestPrice > 0 ? `$${requestPrice.toFixed(requestPrice < 0.01 ? 4 : 2)}` : (m.input === 0 ? 'Free' : `$${m.input.toFixed(2)}`));
-    set('output', requestPrice > 0 ? '—' : (m.output === 0 ? 'Free' : `$${m.output.toFixed(2)}`));
+    set('input', requestPrice > 0 ? `$${requestPrice.toFixed(requestPrice < 0.01 ? 4 : 2)}` : (m.input === 0 ? 'Free' : `$${m.input.toFixed(m.input > 0 && m.input < 0.01 ? 3 : 2)}`));
+    set('output', requestPrice > 0 ? '—' : (m.output === 0 ? 'Free' : `$${m.output.toFixed(m.output > 0 && m.output < 0.01 ? 3 : 2)}`));
 
     const badge = INFO_BOX.querySelector('[data-info="badge"]');
     if (m.tag && window.NOVA_TAG_STYLES[m.tag]) {

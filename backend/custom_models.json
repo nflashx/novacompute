@@ -4,7 +4,7 @@
     "name": "DeepSeek V4 Flash 0731",
     "provider": "DeepSeek",
     "context": "1M",
-    "speed": 0,
+    "speed": 26.67,
     "input": 0.01,
     "output": 0.05,
     "category": "chat",
