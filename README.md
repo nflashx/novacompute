@@ -20,13 +20,13 @@ No credit card is required to claim a founding free seat.
 
 - **Chat and reasoning** — GPT-6, Grok 4.6, Kimi K3, DeepSeek, Qwen, Gemini, GLM, ERNIE, Mistral, MiniMax, Maritaca, K-EXAONE and more.
 - **Vision** — send images to multimodal models with the standard `image_url` content part.
-- **Video-capable models** — MiniMax M3, Qwen 3.8 Omni Flash, Qwen 3.8 Flash and Qwen 3.7 Max accept video input through the standard content-part request.
+- **Video-capable models** — Kimi K3 (small video data URI), MiniMax M3, Qwen 3.8 Omni Flash, Qwen 3.8 Flash and Qwen 3.7 Max accept video input through content parts.
 - **Streaming** — token-by-token SSE on `/v1/chat/completions`.
 - **Text-to-speech** — `POST /v1/audio/speech` with Gemini 3.8 Flash-Lite / Flash TTS.
 - **Moderation** — Omni Moderation through `POST /v1/moderations`.
 - **Typed decisions** — four Codiv decision models for classification, routing and scoring through `POST /v1/systemone`. See [decision.html](https://novarouter.cc.cd/decision.html).
 - **One key, one bill** — no provider accounts, no SDK rewrites. Works with the OpenAI SDK and any OpenAI-compatible client.
-- **Transient failures retry** — 429/5xx responses get up to 5 attempts with backoff and key rotation before the request is reported as failed.
+- **Transient failures retry** — 429/5xx responses rotate keys immediately for up to 8 attempts; single-key providers use backoff.
 - **Live usage** — dashboard charts, API keys, balance, plans and payment history with real data only.
 
 ---
@@ -45,7 +45,7 @@ After the 50 seats are claimed, new accounts are **pay-as-you-go**: add credit o
 
 ## Models and pricing
 
-The live catalogue currently has **49 models: 24 free (22 chat/vision/TTS + 2 decision), 28 with image input and 4 with video input**. That is 45 chat, vision, moderation and TTS models plus 4 decision models on a separate endpoint. Prices are per **1M tokens** unless marked per request or per 1,000 characters.
+The live catalogue currently has **49 models: 24 free (22 chat/vision/TTS + 2 decision), 28 with image input and 5 with video input**. That is 45 chat, vision, moderation and TTS models plus 4 decision models on a separate endpoint. Prices are per **1M tokens** unless marked per request or per 1,000 characters.
 
 **Free chat/code ($0.00):** GPT-6 Luna, GPT-5.6, DeepSeek V4.1, DeepSeek V4 Flash, DeepSeek V4 Flash Vision, DeepSeek V4 Pro, Mistral Large 4, Qwen 3.7, Qwen 3.7 Max, Qwen 3.8 Max, Gemini 3.1 Flash Lite, ERNIE-5.5-Flash, Nemotron 3.5 Super VL, Nemotron 3.5 Lightning, Dots3 Note Preview, GLM-4 Plus, GLM-4 Air, Raon-1 Mini, MiniMax M3.1 Flash, Kimi 2.7, Mercury 3.
 

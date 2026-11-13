@@ -1467,7 +1467,7 @@ def load_keys_from_file(filepath, fallback_key=None):
 
 def json_bytes(obj): return json.dumps(obj, ensure_ascii=False).encode("utf-8")
 
-UPSTREAM_RETRY_ATTEMPTS = max(1, int(os.getenv("NOVA_UPSTREAM_RETRY_ATTEMPTS", "5")))
+UPSTREAM_RETRY_ATTEMPTS = max(1, int(os.getenv("NOVA_UPSTREAM_RETRY_ATTEMPTS", "8")))
 UPSTREAM_RETRY_DELAY = float(os.getenv("NOVA_UPSTREAM_RETRY_DELAY", "1.5"))
 
 def open_upstream(url, data, keys, *, accept="application/json", timeout=UPSTREAM_TIMEOUT,
@@ -1502,8 +1502,11 @@ def open_upstream(url, data, keys, *, accept="application/json", timeout=UPSTREA
             retryable = exc.code in retry_statuses
             rotate = exc.code in rotate_statuses
             if attempt < attempts and (retryable or rotate):
-                wait = min(delay_base * attempt, 8.0) if retryable else 0.4
-                print(f"[{label}] HTTP {exc.code} attempt {attempt}/{attempts}; retrying in {wait:.1f}s")
+                if retryable and len(pool) > 1:
+                    wait = 0.15
+                else:
+                    wait = min(delay_base * attempt, 8.0) if retryable else 0.25
+                print(f"[{label}] HTTP {exc.code} attempt {attempt}/{attempts}; rotating key in {wait:.2f}s")
                 try: exc.close()
                 except Exception: pass
                 time.sleep(wait)

@@ -346,10 +346,10 @@
     "price_per_request": 0.05,
     "category": "code",
     "tag": "New",
-    "note": "Vision",
+    "note": "Vision & video · data URI",
     "price_unit": "request",
     "image": true,
-    "video": false,
+    "video": true,
     "upstream": "aibridge",
     "upstream_id": "kimi-k3"
   },
