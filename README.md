@@ -10,7 +10,7 @@
 
 **Dashboard:** [https://novarouter.cc.cd/dashboard.html](https://novarouter.cc.cd/dashboard.html)
 
-NovaCompute gives you one OpenAI-compatible endpoint for 49 models — 45 chat, vision, moderation and TTS models plus 4 decision models. 24 are free (22 chat/vision/TTS + 2 decision). Create an account, get an API key, and send your first request in under a minute. The first **50 customer accounts** get the founding free plan; after that, access is pay-as-you-go or subscription.
+NovaCompute gives you one OpenAI-compatible endpoint for 50 models — 46 chat, vision, moderation and TTS models plus 4 decision models. 25 are free (23 chat/vision/TTS + 2 decision). Create an account, get an API key, and send your first request in under a minute. The first **50 customer accounts** get the founding free plan; after that, access is pay-as-you-go or subscription.
 
 No credit card is required to claim a founding free seat.
 
@@ -20,7 +20,7 @@ No credit card is required to claim a founding free seat.
 
 - **Chat and reasoning** — GPT-6, Grok 4.6, Kimi K3, DeepSeek, Qwen, Gemini, GLM, ERNIE, Mistral, MiniMax, Maritaca, K-EXAONE and more.
 - **Vision** — send images to multimodal models with the standard `image_url` content part.
-- **Video-capable models** — Kimi K3 (small video data URI), MiniMax M3, Qwen 3.8 Omni Flash, Qwen 3.8 Flash and Qwen 3.7 Max accept video input through content parts.
+- **Video-capable models** — Kimi K3 (small video data URI), Kimi K3.1 Pro, MiniMax M3, Qwen 3.8 Omni Flash, Qwen 3.8 Flash and Qwen 3.7 Max accept video input through content parts.
 - **Streaming** — token-by-token SSE on `/v1/chat/completions`.
 - **Text-to-speech** — `POST /v1/audio/speech` with Gemini 3.8 Flash-Lite / Flash TTS.
 - **Moderation** — Omni Moderation through `POST /v1/moderations`.
@@ -35,7 +35,7 @@ No credit card is required to claim a founding free seat.
 
 The first **50 customer accounts** receive the free plan:
 
-- Access to every `$0.00` model.
+- Access to every standard `$0.00` model; subscriber-only models such as Kimi K3 require an active Sub.
 - No credit card, no expiry.
 - Live remaining seats: [`/api/free-seats`](https://novarouter.cc.cd/api/free-seats).
 
@@ -45,7 +45,7 @@ After the 50 seats are claimed, new accounts are **pay-as-you-go**: add credit o
 
 ## Models and pricing
 
-The live catalogue currently has **49 models: 24 free (22 chat/vision/TTS + 2 decision), 28 with image input and 5 with video input**. That is 45 chat, vision, moderation and TTS models plus 4 decision models on a separate endpoint. Prices are per **1M tokens** unless marked per request or per 1,000 characters.
+The live catalogue currently has **50 models: 25 free (23 chat/vision/TTS + 2 decision), 29 with image input and 6 with video input**. That is 46 chat, vision, moderation and TTS models plus 4 decision models on a separate endpoint. Prices are per **1M tokens** unless marked per request or per 1,000 characters.
 
 **Free chat/code ($0.00):** GPT-6 Luna, GPT-5.6, DeepSeek V4.1, DeepSeek V4 Flash, DeepSeek V4 Flash Vision, DeepSeek V4 Pro, Mistral Large 4, Qwen 3.7, Qwen 3.7 Max, Qwen 3.8 Max, Gemini 3.1 Flash Lite, ERNIE-5.5-Flash, Nemotron 3.5 Super VL, Nemotron 3.5 Lightning, Dots3 Note Preview, GLM-4 Plus, GLM-4 Air, Raon-1 Mini, MiniMax M3.1 Flash, Kimi 2.7, Mercury 3.
 
@@ -79,11 +79,11 @@ DeepSeek free status on 2026-11-13: V4.1, V4 Flash, V4 Flash Vision and V4 Pro a
 | Qwen 3.8 Omni Flash | $0.03 | $0.12 |
 | MiniMax M3 | $0.02 | $0.08 |
 | Qwen 3.8 Flash | $0.01 | $0.05 |
-| Kimi K3 | $0.05 | — |
+| Kimi K3.1 Pro | $0.05 | — |
 | OpenJev Decision | $0.002 / request | — |
 | JevK5 Fast | $0.001 / request | — |
 
-Kimi K3, OpenJev Decision and JevK5 Fast are billed per request; their table price is the charge per call.
+Kimi K3 is free for active subscribers (not on the founding free seat). Kimi K3.1 Pro, OpenJev Decision and JevK5 Fast are billed per request; their table price is the charge per call.
 
 **Text-to-speech:** Gemini 3.8 Flash-Lite TTS at $0.0055 / 1k chars and Gemini 3.8 Flash TTS at $0.0080 / 1k chars via `POST /v1/audio/speech`.
 

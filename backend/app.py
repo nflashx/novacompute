@@ -1484,6 +1484,8 @@ def open_upstream(url, data, keys, *, accept="application/json", timeout=UPSTREA
     delay_base = float(UPSTREAM_RETRY_DELAY if retry_delay is None else retry_delay)
     pool = list(keys)
     random.shuffle(pool)
+    if label == "nightrouter" and len(pool) > attempts:
+        attempts = min(len(pool), 32)
     last_exc = None
     last_key = None
     for attempt in range(1, attempts + 1):
@@ -2398,6 +2400,9 @@ class NovaHandler(BaseHTTPRequestHandler):
                                             f"Try limit reached ({limit}/day). Use your API key for production traffic.")
         model = str(body.get("model", "")).strip()
         if model not in MODEL_IDS: return self.send_error_json(400, "invalid_request_error", "invalid_model", f"Unknown model '{model}'.")
+        if model == "kimi-k3" and not user.get("is_admin") and not plan_active(user):
+            return self.send_error_json(403, "permission_error", "subscription_required",
+                                        "Kimi K3 is free with an active subscription. Choose a Sub plan to use it.")
         if (MODEL_LOOKUP.get(model) or {}).get("category") == "moderation":
             return self.send_error_json(400, "invalid_request_error", "use_moderation_endpoint",
                                         "This model uses /v1/moderations, not /v1/chat/completions.")
