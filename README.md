@@ -10,7 +10,7 @@
 
 **Dashboard:** [https://novarouter.cc.cd/dashboard.html](https://novarouter.cc.cd/dashboard.html)
 
-NovaCompute gives you one OpenAI-compatible endpoint for 45 models — 41 chat, vision, moderation and TTS models plus 4 decision models. 25 are free (23 chat/vision/TTS + 2 decision). Create an account, get an API key, and send your first request in under a minute. The first **50 customer accounts** get the founding free plan; after that, access is pay-as-you-go or subscription.
+NovaCompute gives you one OpenAI-compatible endpoint for 45 models — 41 chat, vision, moderation and TTS models plus 4 decision models. 23 are free (21 chat/vision/TTS + 2 decision). Create an account, get an API key, and send your first request in under a minute. The first **50 customer accounts** get the founding free plan; after that, access is pay-as-you-go or subscription.
 
 No credit card is required to claim a founding free seat.
 
@@ -45,11 +45,11 @@ After the 50 seats are claimed, new accounts are **pay-as-you-go**: add credit o
 
 ## Models and pricing
 
-The live catalogue currently has **45 models: 25 free (23 chat/vision/TTS + 2 decision), 20 with image input and 5 with video input**. That is 41 chat, vision, moderation and TTS models plus 4 decision models on a separate endpoint. Prices are per **1M tokens** unless marked per request or per 1,000 characters.
+The live catalogue currently has **45 models: 23 free (21 chat/vision/TTS + 2 decision), 24 with image input and 5 with video input**. That is 41 chat, vision, moderation and TTS models plus 4 decision models on a separate endpoint. Prices are per **1M tokens** unless marked per request or per 1,000 characters.
 
-**Free chat/code ($0.00):** GPT-6 Luna, GPT-5.6, DeepSeek V4.1, DeepSeek V4 Flash, DeepSeek V4 Flash 0731, DeepSeek V4 Flash Vision, DeepSeek V4 Pro, DeepSeek V4 Pro 0813, Mistral Large 4, Qwen 3.7, Qwen 3.8 Max, Gemini 3.1 Flash Lite, ERNIE-5.5-Flash, Nemotron 3.5 Super VL, Nemotron 3.5 Lightning, Dots3 Note Preview, GLM-4 Plus, GLM-4 Air, Raon-1 Mini, MiniMax M3.1 Flash, Kimi 2.7, Mercury 3.
+**Free chat/code ($0.00):** GPT-6 Luna, GPT-5.6, DeepSeek V4.1, DeepSeek V4 Flash, DeepSeek V4 Flash Vision, DeepSeek V4 Pro, Mistral Large 4, Qwen 3.7, Qwen 3.8 Max, Gemini 3.1 Flash Lite, ERNIE-5.5-Flash, Nemotron 3.5 Super VL, Nemotron 3.5 Lightning, Dots3 Note Preview, GLM-4 Plus, GLM-4 Air, Raon-1 Mini, MiniMax M3.1 Flash, Kimi 2.7, Mercury 3.
 
-DeepSeek free status on 2026-11-13: V4.1, V4 Flash, V4 Flash Vision, V4 Pro and V4 Pro 0813 are live; V4 Flash 0731 is upstream-down.
+DeepSeek free status on 2026-11-13: V4.1, V4 Flash, V4 Flash Vision and V4 Pro are live and read images. V4 Pro 0813 and V4 Flash 0731 are paid now; 0731 does not read images.
 
 **Moderation:** Omni Moderation is free through `POST /v1/moderations` (not chat completions).
 
@@ -74,6 +74,8 @@ DeepSeek free status on 2026-11-13: V4.1, V4 Flash, V4 Flash Vision, V4 Pro and 
 | Gemini 3.8 Flash | $0.05 | $0.20 |
 | GPT-5.6 Sol | $0.04 | $0.16 |
 | Nemotron 3 Ultra | $0.03 | $0.12 |
+| DeepSeek V4 Pro 0813 | $0.03 | $0.12 |
+| DeepSeek V4 Flash 0731 | $0.01 | $0.05 |
 | Kimi K3 | $0.05 | — |
 | OpenJev Decision | $0.002 / request | — |
 | JevK5 Fast | $0.001 / request | — |
