@@ -65,6 +65,10 @@
     { id: "gpt-6.1-sol", name: "GPT-6.1 Sol", provider: "OpenAI", color: "#10a37f", context: "900K", speed: 5.02, input: 0.12, output: 0.6, tag: "New", category: "chat", image: true, video: true, note: "Paid · vision & video", quota_multiplier: 1 },
     { id: "glm-5.3", name: "GLM 5.3", provider: "Zhipu", color: "#0ea5e9", context: "1M", speed: 19.42, input: 0.15, output: 0.6, tag: "New", category: "chat", image: false, video: false, note: "Paid · text only", quota_multiplier: 1 },
     { id: "kimi-2.7", name: "Kimi 2.7", provider: "Moonshot AI", color: "#8b5cf6", context: "256K", speed: 6.01, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: true, video: false, note: "Free · NightRouter free tier", quota_multiplier: 1 },
+    { id: "minimax-m3", name: "MiniMax M3", provider: "MiniMax", color: "#f59e0b", context: "1M", speed: 9.74, input: 0.02, output: 0.08, tag: "New", category: "chat", image: true, video: true, note: "Paid · vision & video", quota_multiplier: 1 },
+    { id: "qwen-3.8-omni-flash", name: "Qwen 3.8 Omni Flash", provider: "Alibaba", color: "#6366f1", context: "1M", speed: 8.9, input: 0.03, output: 0.12, tag: "New", category: "chat", image: true, video: true, note: "Paid · vision & video", quota_multiplier: 1 },
+    { id: "qwen-3.8-flash", name: "Qwen 3.8 Flash", provider: "Alibaba", color: "#6366f1", context: "1M", speed: 8.73, input: 0.01, output: 0.05, tag: "New", category: "chat", image: true, video: true, note: "Paid · vision & video", quota_multiplier: 1 },
+    { id: "qwen-3.7-max", name: "Qwen 3.7 Max", provider: "Alibaba", color: "#6366f1", context: "1M", speed: 6.82, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: true, video: true, note: "Free · vision & video", quota_multiplier: 1 },
   ];
 
   const FALLBACK_BY_ID = {};
