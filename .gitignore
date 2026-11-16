@@ -53,3 +53,10 @@ instabox-openapi.json
 
 # Model watcher local state
 monitor/model_watch_state.json
+
+# Local YuE2 bridge config (contains upstream API key)
+local_api/config.json
+local_api/*.log
+
+# Temporary provider visibility state
+backend/nightrouter_hide_state.json

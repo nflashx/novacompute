@@ -7,6 +7,11 @@
 (function () {
   'use strict';
 
+  function requestPrice(value) {
+    const price = Number(value || 0);
+    return `$${price.toFixed(price > 0 && price < 0.01 ? 3 : 2)}`;
+  }
+
   /* ---------- Copy buttons ---------- */
   document.querySelectorAll('[data-copy]').forEach((btn) => {
     btn.addEventListener('click', async () => {
@@ -90,7 +95,7 @@
       const input = isTts
         ? '<span class="text-slate-600">—</span>'
         : isRequest
-          ? `<span class="font-mono text-slate-200" title="Billed per request">$${Number(m.price_per_request || 0).toFixed(2)}</span>`
+          ? `<span class="font-mono text-slate-200" title="Billed per request">${requestPrice(m.price_per_request)}</span>`
           : isFree
             ? '<span class="font-medium text-emerald-400">Free</span>'
             : `<span class="font-mono text-slate-200">$${m.input.toFixed(m.input > 0 && m.input < 0.01 ? 3 : 2)}</span>`;

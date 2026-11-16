@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """NovaCompute API gateway — Python standard library only."""
 
+import base64
 import hashlib
 import json
 from collections import deque
@@ -295,6 +296,10 @@ PROVIDERS = {
         "url": "https://crowllm.com/v1/chat/completions",
         "keys_file": os.path.join(BASE_DIR, "crowllm_keys.json"),
     },
+    "dahl": {
+        "url": "https://inference.dahl.global/v1/chat/completions",
+        "keys_file": os.path.join(BASE_DIR, "dahl_keys.json"),
+    },
     "aibridge": {
         "url": "https://aibridge-api.com/v1/chat/completions",
         "keys_file": os.path.join(BASE_DIR, "aibridge_keys.json"),
@@ -335,6 +340,7 @@ PROVIDER_NOTES = {
     "nagaai": "Thủ công",
     "dreamprompting": "Hold — chưa đụng, chưa dùng API",
     "crowllm": "Thủ công",
+    "dahl": "Thủ công",
     "aibridge": "Thủ công",
     "routeway": "Thủ công",
     "raon": "Thủ công",
@@ -369,6 +375,7 @@ PRICING = {m["id"]: (m["input"], m["output"]) for m in MODELS}
 REQUEST_PRICES = {m["id"]: float(m.get("price_per_request", 0) or 0) for m in MODELS}
 BASE_MODEL_IDS = set(PRICING)
 MODEL_IDS = set(PRICING)
+ALL_MODEL_IDS = set(PRICING)
 
 # ================= SUBSCRIPTION PLANS =================
 PLANS = {
@@ -387,6 +394,7 @@ QUOTA_MULTIPLIERS = {
     "ernie-5.5-flash": 12,
     "gemini-4-argon": 25,
     "grok-4.6": 100,
+    "grok-4.7": 100,
     "kimi-k3.1-pro": 180,
     "claude-sonnet-5.5": 180,
     "claude-opus-5.5": 320,
@@ -502,7 +510,7 @@ MODEL_LOOKUP = {m["id"]: m for m in MODELS}
 _custom_state = {"mtime": None}
 
 def refresh_models():
-    global MODELS, PRICING, REQUEST_PRICES, MODEL_IDS, MODEL_PROVIDER_MAP, MODEL_LOOKUP
+    global MODELS, PRICING, REQUEST_PRICES, MODEL_IDS, ALL_MODEL_IDS, MODEL_PROVIDER_MAP, MODEL_LOOKUP
     try:
         mtime = os.path.getmtime(CUSTOM_MODELS_FILE)
     except OSError:
@@ -526,21 +534,32 @@ def refresh_models():
         merged = [m for m in BASE_MODELS if m["id"] not in custom_ids and m["id"] not in hidden_ids] + \
                  [m for m in custom if not m.get("hidden")]
         MODELS = merged
-        PRICING = {m["id"]: (float(m.get("input", 0) or 0), float(m.get("output", 0) or 0)) for m in merged}
-        REQUEST_PRICES = {m["id"]: float(m.get("price_per_request", 0) or 0) for m in merged}
-        MODEL_IDS = set(PRICING)
+
+        # Keep hidden models resolvable for admins (local bridge/tests) while
+        # /v1/models and the public site only expose `merged`.
+        all_by_id = {m["id"]: dict(m) for m in BASE_MODELS}
+        for m in custom:
+            base = all_by_id.get(m["id"], {})
+            if set(m) <= {"id", "hidden"}:
+                entry = dict(base)
+                entry.update(m)
+            else:
+                entry = dict(m)
+            all_by_id[m["id"]] = entry
+        PRICING = {model_id: (float(m.get("input", 0) or 0), float(m.get("output", 0) or 0)) for model_id, m in all_by_id.items()}
+        REQUEST_PRICES = {model_id: float(m.get("price_per_request", 0) or 0) for model_id, m in all_by_id.items()}
+        MODEL_IDS = {m["id"] for m in merged}
+        ALL_MODEL_IDS = set(all_by_id)
         provider_map = dict(BASE_PROVIDER_MAP)
         for m in custom:
-            if m.get("hidden"):
-                continue
             upstream = str(m.get("upstream") or "").strip()
             if upstream in PROVIDERS:
                 provider_map[m["id"]] = upstream
         MODEL_PROVIDER_MAP = provider_map
         global MODEL_LOOKUP
-        MODEL_LOOKUP = {m["id"]: m for m in merged}
+        MODEL_LOOKUP = all_by_id
         _custom_state["mtime"] = mtime
-        print(f"[models] catalogue reloaded: {len(merged)} models (+{len(custom)} custom)")
+        print(f"[models] catalogue reloaded: {len(merged)} models ({len(all_by_id)} total, +{len(custom)} custom)")
 
 def now_utc(): return datetime.now(timezone.utc)
 def iso(dt): return dt.strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -602,6 +621,16 @@ def family_taken(db, email):
 
 def public_key(key):
     return {"id": key["id"], "name": key.get("name", "Key"), "key": key["key"], "created_at": key.get("created_at"), "last_used": key.get("last_used"), "status": key.get("status", "active")}
+
+def remember_user_ip(user, ip):
+    """Track the signup/last-seen IP for admin abuse review."""
+    if not ip:
+        return
+    user.setdefault("ips", [])
+    if ip not in user["ips"]:
+        user["ips"] = (user["ips"] + [ip])[-20:]
+    user["last_ip"] = ip
+    user.setdefault("signup_ip", ip)
 
 # ================= FOUNDING FREE SEATS =================
 def free_seat_count(db):
@@ -837,8 +866,11 @@ def load_json_cfg(path):
         return None
 
 def client_ip(handler):
+    # Behind Cloudflare/nginx, prefer the real visitor IP when it is available.
+    cf = (handler.headers.get("CF-Connecting-IP", "") or "").strip()
+    real = (handler.headers.get("X-Real-IP", "") or "").strip()
     fwd = (handler.headers.get("X-Forwarded-For", "") or "").split(",")[0].strip()
-    ip = fwd or (handler.client_address[0] if handler.client_address else "0.0.0.0")
+    ip = cf or real or fwd or (handler.client_address[0] if handler.client_address else "0.0.0.0")
     if ip in ("::1", "::ffff:127.0.0.1"):
         return "127.0.0.1"
     return ip
@@ -1061,6 +1093,7 @@ def oauth_session_token(provider, query, ip=""):
                 "usage": [], "transactions": [], "verified": True, "provider": provider, "plan": "free",
             }
             assign_free_seat(db, user, allow=bool(profile_meta.get("trusted", True)))
+            remember_user_ip(user, ip)
             db["users"].append(user)
             if ip:
                 record_signup_ip(db, ip)
@@ -1073,6 +1106,7 @@ def oauth_session_token(provider, query, ip=""):
                 user["api_keys"] = [{"id": "key_" + secrets.token_hex(6), "name": "Default",
                                      "key": new_api_key(), "created_at": iso(now_utc()),
                                      "last_used": None, "status": "active"}]
+            remember_user_ip(user, ip)
         token = secrets.token_urlsafe(32)
         db["oauth_sessions"][token] = {"user_id": user["id"], "expires": time.time() + 600}
         save_users(db)
@@ -1334,6 +1368,16 @@ def split_structured_content(content):
                 reasoning_parts.append(str(part["text"]))
     return "".join(text_parts), "".join(reasoning_parts)
 
+INLINE_THINK_RE = re.compile(r"<think(?:ing)?>.*?</think(?:ing)?>", re.IGNORECASE | re.DOTALL)
+
+
+def strip_inline_reasoning(text):
+    """Remove  thinking...</think> blocks some providers leave in content."""
+    if not isinstance(text, str):
+        return text
+    return INLINE_THINK_RE.sub("", text).strip()
+
+
 def normalize_completion_payload(data):
     if not isinstance(data, dict):
         return data
@@ -1343,9 +1387,13 @@ def normalize_completion_payload(data):
             continue
         text, reasoning = split_structured_content(message.get("content"))
         if text is not None:
-            message["content"] = text
-            if reasoning:
-                message.setdefault("reasoning_content", reasoning)
+            message["content"] = strip_inline_reasoning(text)
+        elif isinstance(message.get("content"), str):
+            message["content"] = strip_inline_reasoning(message["content"])
+        # Never expose chain-of-thought / raw reasoning to API clients.
+        message.pop("reasoning_content", None)
+        message.pop("reasoning", None)
+        message.pop("reasoning_details", None)
     return data
 
 def normalize_stream_event(event):
@@ -1357,10 +1405,49 @@ def normalize_stream_event(event):
             continue
         text, reasoning = split_structured_content(delta.get("content"))
         if text is not None:
-            delta["content"] = text
-            if reasoning:
-                delta.setdefault("reasoning_content", reasoning)
+            delta["content"] = strip_inline_reasoning(text)
+        elif isinstance(delta.get("content"), str):
+            delta["content"] = strip_inline_reasoning(delta["content"])
+        # Drop reasoning deltas; the final answer is the only thing clients need.
+        delta.pop("reasoning_content", None)
+        delta.pop("reasoning", None)
+        delta.pop("reasoning_details", None)
     return event
+
+def fetch_image_as_data_uri(url, max_bytes=10 * 1024 * 1024, timeout=20):
+    """Download a remote image and return it as a base64 data: URI (None on failure)."""
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0", "Accept": "image/*,*/*"})
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            ctype = (resp.headers.get("Content-Type") or "").split(";")[0].strip().lower()
+            raw = resp.read(max_bytes + 1)
+        if len(raw) > max_bytes or not raw:
+            return None
+        if not ctype.startswith("image/"):
+            ext = url.split("?")[0].rsplit(".", 1)[-1].lower()[:5]
+            ctype = {"png": "image/png", "jpg": "image/jpeg", "jpeg": "image/jpeg",
+                     "gif": "image/gif", "webp": "image/webp"}.get(ext, "")
+            if not ctype:
+                return None
+        return f"data:{ctype};base64,{base64.b64encode(raw).decode('ascii')}"
+    except Exception:
+        return None
+
+def inline_remote_images(messages):
+    """Rewrite remote image URLs to base64 data URIs — many upstreams cannot fetch URLs."""
+    for message in messages or []:
+        if not isinstance(message, dict): continue
+        content = message.get("content")
+        if not isinstance(content, list): continue
+        for part in content:
+            if not isinstance(part, dict) or part.get("type") != "image_url": continue
+            slot = part.get("image_url")
+            if not isinstance(slot, dict): continue
+            url = str(slot.get("url") or "")
+            if url.startswith(("http://", "https://")):
+                uri = fetch_image_as_data_uri(url)
+                if uri: slot["url"] = uri
+    return messages
 
 def detect_reply_language(messages, accept_language=""):
     """Cheap language detection: strong script signals + word lists + client locale."""
@@ -1397,14 +1484,15 @@ def detect_reply_language(messages, accept_language=""):
         return fallback[locale]
     return None
 
-def record_usage(user_id, key_id, model_id, prompt_tokens, completion_tokens, latency_ms, status="ok", cost=0.0, client=""):
+def record_usage(user_id, key_id, model_id, prompt_tokens, completion_tokens, latency_ms, status="ok", cost=0.0, client="", ip=""):
     with DB_LOCK:
         db = load_users()
         for user in db["users"]:
             if user.get("id") != user_id: continue
-            event = {"ts": int(time.time()), "model": model_id, "key_id": key_id, "prompt_tokens": int(prompt_tokens), "completion_tokens": int(completion_tokens), "latency_ms": int(latency_ms), "status": status, "cost": round(float(cost), 6), "client": client}
+            event = {"ts": int(time.time()), "model": model_id, "key_id": key_id, "prompt_tokens": int(prompt_tokens), "completion_tokens": int(completion_tokens), "latency_ms": int(latency_ms), "status": status, "cost": round(float(cost), 6), "client": client, "ip": ip}
             user.setdefault("usage", []).append(event)
             user["usage"] = user["usage"][-800:]
+            remember_user_ip(user, ip)
             if cost:
                 user["balance"] = round(max(0.0, user.get("balance", 0.0) - cost), 6)
                 user.setdefault("transactions", []).append({"ts": event["ts"], "type": "usage", "description": f"API usage — {model_id}", "method": "Balance", "amount": -round(float(cost), 6)})
@@ -1561,10 +1649,13 @@ class NovaHandler(BaseHTTPRequestHandler):
         try: return json.loads(raw.decode("utf-8"))
         except: return None
 
-    def authenticate(self):
+    def authenticate(self, anthropic=False):
+        token = ""
         header = self.headers.get("Authorization", "")
-        if not header.lower().startswith("bearer "): return None, None, None
-        token = header[7:].strip()
+        if header.lower().startswith("bearer "):
+            token = header[7:].strip()
+        elif anthropic:
+            token = (self.headers.get("x-api-key", "") or "").strip()
         if not token: return None, None, None
         db = load_users()
         user, key = find_user_by_api_key(db, token)
@@ -1595,6 +1686,26 @@ class NovaHandler(BaseHTTPRequestHandler):
         if path == "/api/fx": self.handle_fx(); return
         if path == "/api/admin/overview": self.handle_admin_overview(); return
         if path == "/api/admin/users": self.handle_admin_users(); return
+        if path == "/api/admin/user-detail":
+            if not self.require_admin(): return
+            email = (parse_qs(urlparse(self.path).query).get("email") or [""])[0].strip().lower()
+            db = load_users(); user = find_user_by_email(db, email)
+            if not user: return self.send_error_json(404, "not_found", "user_not_found", "User not found.")
+            usage = sorted(user.get("usage", []), key=lambda e: e.get("ts", 0), reverse=True)[:100]
+            self.send_json(200, {
+                "user": {
+                    "email": user.get("email"), "name": user.get("name", ""), "provider": user.get("provider", "email"),
+                    "created_at": user.get("created_at"), "signup_ip": user.get("signup_ip", ""),
+                    "last_ip": user.get("last_ip", ""), "ips": user.get("ips", [])[-20:],
+                    "plan": user.get("plan", "free") if plan_active(user) else "free",
+                    "free_seat": bool(user.get("free_seat")), "is_admin": bool(user.get("is_admin")),
+                    "balance": round(float(user.get("balance", 0) or 0), 2), "banned": bool(user.get("banned")),
+                    "api_keys": len([k for k in user.get("api_keys", []) if k.get("status", "active") == "active"]),
+                },
+                "usage": usage,
+                "transactions": (user.get("transactions") or [])[-50:],
+            })
+            return
         if path == "/api/admin/transactions": self.handle_admin_transactions(); return
         if path == "/api/admin/provider-keys": self.handle_admin_provider_keys_get(); return
         if path == "/api/admin/models": self.handle_admin_models_get(); return
@@ -1608,6 +1719,7 @@ class NovaHandler(BaseHTTPRequestHandler):
     def do_POST(self):
         path = urlparse(self.path).path.rstrip("/") or "/"
         if path == "/v1/chat/completions": self.handle_chat_completions(); return
+        if path == "/v1/messages": self.handle_anthropic_messages(); return
         if path == "/api/register": self.handle_register(); return
         if path == "/api/verify": self.handle_verify(); return
         if path == "/api/resend": self.handle_resend(); return
@@ -1875,6 +1987,7 @@ class NovaHandler(BaseHTTPRequestHandler):
                 "usage": [], "transactions": [], "verified": True, "provider": "email", "plan": "free",
             }
             assign_free_seat(db, user, allow=True)
+            remember_user_ip(user, pending.get("ip", ""))
             db["users"].append(user)
             db["pending"].pop(email, None)
             save_users(db)
@@ -1902,6 +2015,7 @@ class NovaHandler(BaseHTTPRequestHandler):
     def handle_login(self):
         body = self.read_json_body() or {}
         email = str(body.get("email", "")).strip().lower(); password = str(body.get("password", ""))
+        ip = client_ip(self)
         if not email or not password: return self.send_error_json(400, "invalid_request_error", "missing_fields", "Email and password are required.")
         with DB_LOCK:
             db = load_users()
@@ -1920,6 +2034,7 @@ class NovaHandler(BaseHTTPRequestHandler):
             if not user.get("verified", True):
                 return self.send_error_json(403, "authentication_error", "email_unverified", "Email not verified. Sign up again to receive a new code.")
             db["failed_logins"].pop(email, None); save_users(db)
+            remember_user_ip(user, ip)
             active_keys = [k for k in user.get("api_keys", []) if k.get("status", "active") == "active"]
             if not active_keys: return self.send_error_json(403, "authentication_error", "no_active_key", "This account has no active API keys.")
         self.send_json(200, {"user": {"name": user["name"], "email": user["email"], "created_at": user.get("created_at"), "is_admin": bool(user.get("is_admin")), "free_seat": bool(user.get("free_seat"))}, "api_key": active_keys[0]["key"], "balance": round(user.get("balance", 0.0), 6)})
@@ -1983,12 +2098,17 @@ class NovaHandler(BaseHTTPRequestHandler):
             rows.append({
                 "email": user.get("email"),
                 "name": user.get("name", ""),
+                "provider": user.get("provider", "email"),
                 "plan": user.get("plan", "free") if plan_active(user) else "free",
                 "plan_expires": user.get("plan_expires") if plan_active(user) else None,
                 "balance": round(float(user.get("balance", 0) or 0), 2),
                 "requests": len(usage),
                 "tokens": tokens,
                 "last_used": last,
+                "last_model": (sorted(usage, key=lambda e: e.get("ts", 0), reverse=True)[0].get("model", "") if usage else ""),
+                "signup_ip": user.get("signup_ip", ""),
+                "last_ip": user.get("last_ip", ""),
+                "ips": user.get("ips", [])[-10:],
                 "is_admin": bool(user.get("is_admin")),
                 "free_seat": bool(user.get("free_seat")),
                 "banned": bool(user.get("banned")),
@@ -2274,7 +2394,7 @@ class NovaHandler(BaseHTTPRequestHandler):
             audio = resp.read()
             ctype = resp.headers.get("Content-Type", "audio/wav")
         latency = int((time.time() - started) * 1000)
-        record_usage(user["id"], key["id"], model, max(1, len(text) // 4), 0, latency, status="ok", cost=cost, client=client)
+        record_usage(user["id"], key["id"], model, max(1, len(text) // 4), 0, latency, status="ok", cost=cost, client=client, ip=client_ip(self))
         self.send_response(200)
         self.send_header("Content-Type", ctype)
         self.send_header("Content-Length", str(len(audio)))
@@ -2327,7 +2447,7 @@ class NovaHandler(BaseHTTPRequestHandler):
         latency = int((time.time() - started) * 1000)
         usage = (data.get("usage") or {}) if isinstance(data, dict) else {}
         record_usage(user["id"], key["id"], model, int(usage.get("prompt_tokens") or 0),
-                     int(usage.get("completion_tokens") or 0), latency, status="ok", cost=0.0, client="moderation")
+                     int(usage.get("completion_tokens") or 0), latency, status="ok", cost=0.0, client="moderation", ip=client_ip(self))
         self.send_json(200, data)
 
     def handle_systemone(self):
@@ -2377,7 +2497,7 @@ class NovaHandler(BaseHTTPRequestHandler):
         usage = (data.get("usage") or {}) if isinstance(data, dict) else {}
         record_usage(user["id"], key["id"], model, int(usage.get("input_tokens") or 0),
                      int(usage.get("output_tokens") or 0), latency, status="ok",
-                     cost=(0.0 if user.get("is_admin") else request_price), client="systemone")
+                     cost=(0.0 if user.get("is_admin") else request_price), client="systemone", ip=client_ip(self))
         self.send_json(200, data)
 
     def handle_chat_completions(self):
@@ -2399,7 +2519,9 @@ class NovaHandler(BaseHTTPRequestHandler):
                 return self.send_error_json(429, "rate_limit_error", "try_limit_reached",
                                             f"Try limit reached ({limit}/day). Use your API key for production traffic.")
         model = str(body.get("model", "")).strip()
-        if model not in MODEL_IDS: return self.send_error_json(400, "invalid_request_error", "invalid_model", f"Unknown model '{model}'.")
+        if model not in MODEL_IDS:
+            if not (user.get("is_admin") and model in ALL_MODEL_IDS):
+                return self.send_error_json(400, "invalid_request_error", "invalid_model", f"Unknown model '{model}'.")
         if model == "kimi-k3" and not user.get("is_admin") and not plan_active(user):
             return self.send_error_json(403, "permission_error", "subscription_required",
                                         "Kimi K3 is free with an active subscription. Choose a Sub plan to use it.")
@@ -2426,6 +2548,7 @@ class NovaHandler(BaseHTTPRequestHandler):
             messages[0]["content"] = (base + "\n\n" + language_rule).strip()
         else:
             messages.insert(0, {"role": "system", "content": language_rule})
+        inline_remote_images(messages)
         body["messages"] = messages
         upstream_model = (MODEL_LOOKUP.get(model) or {}).get("upstream_id") or model
         
@@ -2463,6 +2586,24 @@ class NovaHandler(BaseHTTPRequestHandler):
         
         stream = bool(body.get("stream"))
         payload = dict(body); payload["model"] = upstream_model
+        # Some models spend most of their budget on reasoning before writing
+        # the answer. Enforce a floor so a small max_tokens cannot yield an
+        # empty message; reasoning itself is stripped from the response below.
+        try:
+            min_tokens = int((MODEL_LOOKUP.get(model) or {}).get("min_max_tokens") or 0)
+        except (TypeError, ValueError):
+            min_tokens = 0
+        if min_tokens:
+            for token_key in ("max_completion_tokens", "max_tokens"):
+                if token_key not in payload:
+                    continue
+                try:
+                    current = int(payload.get(token_key) or 0)
+                except (TypeError, ValueError):
+                    current = 0
+                if current < min_tokens:
+                    payload[token_key] = min_tokens
+                break
         # Maritaca S5 only accepts the default temperature; drop a custom value
         # instead of letting the whole request fail with HTTP 400.
         if provider_name == "maritaca" and "temperature" in payload:
@@ -2497,7 +2638,7 @@ class NovaHandler(BaseHTTPRequestHandler):
                 return self.send_error_json(502, "upstream_error", "upstream_rejected", f"Upstream HTTP {last_exc.code}: {detail}")
             return self.send_error_json(502, "upstream_error", "all_keys_failed", f"All upstream attempts failed for {provider_name}. Last error: {str(last_exc)}")
 
-        if stream: return self.relay_stream(upstream, user, key, model, bill_in, bill_out, bill_request, started, client)
+        if stream: return self.relay_stream(upstream, user, key, model, bill_in, bill_out, bill_request, started, client, ip=client_ip(self))
 
         try:
             raw = upstream.read(); data = json.loads(raw.decode("utf-8"))
@@ -2507,11 +2648,200 @@ class NovaHandler(BaseHTTPRequestHandler):
         latency = int((time.time() - started) * 1000); usage = data.get("usage") or {}
         prompt_tokens = int(usage.get("prompt_tokens") or 0); completion_tokens = int(usage.get("completion_tokens") or 0)
         cost = bill_request if bill_request else (prompt_tokens * bill_in + completion_tokens * bill_out) / 1_000_000
-        record_usage(user["id"], key["id"], model, prompt_tokens, completion_tokens, latency, status="ok", cost=cost, client=client)
+        record_usage(user["id"], key["id"], model, prompt_tokens, completion_tokens, latency, status="ok", cost=cost, client=client, ip=client_ip(self))
         data = normalize_completion_payload(data)
         self.send_json(200, data)
 
-    def relay_stream(self, upstream, user, key, model, price_in, price_out, request_price, started, client=""):
+    def handle_anthropic_messages(self):
+        """Minimal Anthropic Messages compatibility for clients that call /v1/messages."""
+        refresh_models()
+        _db, user, key = self.authenticate(anthropic=True)
+        if not user: return self.send_error_json(401, "authentication_error", "invalid_api_key", "Missing or invalid API key.")
+        if (not user.get("is_admin") and not user.get("free_seat")
+                and not plan_active(user) and user.get("balance", 0.0) <= 0):
+            return self.send_error_json(402, "insufficient_balance_error", "free_capacity_reached",
+                                        "The first 10 free seats are taken. Add credit or subscribe to use the API.")
+        if not self.enforce_rate_limit(user, key): return
+        body = self.read_json_body()
+        if not isinstance(body, dict): return self.send_error_json(400, "invalid_request_error", "invalid_json", "Request body must be valid JSON.")
+        model = str(body.get("model", "")).strip()
+        if model not in MODEL_IDS: return self.send_error_json(400, "invalid_request_error", "invalid_model", f"Unknown model '{model}'.")
+        if (MODEL_LOOKUP.get(model) or {}).get("category") == "moderation":
+            return self.send_error_json(400, "invalid_request_error", "use_moderation_endpoint", "This model uses /v1/moderations, not /v1/messages.")
+        if (MODEL_LOOKUP.get(model) or {}).get("category") == "decision":
+            return self.send_error_json(400, "invalid_request_error", "use_systemone_endpoint", "This model uses /v1/systemone, not /v1/messages.")
+
+        def block_text(content):
+            if isinstance(content, str): return content
+            if isinstance(content, list):
+                return "".join(str(p.get("text", "")) for p in content if isinstance(p, dict) and p.get("type") == "text")
+            return ""
+
+        openai_messages = []
+        system = body.get("system")
+        if system:
+            if isinstance(system, str): openai_messages.append({"role": "system", "content": system})
+            else:
+                text = block_text(system)
+                if text: openai_messages.append({"role": "system", "content": text})
+        for message in body.get("messages") or []:
+            if not isinstance(message, dict): continue
+            role = message.get("role", "user")
+            content = message.get("content")
+            if isinstance(content, str):
+                openai_messages.append({"role": role, "content": content}); continue
+            openai_content = []
+            for part in content or []:
+                if not isinstance(part, dict): continue
+                ptype = part.get("type")
+                if ptype == "text" and part.get("text"):
+                    openai_content.append({"type": "text", "text": str(part["text"])})
+                elif ptype == "image" and isinstance(part.get("source"), dict):
+                    src = part["source"]
+                    if src.get("type") == "base64":
+                        mime = src.get("media_type", "image/png")
+                        openai_content.append({"type": "image_url", "image_url": {"url": f"data:{mime};base64,{src.get('data', '')}"}})
+                    elif src.get("type") == "url":
+                        openai_content.append({"type": "image_url", "image_url": {"url": str(src.get("url") or "")}})
+                elif ptype == "image_url" and isinstance(part.get("image_url"), dict):
+                    # OpenAI-style part sent through the Anthropic endpoint.
+                    openai_content.append({"type": "image_url", "image_url": {"url": str(part["image_url"].get("url") or "")}})
+                elif ptype == "image" and isinstance(part.get("url")):
+                    # URL-source image block: {"type": "image", "url": "..."}
+                    openai_content.append({"type": "image_url", "image_url": {"url": str(part.get("url") or "")}})
+            inline_remote_images([{"role": role, "content": openai_content}])
+            if openai_content: openai_messages.append({"role": role, "content": openai_content})
+
+        language_rule = detect_reply_language(openai_messages, self.headers.get("Accept-Language", ""))
+        if language_rule:
+            language_rule = (f"The user's latest message is in {language_rule}. "
+                             f"Always answer in {language_rule}. Never switch language unless the user asks.")
+        else:
+            language_rule = "Always answer in the same language as the user's most recent message."
+        if openai_messages and openai_messages[0].get("role") == "system":
+            openai_messages[0]["content"] = (str(openai_messages[0].get("content") or "").rstrip() + "\n\n" + language_rule).strip()
+        else:
+            openai_messages.insert(0, {"role": "system", "content": language_rule})
+
+        price_in, price_out = PRICING[model]
+        request_price = float(REQUEST_PRICES.get(model, 0) or 0)
+        is_paid = (price_in or price_out or request_price) > 0
+        is_admin = bool(user.get("is_admin"))
+        active_plan = plan_active(user)
+        plan_covered = bool(is_paid and active_plan and request_price <= 0)
+        if is_paid and not is_admin:
+            if plan_covered:
+                quota = PLAN_QUOTA.get(user.get("plan"), 0)
+                if plan_tokens_used_today(user) >= quota:
+                    if user.get("balance", 0) <= 0:
+                        return self.send_error_json(429, "rate_limit_error", "sub_quota_reached", "Daily subscription quota reached. Top up or wait for the 00:00 UTC reset.")
+                    plan_covered = False
+            else:
+                balance = float(user.get("balance", 0) or 0)
+                if balance <= 0 or (request_price and balance + 1e-9 < request_price):
+                    return self.send_error_json(402, "insufficient_balance_error", "insufficient_balance", "Balance exhausted.")
+        bill_in, bill_out = (0, 0) if (plan_covered or is_admin) else (price_in, price_out)
+        bill_request = 0.0 if (plan_covered or is_admin) else request_price
+
+        provider_name = MODEL_PROVIDER_MAP.get(model, DEFAULT_PROVIDER)
+        provider_info = PROVIDERS.get(provider_name)
+        if not provider_info:
+            return self.send_error_json(500, "configuration_error", "provider_missing", f"Provider '{provider_name}' not configured.")
+        upstream_keys = load_keys_from_file(provider_info["keys_file"], provider_info.get("fallback_key"))
+        if not upstream_keys:
+            return self.send_error_json(503, "configuration_error", "upstream_not_configured", f"No keys found for provider '{provider_name}'.")
+
+        upstream_model = (MODEL_LOOKUP.get(model) or {}).get("upstream_id") or model
+        payload = {
+            "model": upstream_model,
+            "messages": openai_messages,
+            "max_tokens": int(body.get("max_tokens") or 2048),
+            "stream": False,
+        }
+        try:
+            min_tokens = int((MODEL_LOOKUP.get(model) or {}).get("min_max_tokens") or 0)
+        except (TypeError, ValueError):
+            min_tokens = 0
+        if min_tokens: payload["max_tokens"] = max(payload["max_tokens"], min_tokens)
+        if "temperature" in body: payload["temperature"] = body.get("temperature")
+        if "top_p" in body: payload["top_p"] = body.get("top_p")
+        if "stop_sequences" in body and isinstance(body.get("stop_sequences"), list):
+            payload["stop"] = body["stop_sequences"]
+
+        started = time.time()
+        upstream, _used_key, last_exc = open_upstream(
+            provider_info["url"], json_bytes(payload), upstream_keys,
+            accept="application/json", label=f"anthropic:{model}")
+        if not upstream:
+            detail = ""
+            if isinstance(last_exc, urllib.error.HTTPError):
+                try: detail = last_exc.read().decode("utf-8", "replace")[:300]
+                except Exception: pass
+            return self.send_error_json(502, "upstream_error", "model_request_failed", f"All upstream attempts failed for {provider_name}. {detail}")
+        with upstream:
+            raw = upstream.read()
+        try:
+            data = json.loads(raw.decode("utf-8"))
+        except (ValueError, OSError):
+            return self.send_error_json(502, "upstream_error", "bad_upstream_response", "Upstream malformed JSON.")
+        data = normalize_completion_payload(data)
+        choice = (data.get("choices") or [{}])[0]
+        message = choice.get("message") or {}
+        text = message.get("content")
+        if isinstance(text, list): text = "".join(str(p.get("text", "")) for p in text if isinstance(p, dict))
+        text = strip_inline_reasoning(str(text or ""))
+        latency = int((time.time() - started) * 1000)
+        usage = data.get("usage") or {}
+        prompt_tokens = int(usage.get("prompt_tokens") or 0)
+        completion_tokens = int(usage.get("completion_tokens") or 0)
+        cost = bill_request if bill_request else (prompt_tokens * bill_in + completion_tokens * bill_out) / 1_000_000
+        ip = client_ip(self)
+        record_usage(user["id"], key["id"], model, prompt_tokens, completion_tokens, latency, status="ok", cost=cost, client="anthropic", ip=ip)
+        finish = choice.get("finish_reason") or "stop"
+        message_id = data.get("id") or f"msg_{secrets.token_hex(12)}"
+        stop_reason = "end_turn" if finish == "stop" else "max_tokens" if finish == "length" else "stop_sequence"
+        response = {
+            "id": message_id,
+            "type": "message",
+            "role": "assistant",
+            "model": model,
+            "content": [{"type": "text", "text": text}],
+            "stop_reason": stop_reason,
+            "stop_sequence": None,
+            "usage": {
+                "input_tokens": prompt_tokens,
+                "output_tokens": completion_tokens,
+                "total_tokens": prompt_tokens + completion_tokens,
+            },
+        }
+        if body.get("stream"):
+            self.send_response(200)
+            self.send_header("Content-Type", "text/event-stream; charset=utf-8")
+            self.send_header("Cache-Control", "no-cache")
+            self.send_header("Connection", "close")
+            self.end_headers()
+            events = [
+                ("message_start", {"type": "message_start", "message": {
+                    "id": message_id, "type": "message", "role": "assistant", "model": model,
+                    "content": [], "stop_reason": None, "stop_sequence": None,
+                    "usage": {"input_tokens": prompt_tokens, "output_tokens": 0},
+                }}),
+                ("content_block_start", {"type": "content_block_start", "index": 0, "content_block": {"type": "text", "text": ""}}),
+                ("content_block_delta", {"type": "content_block_delta", "index": 0, "delta": {"type": "text_delta", "text": text}}),
+                ("content_block_stop", {"type": "content_block_stop", "index": 0}),
+                ("message_delta", {"type": "message_delta", "delta": {"stop_reason": stop_reason, "stop_sequence": None}, "usage": {"output_tokens": completion_tokens}}),
+                ("message_stop", {"type": "message_stop"}),
+            ]
+            try:
+                for event_type, event in events:
+                    self.wfile.write(f"event: {event_type}\ndata: {json.dumps(event, ensure_ascii=False, separators=(',', ':'))}\n\n".encode("utf-8"))
+                    self.wfile.flush()
+            except (BrokenPipeError, ConnectionResetError):
+                pass
+            return
+        self.send_json(200, response)
+
+    def relay_stream(self, upstream, user, key, model, price_in, price_out, request_price, started, client="", ip=""):
         self.send_response(200)
         self.send_header("Content-Type", "text/event-stream; charset=utf-8")
         self.send_header("Cache-Control", "no-cache")
@@ -2553,7 +2883,7 @@ class NovaHandler(BaseHTTPRequestHandler):
         else:
             prompt_tokens = 0; completion_tokens = max(1, collected_chars // 4)
         cost = request_price if request_price else (prompt_tokens * price_in + completion_tokens * price_out) / 1_000_000
-        record_usage(user["id"], key["id"], model, prompt_tokens, completion_tokens, latency, status="ok", cost=cost, client=client)
+        record_usage(user["id"], key["id"], model, prompt_tokens, completion_tokens, latency, status="ok", cost=cost, client=client, ip=ip)
 
 class OAuthCallbackHandler(BaseHTTPRequestHandler):
     """Small listener for the redirect URIs registered with Google/GitHub."""

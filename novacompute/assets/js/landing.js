@@ -66,6 +66,9 @@
             el.dataset.target = String(free);
             el.textContent = String(free);
           });
+          document.querySelectorAll('[data-model-count]').forEach((el) => {
+            el.textContent = `${models.length} models`;
+          });
         }
       });
     }

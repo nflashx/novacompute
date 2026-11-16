@@ -10,7 +10,12 @@
 
 **Dashboard:** [https://novarouter.cc.cd/dashboard.html](https://novarouter.cc.cd/dashboard.html)
 
-NovaCompute gives you one OpenAI-compatible endpoint for 50 models — 46 chat, vision, moderation and TTS models plus 4 decision models. 25 are free (23 chat/vision/TTS + 2 decision). Create an account, get an API key, and send your first request in under a minute. The first **50 customer accounts** get the founding free plan; after that, access is pay-as-you-go or subscription.
+NovaCompute gives you one OpenAI-compatible endpoint for 48 models — 44 chat, vision and TTS models plus 4 decision models. 22 are free. Create an account, get an API key, and send your first request in under a minute. The first **50 customer accounts** get the founding free plan; after that, access is pay-as-you-go or subscription.
+
+> **Temporary catalogue status (2026-11-14):** the new free list is
+> re-enabled, while older upstream rows remain hidden. The public API
+> currently serves **33 models — 16 free / 17 paid**; the full 48-model catalogue
+> (and the remaining hidden rows below) returns when hiding is removed.
 
 No credit card is required to claim a founding free seat.
 
@@ -20,10 +25,10 @@ No credit card is required to claim a founding free seat.
 
 - **Chat and reasoning** — GPT-6, Grok 4.6, Kimi K3, DeepSeek, Qwen, Gemini, GLM, ERNIE, Mistral, MiniMax, Maritaca, K-EXAONE and more.
 - **Vision** — send images to multimodal models with the standard `image_url` content part.
-- **Video-capable models** — Kimi K3 (small video data URI), Kimi K3.1 Pro, MiniMax M3, Qwen 3.8 Omni Flash, Qwen 3.8 Flash and Qwen 3.7 Max accept video input through content parts.
+- **Video-capable models** — Kimi K3 (small video data URI), Kimi K3.1 Pro, Qwen 3.8 Omni Flash, Qwen 3.8 Flash and Qwen 3.7 Max accept video input through content parts. The current MiniMax M3 route is text-only.
 - **Streaming** — token-by-token SSE on `/v1/chat/completions`.
+- **Clean answers** — chain-of-thought/reasoning fields are stripped from regular and streamed responses; reasoning-heavy models get a minimum output budget so small `max_tokens` cannot produce an empty answer.
 - **Text-to-speech** — `POST /v1/audio/speech` with Gemini 3.8 Flash-Lite / Flash TTS.
-- **Moderation** — Omni Moderation through `POST /v1/moderations`.
 - **Typed decisions** — four Codiv decision models for classification, routing and scoring through `POST /v1/systemone`. See [decision.html](https://novarouter.cc.cd/decision.html).
 - **One key, one bill** — no provider accounts, no SDK rewrites. Works with the OpenAI SDK and any OpenAI-compatible client.
 - **Transient failures retry** — 429/5xx responses rotate keys immediately for up to 8 attempts; single-key providers use backoff.
@@ -45,13 +50,11 @@ After the 50 seats are claimed, new accounts are **pay-as-you-go**: add credit o
 
 ## Models and pricing
 
-The live catalogue currently has **50 models: 25 free (23 chat/vision/TTS + 2 decision), 29 with image input and 6 with video input**. That is 46 chat, vision, moderation and TTS models plus 4 decision models on a separate endpoint. Prices are per **1M tokens** unless marked per request or per 1,000 characters.
+The full catalogue has **48 models: 22 free, 31 with image input and 6 with video input**. That is 44 chat, vision and TTS models plus 4 decision models on a separate endpoint. The live API currently shows **33 models (16 free / 17 paid)** while the remaining old upstream rows are hidden. Prices are per **1M tokens** unless marked per request or per 1,000 characters.
 
-**Free chat/code ($0.00):** GPT-6 Luna, GPT-5.6, DeepSeek V4.1, DeepSeek V4 Flash, DeepSeek V4 Flash Vision, DeepSeek V4 Pro, Mistral Large 4, Qwen 3.7, Qwen 3.7 Max, Qwen 3.8 Max, Gemini 3.1 Flash Lite, ERNIE-5.5-Flash, Nemotron 3.5 Super VL, Nemotron 3.5 Lightning, Dots3 Note Preview, GLM-4 Plus, GLM-4 Air, Raon-1 Mini, MiniMax M3.1 Flash, Kimi 2.7, Mercury 3.
+**Free chat/code ($0.00):** GPT-5.6, GPT-5.6 Sol (3/min), DeepSeek V4 Flash 0731, MiniMax M3 (text only), Mistral Large 4, Qwen 3.7, Qwen 3.8 Max, Gemini 3.1 Flash Lite, ERNIE-5.5-Flash, Nemotron 3.5 Lightning, Dots3 Note Preview, Raon-1 Mini, Mercury 3.
 
-DeepSeek free status on 2026-11-13: V4.1, V4 Flash, V4 Flash Vision and V4 Pro are live and read images. V4 Pro 0813 and V4 Flash 0731 are paid now; 0731 does not read images.
-
-**Moderation:** Omni Moderation is free through `POST /v1/moderations` (not chat completions).
+DeepSeek free status on 2026-11-13: V4.1, V4 Flash, V4 Flash Vision and V4 Pro are live and read images. V4 Pro 0813 is paid; V4 Flash 0731 is now free and does not read images.
 
 **Decision:** Verdict Classifier and CLM Router are free; OpenJev Decision and JevK5 Fast are paid per request through `POST /v1/systemone`.
 
@@ -65,21 +68,22 @@ DeepSeek free status on 2026-11-13: V4.1, V4 Flash, V4 Flash Vision and V4 Pro a
 | Grok 4.6 | $1.70 | $5.10 |
 | K-EXAONE 2.5 | $0.20 | $0.80 |
 | GLM 5.3 | $0.15 | $0.60 |
+| GLM 5.3 FLASHX | $0.30 | $1.00 |
 | GPT-6.1 Sol | $0.12 | $0.60 |
 | Claude Haiku 5.5 | $0.10 | $0.50 |
 | GPT-6 Astra | $0.10 | $0.50 |
+| 5.6 Terra Max | $0.10 | $0.50 |
 | S5 PRO | $0.10 | $0.40 |
-| GLM 5.3 FLASHX | $0.10 | $0.40 |
+| GPT-6 Luna | $0.08 | $0.40 |
 | DeepSeek V4.1 1017 | $0.005 | $0.24 |
 | Gemini 3.8 Flash | $0.05 | $0.20 |
 | GPT-5.6 Sol | $0.04 | $0.16 |
+| Nemotron 3.5 Super VL | $0.03 | $0.12 |
 | Nemotron 3 Ultra | $0.03 | $0.12 |
 | DeepSeek V4 Pro 0813 | $0.03 | $0.12 |
-| DeepSeek V4 Flash 0731 | $0.01 | $0.05 |
 | Qwen 3.8 Omni Flash | $0.03 | $0.12 |
-| MiniMax M3 | $0.02 | $0.08 |
 | Qwen 3.8 Flash | $0.01 | $0.05 |
-| Kimi K3.1 Pro | $0.05 | — |
+| Kimi K3.1 Pro | $0.10 | — |
 | OpenJev Decision | $0.002 / request | — |
 | JevK5 Fast | $0.001 / request | — |
 
@@ -102,7 +106,7 @@ curl https://novarouter.cc.cd/v1/chat/completions \
   -H "Authorization: Bearer $NOVA_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
-    "model": "deepseek-v4.1-flash",
+    "model": "gpt-5.6-luna",
     "messages": [{"role": "user", "content": "Explain SSE in one sentence."}],
     "stream": true
   }'
@@ -181,7 +185,6 @@ Google and GitHub accounts are regular customer accounts. The site administrator
 |---|---|
 | `POST /v1/chat/completions` | Chat, reasoning, vision and video input; streaming supported |
 | `POST /v1/systemone` | Typed decision models (classification, routing, scoring) |
-| `POST /v1/moderations` | Omni Moderation via the moderation API |
 | `POST /v1/audio/speech` | Gemini TTS, returns WAV |
 | `GET /v1/models` | Live model catalogue, prices and capabilities |
 | `GET /api/health` | Service health and free-seat count |

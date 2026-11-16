@@ -13,7 +13,7 @@
 
   let currentFilter = 'all';
 
-  const isFree = (m) => m.input === 0 && m.output === 0;
+  const isFree = (m) => m.input === 0 && m.output === 0 && Number(m.price_per_request || 0) === 0;
 
   function render(filter) {
     const rows = window.NOVA_MODELS.filter((m) =>

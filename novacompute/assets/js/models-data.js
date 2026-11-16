@@ -27,61 +27,83 @@
     { id: "qwen/qwen3.7-flash:free", name: "Qwen 3.7", provider: "Alibaba", color: "#6366f1", context: "1M", speed: 41.42, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: true, video: false, note: "Free · image input", quota_multiplier: 1 },
     { id: "gemini-3.8-flash-lite-tts", name: "Gemini 3.8 Flash-Lite TTS", provider: "Google", color: "#4285f4", context: "N/A", speed: 0, input: 0.0, output: 0.0055, tag: "Sub", category: "tts", image: false, video: false, note: "Free with subscription · up to 100 req/day", price_unit: "1k_chars", quota_multiplier: 1 },
     { id: "gemini-3.8-flash-tts", name: "Gemini 3.8 Flash TTS", provider: "Google", color: "#4285f4", context: "N/A", speed: 0, input: 0.0, output: 0.008, tag: "Sub", category: "tts", image: false, video: false, note: "Free with subscription · up to 100 req/day", price_unit: "1k_chars", quota_multiplier: 1 },
-    { id: "deepseek-v4-flash-0731", name: "DeepSeek V4 Flash 0731", provider: "DeepSeek", color: "#4d6bfe", context: "1M", speed: 26.67, input: 0.01, output: 0.05, tag: "New", category: "chat", image: false, video: false, note: "Paid · text only", quota_multiplier: 1 },
+    { id: "deepseek-v4-flash-0731", name: "DeepSeek V4 Flash 0731", provider: "DeepSeek", color: "#4d6bfe", context: "400K", speed: 0, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: false, video: false, note: "Free", quota_multiplier: 1 },
     { id: "deepseek-v4-flash-free", name: "DeepSeek V4 Flash", provider: "DeepSeek", color: "#4d6bfe", context: "1M", speed: 57.14, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: true, video: false, note: "Free · vision", quota_multiplier: 1 },
     { id: "deepseek-v4-flash-vision-free", name: "DeepSeek V4 Flash Vision", provider: "DeepSeek", color: "#4d6bfe", context: "1M", speed: 45.9, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: true, video: false, note: "Free · vision", quota_multiplier: 1 },
     { id: "deepseek-v4-pro-0813", name: "DeepSeek V4 Pro 0813", provider: "DeepSeek", color: "#4d6bfe", context: "1M", speed: 24.35, input: 0.03, output: 0.12, tag: "New", category: "chat", image: true, video: false, note: "Paid · vision", quota_multiplier: 1 },
     { id: "deepseek-v4-pro-free", name: "DeepSeek V4 Pro", provider: "DeepSeek", color: "#4d6bfe", context: "1M", speed: 39.49, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: true, video: false, note: "Free · vision", quota_multiplier: 1 },
     { id: "deepseek-v4.1-flash-1017", name: "DeepSeek V4.1 1017", provider: "DeepSeek", color: "#4d6bfe", context: "1M", speed: 21.02, input: 0.005, output: 0.24, tag: "New", category: "code", image: true, video: false, note: "Paid · vision", quota_multiplier: 5 },
     { id: "ernie-5.5-flash", name: "ERNIE-5.5-Flash", provider: "Baidu", color: "#2932e1", context: "1M", speed: 89.95, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: false, video: false, note: "Free tier · rate limited", quota_multiplier: 12 },
-    { id: "nemotron-3.5-super-vl-free", name: "Nemotron 3.5 Super VL", provider: "NVIDIA", color: "#76b900", context: "1M", speed: 53.96, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: true, video: false, note: "Free tier · rate limited", quota_multiplier: 1 },
+    { id: "nemotron-3.5-super-vl", name: "Nemotron 3.5 Super VL", provider: "NVIDIA", color: "#76b900", context: "1M", speed: 38.0, input: 0.03, output: 0.12, tag: "New", category: "chat", image: true, video: false, note: "Paid · vision · reasoning; max_tokens ≥300", quota_multiplier: 1 },
     { id: "dots-3-note-free", name: "Dots3 Note Preview", provider: "Dots Studio", color: "#ec4899", context: "512K", speed: 47.23, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: true, video: false, note: "Free tier · rate limited", quota_multiplier: 1 },
     { id: "nemotron-3.5-lightning-free", name: "Nemotron 3.5 Lightning", provider: "NVIDIA", color: "#76b900", context: "1M", speed: 48.91, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: false, video: false, note: "Free tier · rate limited", quota_multiplier: 1 },
     { id: "nemotron-3-ultra", name: "Nemotron 3 Ultra", provider: "NVIDIA", color: "#76b900", context: "1M", speed: 14.39, input: 0.03, output: 0.12, tag: "New", category: "chat", image: false, video: false, note: "Paid · text only", quota_multiplier: 1 },
-    { id: "omni-moderation", name: "Omni Moderation", provider: "OpenAI", color: "#10a37f", context: "N/A", speed: 0, input: 0.0, output: 0.0, tag: "Free", category: "moderation", image: false, video: false, note: "Free moderation API", quota_multiplier: 1 },
     { id: "claude-opus-5.5", name: "Claude Opus 5.5", provider: "Anthropic", color: "#8b5cf6", context: "1M", speed: 26.27, input: 3.2, output: 16.0, tag: "New", category: "chat", image: true, video: false, note: "Paid · vision", quota_multiplier: 320 },
     { id: "claude-sonnet-5.5", name: "Claude Sonnet 5.5", provider: "Anthropic", color: "#8b5cf6", context: "1M", speed: 32.07, input: 1.8, output: 9.0, tag: "New", category: "chat", image: true, video: false, note: "Paid · vision", quota_multiplier: 180 },
-    { id: "kimi-k3.1-pro", name: "Kimi K3.1 Pro", provider: "Moonshot AI", color: "#8b5cf6", context: "1M", speed: 24.96, input: 0.0, output: 0.0, price_per_request: 0.05, tag: "New", category: "chat", image: true, video: true, note: "Paid · vision & video", price_unit: "request", quota_multiplier: 180 },
-    { id: "glm-5.3-flash", name: "GLM 5.3 FLASHX", provider: "Zhipu", color: "#0ea5e9", context: "1M", speed: 25.06, input: 0.1, output: 0.4, tag: "New", category: "chat", image: false, video: false, note: "Paid · text only", quota_multiplier: 2 },
+    { id: "kimi-k3.1-pro", name: "Kimi K3.1 Pro", provider: "Moonshot AI", color: "#8b5cf6", context: "1M", speed: 24.96, input: 0.0, output: 0.0, price_per_request: 0.1, tag: "New", category: "chat", image: true, video: true, note: "Paid · vision & video", price_unit: "request", quota_multiplier: 180 },
+    { id: "glm-5.3-flash", name: "GLM 5.3 FLASHX", provider: "Zhipu", color: "#0ea5e9", context: "1M", speed: 87.7, input: 0.3, output: 1.0, tag: "New", category: "chat", image: false, video: false, note: "Paid · fast route · text only", quota_multiplier: 2 },
     { id: "gemini-3.8-flash", name: "Gemini 3.8 Flash", provider: "Google", color: "#4285f4", context: "1M", speed: 86.33, input: 0.05, output: 0.2, tag: "New", category: "chat", image: false, video: false, note: "Paid · text only", quota_multiplier: 1 },
     { id: "gemini-3.1-flash-lite", name: "Gemini 3.1 Flash Lite", provider: "Google", color: "#4285f4", context: "1M", speed: 28.47, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: true, video: false, note: "Free · vision-capable", quota_multiplier: 1 },
     { id: "qwen-3.8-max-free", name: "Qwen 3.8 Max", provider: "Alibaba", color: "#6366f1", context: "1M", speed: 100.99, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: false, video: false, note: "Free tier · rate limited", quota_multiplier: 1 },
     { id: "kimi-k3", name: "Kimi K3", provider: "Moonshot AI", color: "#8b5cf6", context: "1M", speed: 42.11, input: 0.0, output: 0.0, tag: "Sub", category: "code", image: true, video: true, note: "Subscribers only · vision & video", quota_multiplier: 1 },
-    { id: "glm-4-plus", name: "GLM-4 Plus", provider: "Zhipu", color: "#0ea5e9", context: "128K", speed: 62.12, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: false, video: false, note: "Free · basic coding", quota_multiplier: 1 },
-    { id: "glm-4-air", name: "GLM-4 Air", provider: "Zhipu", color: "#0ea5e9", context: "128K", speed: 60.11, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: false, video: false, note: "Free · basic coding", quota_multiplier: 1 },
-    { id: "minimax-m3.1-flash", name: "MiniMax M3.1 Flash", provider: "MiniMax", color: "#f59e0b", context: "4K", speed: 12.75, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: false, video: false, note: "Free · 4K · BlazeAPI", quota_multiplier: 1 },
     { id: "raon-1-mini", name: "Raon-1 Mini", provider: "Krafton AI", color: "#22d3ee", context: "262K", speed: 117.12, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: false, video: false, note: "Free tier · text only", quota_multiplier: 1 },
-    { id: "openjev-0.1", name: "OpenJev Decision", provider: "Codiv", color: "#a78bfa", context: "65K", speed: 0, input: 0.0, output: 0.0, price_per_request: 0.002, tag: "New", category: "decision", image: true, video: false, note: "Paid per request · typed decision", price_unit: "request", quota_multiplier: 1 },
+    { id: "openjev-0.1", name: "OpenJev Decision", provider: "Codiv", color: "#a78bfa", context: "65K", speed: 0, input: 0.0, output: 0.0, price_per_request: 0.002, tag: "New", category: "decision", image: false, video: false, note: "Paid per request · typed decision", price_unit: "request", quota_multiplier: 1 },
     { id: "verdict-1.4", name: "Verdict Classifier", provider: "Codiv", color: "#a78bfa", context: "512 / q", speed: 0, input: 0.0, output: 0.0, tag: "Free", category: "decision", image: false, video: false, note: "Free · typed decision · /v1/systemone", quota_multiplier: 1 },
     { id: "clm-0.1", name: "CLM Router", provider: "Codiv", color: "#a78bfa", context: "2K / q", speed: 0, input: 0.0, output: 0.0, tag: "Free", category: "decision", image: false, video: false, note: "Free · typed decision · /v1/systemone", quota_multiplier: 1 },
     { id: "jevk5-0.3", name: "JevK5 Fast", provider: "Codiv", color: "#a78bfa", context: "16K", speed: 0, input: 0.0, output: 0.0, price_per_request: 0.001, tag: "New", category: "decision", image: false, video: false, note: "Paid per request · typed decision", price_unit: "request", quota_multiplier: 1 },
     { id: "s5", name: "S5 PRO", provider: "Maritaca AI", color: "#16a34a", context: "1M", speed: 10.53, input: 0.1, output: 0.4, tag: "New", category: "chat", image: false, video: false, note: "PRO · text only", quota_multiplier: 1 },
     { id: "k-exaone-2.5", name: "K-EXAONE 2.5", provider: "LG AI Research", color: "#c026d3", context: "512K", speed: 8.16, input: 0.2, output: 0.8, tag: "New", category: "chat", image: false, video: false, note: "Paid preview · 512K", quota_multiplier: 1 },
-    { id: "gpt-5.6-sol", name: "GPT-5.6 Sol", provider: "OpenAI", color: "#10a37f", context: "900K", speed: 21.87, input: 0.04, output: 0.16, tag: "New", category: "chat", image: true, video: false, note: "Paid · vision", quota_multiplier: 1 },
-    { id: "gpt-6-luna", name: "GPT-6 Luna", provider: "OpenAI", color: "#10a37f", context: "900K", speed: 5.8, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: true, video: false, note: "Free · vision", quota_multiplier: 8 },
+    { id: "gpt-5.6-sol", name: "GPT-5.6 Sol", provider: "OpenAI", color: "#10a37f", context: "900K", speed: 21.87, input: 0.04, output: 0.16, tag: "New", category: "chat", image: false, video: false, note: "Paid · text", quota_multiplier: 1 },
+    { id: "gpt-5.6-sol-free", name: "GPT-5.6 Sol Free", provider: "OpenAI", color: "#10a37f", context: "900K", speed: 0, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: true, video: false, note: "Free · 3/min", quota_multiplier: 1 },
+    { id: "gpt-5.6-terra", name: "5.6 Terra Max", provider: "OpenAI", color: "#10a37f", context: "1M", speed: 0, input: 0.10, output: 0.50, tag: "New", category: "chat", image: true, video: false, note: "Paid · vision", quota_multiplier: 1 },
+    { id: "gpt-6-luna", name: "GPT-6 Luna", provider: "OpenAI", color: "#10a37f", context: "900K", speed: 5.8, input: 0.08, output: 0.4, tag: "New", category: "chat", image: true, video: false, note: "Paid · vision", quota_multiplier: 8 },
     { id: "mercury-3", name: "Mercury 3", provider: "Inception", color: "#d946ef", context: "1M", speed: 210.83, input: 0.0, output: 0.0, tag: "Free", category: "code", image: false, video: false, note: "Free · diffusion", quota_multiplier: 7 },
     { id: "claude-haiku-5.5", name: "Claude Haiku 5.5", provider: "Anthropic", color: "#8b5cf6", context: "200K", speed: 19.48, input: 0.1, output: 0.5, tag: "New", category: "chat", image: true, video: false, note: "Paid · vision", quota_multiplier: 1 },
-    { id: "grok-4.7", name: "Grok 4.7", provider: "xAI", color: "#f43f5e", context: "500K", speed: 7.78, input: 2.0, output: 6.0, tag: "New", category: "chat", image: true, video: false, note: "Paid · vision", quota_multiplier: 1 },
+    { id: "grok-4.7", name: "Grok 4.7", provider: "xAI", color: "#f43f5e", context: "500K", speed: 57.0, input: 2.0, output: 6.0, tag: "New", category: "chat", image: false, video: false, note: "Temporary · text only", quota_multiplier: 100 },
     { id: "gpt-6-astra", name: "GPT-6 Astra", provider: "OpenAI", color: "#10a37f", context: "900K", speed: 4.17, input: 0.1, output: 0.5, tag: "New", category: "chat", image: true, video: false, note: "Paid · vision", quota_multiplier: 1 },
     { id: "gpt-6.1-sol", name: "GPT-6.1 Sol", provider: "OpenAI", color: "#10a37f", context: "900K", speed: 5.02, input: 0.12, output: 0.6, tag: "New", category: "chat", image: true, video: false, note: "Paid · vision", quota_multiplier: 1 },
     { id: "glm-5.3", name: "GLM 5.3", provider: "Zhipu", color: "#0ea5e9", context: "1M", speed: 19.42, input: 0.15, output: 0.6, tag: "New", category: "chat", image: false, video: false, note: "Paid · text only", quota_multiplier: 1 },
-    { id: "kimi-2.7", name: "Kimi 2.7", provider: "Moonshot AI", color: "#8b5cf6", context: "256K", speed: 6.01, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: true, video: false, note: "Free · NightRouter free tier", quota_multiplier: 1 },
-    { id: "minimax-m3", name: "MiniMax M3", provider: "MiniMax", color: "#f59e0b", context: "1M", speed: 9.74, input: 0.02, output: 0.08, tag: "New", category: "chat", image: true, video: true, note: "Paid · vision & video", quota_multiplier: 1 },
+    { id: "kimi-2.7", name: "Kimi 2.7", provider: "Moonshot AI", color: "#8b5cf6", context: "256K", speed: 6.01, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: true, video: false, note: "Free tier", quota_multiplier: 1 },
+    { id: "minimax-m3", name: "MiniMax M3", provider: "MiniMax", color: "#f59e0b", context: "180K", speed: 0, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: false, video: false, note: "Free · image/video unsupported", quota_multiplier: 1 },
     { id: "qwen-3.8-omni-flash", name: "Qwen 3.8 Omni Flash", provider: "Alibaba", color: "#6366f1", context: "1M", speed: 8.9, input: 0.03, output: 0.12, tag: "New", category: "chat", image: true, video: true, note: "Paid · vision & video", quota_multiplier: 1 },
     { id: "qwen-3.8-flash", name: "Qwen 3.8 Flash", provider: "Alibaba", color: "#6366f1", context: "1M", speed: 8.73, input: 0.01, output: 0.05, tag: "New", category: "chat", image: true, video: true, note: "Paid · vision & video", quota_multiplier: 1 },
     { id: "qwen-3.7-max", name: "Qwen 3.7 Max", provider: "Alibaba", color: "#6366f1", context: "1M", speed: 6.82, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: true, video: true, note: "Free · vision & video", quota_multiplier: 1 },
   ];
+
+  /* Some upstream models are temporarily hidden; keep the offline snapshot in sync. */
+  const TEMPORARILY_HIDDEN_MODEL_IDS = new Set([
+    "claude-haiku-5.5",
+    "claude-opus-5.5",
+    "claude-sonnet-5.5",
+    "deepseek-v4.1-flash",
+    "deepseek-v4-flash-free",
+    "deepseek-v4-flash-vision-free",
+    "deepseek-v4-pro-0813",
+    "deepseek-v4-pro-free",
+    "deepseek-v4.1-flash-1017",
+    "glm-5.3",
+    "kimi-2.7",
+    "kimi-k3.1-pro",
+    "qwen-3.7-max",
+    "qwen-3.8-flash",
+    "qwen-3.8-omni-flash",
+  ]);
+  for (let i = FALLBACK_MODELS.length - 1; i >= 0; i -= 1) {
+    if (TEMPORARILY_HIDDEN_MODEL_IDS.has(FALLBACK_MODELS[i].id)) FALLBACK_MODELS.splice(i, 1);
+  }
 
   const FALLBACK_BY_ID = {};
   FALLBACK_MODELS.forEach((m) => { FALLBACK_BY_ID[m.id] = m; });
 
   /* Sub plans count quota tokens, weighted by real model cost. */
   const QUOTA_MULT = {
+    'glm-5.3-flash': 2,
     'deepseek-v4.1-flash-1017': 5,
     'mercury-3': 7,
     'gpt-6-luna': 8,
     'ernie-5.5-flash': 12,
     'grok-4.6': 100,
+    'grok-4.7': 100,
   };
   FALLBACK_MODELS.forEach((m) => { m.quota_multiplier = QUOTA_MULT[m.id] || 1; m.sub_allowance_pro = Math.round(6000000 / m.quota_multiplier); });
 
@@ -104,11 +126,8 @@
   };
 
   function displayCode(m) {
-    const isFree = m.input === 0 && m.output === 0 && Number(m.price_per_request || 0) === 0;
-    if (!isFree) return m.id;
-    const abbr = m.category === 'moderation' ? 'OM' : (PROVIDER_ABBR[m.provider] || 'NV');
-    const base = m.id.replace(/^.*\//, '').replace(/(?::free|-free)$/, '');
-    return `${abbr}-${base}-free`;
+    // Always show the real callable API id — this is what users copy into their client.
+    return m.id;
   }
 
   function colorFor(id, provider) {
@@ -168,7 +187,7 @@
       clearTimeout(timer);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const payload = await res.json();
-      const list = (payload.data || []).map(mapBackendModel).filter(Boolean);
+      const list = (payload.data || []).map(mapBackendModel).filter((m) => m && !TEMPORARILY_HIDDEN_MODEL_IDS.has(m.id));
       if (!list.length) throw new Error('empty catalogue');
       window.NOVA_MODELS = list;
       window.NOVA_MODELS_SOURCE = 'live';
@@ -196,6 +215,11 @@
     return value === 0
       ? '<span class="font-medium text-emerald-400">Free</span>'
       : `<span class="font-mono text-slate-200">$${value.toFixed(value > 0 && value < 0.01 ? 3 : 2)}</span>`;
+  }
+
+  function requestPriceCell(value) {
+    const price = Number(value || 0);
+    return `<span class="whitespace-nowrap font-mono text-slate-200" title="Billed per request">$${price.toFixed(price > 0 && price < 0.01 ? 3 : 2)}</span>`;
   }
 
   function tagCell(tag) {
@@ -246,7 +270,7 @@
           </div>
         </td>
         <td class="whitespace-nowrap px-4 py-4 text-right">${m.price_unit === 'request'
-          ? `<span class="whitespace-nowrap font-mono text-slate-200" title="Billed per request">$${Number(m.price_per_request || 0).toFixed(2)}</span>`
+          ? requestPriceCell(m.price_per_request)
           : (m.category === 'tts' ? '<span class="text-slate-500">—</span>' : priceCell(m.input))}</td>
         <td class="whitespace-nowrap px-4 py-4 text-right">${m.price_unit === '1k_chars'
           ? `<span class="whitespace-nowrap font-mono text-slate-200">$${m.output.toFixed(4)}</span><span class="text-[10px] text-slate-500"> / 1k chars</span>`

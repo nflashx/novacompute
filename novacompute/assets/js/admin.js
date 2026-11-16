@@ -37,6 +37,7 @@
     return `${Math.round(hours / 24)}d ago`;
   };
   const dateShort = (ts) => new Date(ts * 1000).toLocaleDateString([], { month: 'short', day: '2-digit' });
+  const dateTime = (ts) => ts ? new Date(ts * 1000).toLocaleString([], { month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : '—';
 
   const statsEl = document.getElementById('admin-stats');
   const usersEl = document.getElementById('admin-users');
@@ -86,7 +87,7 @@
   function renderUsers(rows) {
     if (!usersEl) return;
     if (!rows.length) {
-      usersEl.innerHTML = '<tr><td colspan="7" class="px-5 py-10 text-center text-sm text-slate-500">No users.</td></tr>';
+      usersEl.innerHTML = '<tr><td colspan="9" class="px-5 py-10 text-center text-sm text-slate-500">No users.</td></tr>';
       return;
     }
     usersEl.innerHTML = rows.map((u) => `
@@ -94,6 +95,7 @@
         <td class="px-5 py-3.5">
           <p class="font-medium text-white">${esc(u.name || u.email)}</p>
           <p class="mt-0.5 font-mono text-[11px] text-slate-500">${esc(u.email)}</p>
+          <p class="mt-0.5 text-[10px] text-slate-500">${esc(u.provider || 'email')}${u.free_seat ? ' · founding seat' : ''}</p>
         </td>
         <td class="px-4 py-3.5">
           <select data-admin-plan="${esc(u.email)}" class="rounded-md border border-white/10 bg-white/[0.04] px-2 py-1.5 text-xs text-slate-200 outline-none focus:border-violet-400/50">
@@ -110,8 +112,15 @@
         <td class="px-4 py-3.5 text-right font-mono text-xs">${Number(u.requests).toLocaleString()}</td>
         <td class="px-4 py-3.5 text-right font-mono text-xs">${tokensShort(u.tokens)}</td>
         <td class="px-4 py-3.5 text-xs text-slate-500">${relative(u.last_used)}</td>
+        <td class="px-4 py-3.5 font-mono text-[11px] text-slate-400">
+          <div title="Last IP">${esc(u.last_ip || u.signup_ip || '—')}</div>
+          <div class="text-[10px] text-slate-600" title="Signup IP">signup: ${esc(u.signup_ip || '—')}</div>
+        </td>
         <td class="px-5 py-3.5 text-right">
           <input data-admin-flag="${esc(u.email)}" type="checkbox" ${u.is_admin ? 'checked' : ''} class="h-4 w-4 rounded border-white/20 bg-white/5 accent-violet-500" />
+        </td>
+        <td class="px-4 py-3.5 text-right">
+          <button type="button" data-admin-detail="${esc(u.email)}" class="btn-ghost rounded-md px-2 py-1.5 text-[11px] text-slate-300">Detail</button>
         </td>
       </tr>`).join('');
   }
@@ -161,6 +170,67 @@
       if (!delta) { window.novaToast('Enter a non-zero amount', false); return; }
       await updateUser(email, { balance_delta: delta });
     });
+    usersEl.addEventListener('click', async (e) => {
+      const btn = e.target.closest('[data-admin-detail]');
+      if (!btn) return;
+      await openUserDetail(btn.dataset.adminDetail);
+    });
+  }
+
+  const modalEl = document.getElementById('admin-user-modal');
+  const modalClose = document.getElementById('admin-user-close');
+  if (modalClose && modalEl) modalClose.addEventListener('click', () => modalEl.classList.add('hidden'));
+
+  async function openUserDetail(email) {
+    if (!modalEl) return;
+    const res = await window.novaApi(`/api/admin/user-detail?email=${encodeURIComponent(email)}`);
+    if (!res.ok) {
+      window.novaToast(res.data.error?.message || 'Could not load user detail.', false);
+      return;
+    }
+    const user = res.data.user || {};
+    const usage = res.data.usage || [];
+    const transactions = res.data.transactions || [];
+    document.getElementById('admin-user-title').textContent = user.name || user.email || 'User detail';
+    document.getElementById('admin-user-sub').textContent = `${user.email || ''} · ${user.provider || 'email'} · ${user.created_at || ''}`;
+    const summary = [
+      ['Signup IP', user.signup_ip || '—'],
+      ['Last IP', user.last_ip || '—'],
+      ['All IPs', (user.ips || []).join(', ') || '—'],
+      ['Plan', user.plan || 'free'],
+      ['Balance', money(user.balance)],
+      ['Founding seat', user.free_seat ? 'Yes' : 'No'],
+      ['Admin', user.is_admin ? 'Yes' : 'No'],
+      ['Active keys', String(user.api_keys ?? 0)],
+    ];
+    document.getElementById('admin-user-summary').innerHTML = summary.map(([label, value]) => `
+      <div class="rounded-xl border border-white/10 bg-white/[0.02] p-4">
+        <p class="text-[10px] uppercase tracking-wider text-slate-500">${esc(label)}</p>
+        <p class="mt-1 font-mono text-xs break-all text-slate-200">${esc(value)}</p>
+      </div>`).join('');
+    const usageBody = document.getElementById('admin-user-usage');
+    usageBody.innerHTML = usage.length ? usage.map((e) => `
+      <tr>
+        <td class="px-4 py-2.5 text-xs text-slate-400">${dateTime(e.ts)}</td>
+        <td class="px-4 py-2.5 font-mono text-[11px] text-slate-200">${esc(e.model || '')}</td>
+        <td class="px-3 py-2.5 text-right font-mono text-[11px]">${Number(e.prompt_tokens || 0).toLocaleString()}</td>
+        <td class="px-3 py-2.5 text-right font-mono text-[11px]">${Number(e.completion_tokens || 0).toLocaleString()}</td>
+        <td class="px-3 py-2.5 text-right font-mono text-[11px]">${Number(e.latency_ms || 0).toLocaleString()}</td>
+        <td class="px-3 py-2.5 text-xs ${e.status === 'ok' ? 'text-emerald-400' : 'text-rose-300'}">${esc(e.status || 'ok')}</td>
+        <td class="px-3 py-2.5 text-[11px] text-slate-400">${esc(e.client || 'API')}</td>
+        <td class="px-4 py-2.5 font-mono text-[11px] text-slate-400">${esc(e.ip || '—')}</td>
+      </tr>`).join('') : '<tr><td colspan="8" class="px-4 py-6 text-center text-sm text-slate-500">No API usage yet.</td></tr>';
+    const txEl = document.getElementById('admin-user-transactions');
+    txEl.innerHTML = transactions.length ? transactions.map((t) => `
+      <div class="rounded-lg border border-white/10 bg-white/[0.02] p-3">
+        <div class="flex items-center justify-between gap-3">
+          <span>${esc(t.description || t.type || 'Transaction')}</span>
+          <span class="font-mono ${Number(t.amount) >= 0 ? 'text-emerald-400' : 'text-slate-300'}">${Number(t.amount) >= 0 ? '+' : ''}${money(t.amount)}</span>
+        </div>
+        <div class="mt-1 text-[10px] text-slate-500">${dateTime(t.ts)} · ${esc(t.method || '')}</div>
+      </div>`).join('') : '<p>No transactions yet.</p>';
+    modalEl.classList.remove('hidden');
+    modalEl.classList.add('flex');
   }
 
   async function loadAdmin() {
