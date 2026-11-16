@@ -328,6 +328,18 @@ PROVIDERS = {
         "url": "https://api.blazeapi.org/paid/v1/chat/completions",
         "keys_file": os.path.join(BASE_DIR, "blaze_keys.json"),
     },
+    "chuan": {
+        "url": "https://chuan.sylu.cc/v1/chat/completions",
+        "keys_file": os.path.join(BASE_DIR, "chuan_keys.json"),
+    },
+    "kiosapi": {
+        "url": "https://kiosapi.com/v1/chat/completions",
+        "keys_file": os.path.join(BASE_DIR, "kiosapi_keys.json"),
+    },
+    "zai": {
+        "url": "https://api.z.ai/api/paas/v4/chat/completions",
+        "keys_file": os.path.join(BASE_DIR, "zai_keys.json"),
+    },
 }
 
 PROVIDER_NOTES = {
@@ -348,6 +360,9 @@ PROVIDER_NOTES = {
     "maritaca": "Thủ công",
     "exaone": "Thủ công",
     "blaze": "Hold — test free chậm",
+    "chuan": "Tool got — 9/10 model, Claude line, no image passthrough",
+    "kiosapi": "Tool got — free group 4 model, GLM đọc ảnh được",
+    "zai": "Tool got — GLM flash free vĩnh viễn, 4.6V đọc ảnh",
 }
 
 # ================= DANH SÁCH MODEL & GIÁ =================
