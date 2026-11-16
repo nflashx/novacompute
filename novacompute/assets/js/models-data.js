@@ -20,7 +20,7 @@
   };
 
   const FALLBACK_MODELS = [
-    { id: "gpt-5.6-luna", name: "GPT-5.6", provider: "OpenAI", color: "#10a37f", context: "900K", speed: 8.03, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: true, video: false, note: "", quota_multiplier: 1 },
+    { id: "gpt-5.6-luna", name: "GPT-5.6", provider: "OpenAI", color: "#10a37f", context: "900K", speed: 16.6, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: true, video: false, note: "Free · vision · restored", quota_multiplier: 1 },
     { id: "grok-4.6", name: "Grok 4.6", provider: "xAI", color: "#f43f5e", context: "500K", speed: 0.68, input: 1.7, output: 5.1, tag: null, category: "chat", image: true, video: false, note: "", quota_multiplier: 100 },
     { id: "deepseek-v4.1-flash", name: "DeepSeek V4.1", provider: "DeepSeek", color: "#4d6bfe", context: "1M", speed: 58.08, input: 0.0, output: 0.0, tag: "Free", category: "code", image: true, video: false, note: "Free · vision", quota_multiplier: 1 },
     { id: "mistral-large-4", name: "Mistral Large 4", provider: "Mistral AI", color: "#ff7000", context: "1M", speed: 76.47, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: true, video: false, note: "", quota_multiplier: 1 },
@@ -34,6 +34,9 @@
     { id: "glm-5.3-flash-free", name: "GLM 5.3 Flash Free", provider: "Z.ai", color: "#38bdf8", context: "1M", speed: 29.1, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: true, video: false, note: "Free · vision", quota_multiplier: 1 },
     { id: "glm-4.5-flash", name: "GLM 4.5 Flash", provider: "Z.ai", color: "#38bdf8", context: "128K", speed: 34.6, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: false, video: false, note: "Free", quota_multiplier: 1 },
     { id: "glm-4.6v-flash", name: "GLM 4.6V Flash", provider: "Z.ai", color: "#38bdf8", context: "128K", speed: 52.8, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: true, video: false, note: "Free · vision", quota_multiplier: 1 },
+    { id: "glm-5.3-free", name: "GLM 5.3 Free", provider: "Z.ai", color: "#38bdf8", context: "128K", speed: 23.6, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: false, video: false, note: "Free · big GLM", quota_multiplier: 1 },
+    { id: "nemotron-3.5-super-vl-free", name: "Nemotron 3.5 Super VL Free", provider: "NVIDIA", color: "#76b900", context: "1M", speed: 177.3, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: true, video: false, note: "Free · vision", quota_multiplier: 1 },
+    { id: "gpt-oss-120b", name: "GPT-OSS 120B", provider: "OpenAI", color: "#10a37f", context: "128K", speed: 44.1, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: false, video: false, note: "Free · fast", quota_multiplier: 1 },
     { id: "deepseek-v4-flash-vision-free", name: "DeepSeek V4 Flash Vision", provider: "DeepSeek", color: "#4d6bfe", context: "1M", speed: 45.9, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: true, video: false, note: "Free · vision", quota_multiplier: 1 },
     { id: "deepseek-v4-pro-0813", name: "DeepSeek V4 Pro 0813", provider: "DeepSeek", color: "#4d6bfe", context: "1M", speed: 24.35, input: 0.03, output: 0.12, tag: "New", category: "chat", image: true, video: false, note: "Paid · vision", quota_multiplier: 1 },
     { id: "deepseek-v4-pro-free", name: "DeepSeek V4 Pro", provider: "DeepSeek", color: "#4d6bfe", context: "1M", speed: 39.49, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: true, video: false, note: "Free · vision", quota_multiplier: 1 },
@@ -77,7 +80,6 @@
 
   /* Some upstream models are temporarily hidden; keep the offline snapshot in sync. */
   const TEMPORARILY_HIDDEN_MODEL_IDS = new Set([
-    "gpt-5.6-luna",
     "mistral-large-4",
     "claude-haiku-5.5",
     "claude-opus-5.5",

@@ -340,6 +340,14 @@ PROVIDERS = {
         "url": "https://api.z.ai/api/paas/v4/chat/completions",
         "keys_file": os.path.join(BASE_DIR, "zai_keys.json"),
     },
+    "sharellm": {
+        "url": "https://sharellm.net/v1/chat/completions",
+        "keys_file": os.path.join(BASE_DIR, "sharellm_keys.json"),
+    },
+    "vyce": {
+        "url": "https://vyceai.com/v1/chat/completions",
+        "keys_file": os.path.join(BASE_DIR, "vyce_keys.json"),
+    },
 }
 
 PROVIDER_NOTES = {
@@ -363,6 +371,8 @@ PROVIDER_NOTES = {
     "chuan": "Tool got — 9/10 model, Claude line, no image passthrough",
     "kiosapi": "Tool got — free group 4 model, GLM đọc ảnh được",
     "zai": "Tool got — GLM flash free vĩnh viễn, 4.6V đọc ảnh",
+    "sharellm": "Tool got — 19/41 model sống, gpt-5.6-luna có ảnh",
+    "vyce": "Tool got — promo pool, nemotron VL đọc ảnh 177 tok/s",
 }
 
 # ================= DANH SÁCH MODEL & GIÁ =================
