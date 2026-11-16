@@ -28,12 +28,12 @@
     { id: "gemini-3.8-flash-lite-tts", name: "Gemini 3.8 Flash-Lite TTS", provider: "Google", color: "#4285f4", context: "N/A", speed: 0, input: 0.0, output: 0.0055, tag: "Sub", category: "tts", image: false, video: false, note: "Free with subscription · up to 100 req/day", price_unit: "1k_chars", quota_multiplier: 1 },
     { id: "gemini-3.8-flash-tts", name: "Gemini 3.8 Flash TTS", provider: "Google", color: "#4285f4", context: "N/A", speed: 0, input: 0.0, output: 0.008, tag: "Sub", category: "tts", image: false, video: false, note: "Free with subscription · up to 100 req/day", price_unit: "1k_chars", quota_multiplier: 1 },
     { id: "deepseek-v4-flash-0731", name: "DeepSeek V4 Flash 0731", provider: "DeepSeek", color: "#4d6bfe", context: "400K", speed: 0, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: false, video: false, note: "Free", quota_multiplier: 1 },
-    { id: "deepseek-v4-flash-free", name: "DeepSeek V4 Flash Free", provider: "DeepSeek", color: "#4d6bfe", context: "128K", speed: 0, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: false, video: false, note: "Free · fast · text only", quota_multiplier: 1 },
-    { id: "claude-opus-5.5-free", name: "Claude Opus 5.5 Free", provider: "Anthropic", color: "#d97757", context: "200K", speed: 0, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: false, video: false, note: "Free · limited", quota_multiplier: 1 },
-    { id: "claude-haiku-5.5-free", name: "Claude Haiku 5.5 Free", provider: "Anthropic", color: "#d97757", context: "200K", speed: 0, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: false, video: false, note: "Free · limited", quota_multiplier: 1 },
-    { id: "glm-5.3-flash-free", name: "GLM 5.3 Flash Free", provider: "Z.ai", color: "#38bdf8", context: "1M", speed: 0, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: true, video: false, note: "Free · vision", quota_multiplier: 1 },
-    { id: "glm-4.5-flash", name: "GLM 4.5 Flash", provider: "Z.ai", color: "#38bdf8", context: "128K", speed: 0, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: false, video: false, note: "Free", quota_multiplier: 1 },
-    { id: "glm-4.6v-flash", name: "GLM 4.6V Flash", provider: "Z.ai", color: "#38bdf8", context: "128K", speed: 0, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: true, video: false, note: "Free · vision", quota_multiplier: 1 },
+    { id: "deepseek-v4-flash-free", name: "DeepSeek V4 Flash Free", provider: "DeepSeek", color: "#4d6bfe", context: "128K", speed: 18.0, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: false, video: false, note: "Free · fast · text only", quota_multiplier: 1 },
+    { id: "claude-opus-5.5-free", name: "Claude Opus 5.5 Free", provider: "Anthropic", color: "#d97757", context: "200K", speed: 34.6, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: false, video: false, note: "Free · limited", quota_multiplier: 1 },
+    { id: "claude-haiku-5.5-free", name: "Claude Haiku 5.5 Free", provider: "Anthropic", color: "#d97757", context: "200K", speed: 37.3, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: false, video: false, note: "Free · limited", quota_multiplier: 1 },
+    { id: "glm-5.3-flash-free", name: "GLM 5.3 Flash Free", provider: "Z.ai", color: "#38bdf8", context: "1M", speed: 29.1, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: true, video: false, note: "Free · vision", quota_multiplier: 1 },
+    { id: "glm-4.5-flash", name: "GLM 4.5 Flash", provider: "Z.ai", color: "#38bdf8", context: "128K", speed: 34.6, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: false, video: false, note: "Free", quota_multiplier: 1 },
+    { id: "glm-4.6v-flash", name: "GLM 4.6V Flash", provider: "Z.ai", color: "#38bdf8", context: "128K", speed: 52.8, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: true, video: false, note: "Free · vision", quota_multiplier: 1 },
     { id: "deepseek-v4-flash-vision-free", name: "DeepSeek V4 Flash Vision", provider: "DeepSeek", color: "#4d6bfe", context: "1M", speed: 45.9, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: true, video: false, note: "Free · vision", quota_multiplier: 1 },
     { id: "deepseek-v4-pro-0813", name: "DeepSeek V4 Pro 0813", provider: "DeepSeek", color: "#4d6bfe", context: "1M", speed: 24.35, input: 0.03, output: 0.12, tag: "New", category: "chat", image: true, video: false, note: "Paid · vision", quota_multiplier: 1 },
     { id: "deepseek-v4-pro-free", name: "DeepSeek V4 Pro", provider: "DeepSeek", color: "#4d6bfe", context: "1M", speed: 39.49, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: true, video: false, note: "Free · vision", quota_multiplier: 1 },
@@ -77,6 +77,8 @@
 
   /* Some upstream models are temporarily hidden; keep the offline snapshot in sync. */
   const TEMPORARILY_HIDDEN_MODEL_IDS = new Set([
+    "gpt-5.6-luna",
+    "mistral-large-4",
     "claude-haiku-5.5",
     "claude-opus-5.5",
     "claude-sonnet-5.5",

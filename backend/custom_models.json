@@ -22,7 +22,7 @@
     "name": "DeepSeek V4 Flash",
     "provider": "DeepSeek",
     "context": "1M",
-    "speed": 57.14,
+    "speed": 18.0,
     "input": 0.0,
     "output": 0.0,
     "category": "chat",
@@ -866,7 +866,7 @@
     "name": "Claude Opus 5.5 Free",
     "provider": "Anthropic",
     "context": "200K",
-    "speed": 0,
+    "speed": 34.6,
     "input": 0.0,
     "output": 0.0,
     "image": false,
@@ -882,7 +882,7 @@
     "name": "Claude Haiku 5.5 Free",
     "provider": "Anthropic",
     "context": "200K",
-    "speed": 0,
+    "speed": 37.3,
     "input": 0.0,
     "output": 0.0,
     "image": false,
@@ -898,7 +898,7 @@
     "name": "GLM 5.3 Flash Free",
     "provider": "Z.ai",
     "context": "1M",
-    "speed": 0,
+    "speed": 29.1,
     "input": 0.0,
     "output": 0.0,
     "image": true,
@@ -915,7 +915,7 @@
     "name": "GLM 4.5 Flash",
     "provider": "Z.ai",
     "context": "128K",
-    "speed": 0,
+    "speed": 34.6,
     "input": 0.0,
     "output": 0.0,
     "image": false,
@@ -932,7 +932,7 @@
     "name": "GLM 4.6V Flash",
     "provider": "Z.ai",
     "context": "128K",
-    "speed": 0,
+    "speed": 52.8,
     "input": 0.0,
     "output": 0.0,
     "image": true,
@@ -943,5 +943,13 @@
     "upstream_id": "glm-4.6v-flash",
     "min_max_tokens": 2048,
     "upstream": "zai"
+  },
+  {
+    "id": "gpt-5.6-luna",
+    "hidden": true
+  },
+  {
+    "id": "mistral-large-4",
+    "hidden": true
   }
 ]

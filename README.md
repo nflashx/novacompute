@@ -12,10 +12,9 @@
 
 NovaCompute gives you one OpenAI-compatible endpoint for 48 models — 44 chat, vision and TTS models plus 4 decision models. 22 are free. Create an account, get an API key, and send your first request in under a minute. The first **50 customer accounts** get the founding free plan; after that, access is pay-as-you-go or subscription.
 
-> **Temporary catalogue status (2026-11-14):** the new free list is
-> re-enabled, while older upstream rows remain hidden. The public API
-> currently serves **33 models — 16 free / 17 paid**; the full 48-model catalogue
-> (and the remaining hidden rows below) returns when hiding is removed.
+> **Temporary catalogue status (2026-11-17):** the live API currently serves
+> **37 models — 20 free chat/code, plus 4 decision and 2 TTS models**; older
+> unavailable upstream rows stay hidden until their routes recover.
 
 No credit card is required to claim a founding free seat.
 
