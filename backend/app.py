@@ -352,6 +352,10 @@ PROVIDERS = {
         "url": "https://freeapi.dgbmc.top/v1/chat/completions",
         "keys_file": os.path.join(BASE_DIR, "dgb_keys.json"),
     },
+    "tokeness": {
+        "url": "https://n.tokeness.dev/v1/chat/completions",
+        "keys_file": os.path.join(BASE_DIR, "tokeness_keys.json"),
+    },
 }
 
 PROVIDER_NOTES = {
@@ -378,6 +382,7 @@ PROVIDER_NOTES = {
     "sharellm": "Tool got — 19/41 model sống, gpt-5.6-luna có ảnh",
     "vyce": "Tool got — promo pool, nemotron VL đọc ảnh 177 tok/s",
     "dgb": "Tool got — grok-4.7 54.8 tok/s, $100 gift, 7 model xAI",
+    "tokeness": "Tool got — free pool xoay model (dots-3-note / stealth glyph-cluster)",
 }
 
 # ================= DANH SÁCH MODEL & GIÁ =================

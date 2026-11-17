@@ -1013,5 +1013,21 @@
     "note": "Free · fast",
     "upstream_id": "gpt-oss-120b",
     "upstream": "vyce"
+  },
+  {
+    "id": "nova-ai",
+    "name": "Nova AI",
+    "provider": "NovaCompute",
+    "context": "128K",
+    "speed": 55.6,
+    "input": 0.0,
+    "output": 0.0,
+    "image": false,
+    "video": false,
+    "category": "chat",
+    "tag": "New",
+    "note": "Free · stealth pool",
+    "upstream_id": "tokeness/free",
+    "upstream": "tokeness"
   }
 ]
