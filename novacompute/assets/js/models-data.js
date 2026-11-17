@@ -81,6 +81,17 @@
 
   /* Some upstream models are temporarily hidden; keep the offline snapshot in sync. */
   const TEMPORARILY_HIDDEN_MODEL_IDS = new Set([
+    "grok-4.6",
+    "deepseek-v4-flash-free",
+    "gpt-6-luna",
+    "gpt-6-astra",
+    "gpt-6.1-sol",
+    "deepseek-v4-flash-0731",
+    "minimax-m3",
+    "gpt-5.6-sol-free",
+    "gpt-5.6-terra",
+    "nemotron-3.5-super-vl-free",
+    "gpt-oss-120b",
     "mistral-large-4",
     "claude-haiku-5.5",
     "claude-opus-5.5",

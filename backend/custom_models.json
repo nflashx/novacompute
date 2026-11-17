@@ -32,7 +32,8 @@
     "image": false,
     "video": false,
     "upstream": "kiosapi",
-    "upstream_id": "deepseek-v4-flash-free"
+    "upstream_id": "deepseek-v4-flash-free",
+    "hidden": true
   },
   {
     "id": "deepseek-v4-flash-vision-free",
@@ -552,7 +553,8 @@
     "note": "Paid · vision",
     "upstream": "nightrouter",
     "upstream_id": "gpt-6-luna-free",
-    "min_max_tokens": 2048
+    "min_max_tokens": 2048,
+    "hidden": true
   },
   {
     "speed": 210.83,
@@ -621,7 +623,8 @@
     "price_unit": "",
     "upstream": "nightrouter",
     "upstream_id": "gpt-6-astra-free",
-    "min_max_tokens": 2048
+    "min_max_tokens": 2048,
+    "hidden": true
   },
   {
     "id": "gpt-6.1-sol",
@@ -639,7 +642,8 @@
     "price_unit": "",
     "upstream": "nightrouter",
     "upstream_id": "gpt-6.1-sol-free",
-    "min_max_tokens": 2048
+    "min_max_tokens": 2048,
+    "hidden": true
   },
   {
     "id": "glm-5.3",
@@ -805,7 +809,8 @@
     "price_unit": "",
     "upstream": "dahl",
     "upstream_id": "deepseek-ai/DeepSeek-V4-Flash-0731",
-    "min_max_tokens": 2048
+    "min_max_tokens": 2048,
+    "hidden": true
   },
   {
     "id": "minimax-m3",
@@ -823,7 +828,8 @@
     "price_unit": "",
     "upstream": "dahl",
     "upstream_id": "MiniMaxAI/MiniMax-M2.7",
-    "min_max_tokens": 2048
+    "min_max_tokens": 2048,
+    "hidden": true
   },
   {
     "id": "gpt-5.6-sol-free",
@@ -841,7 +847,8 @@
     "price_unit": "",
     "upstream": "nightrouter",
     "upstream_id": "gpt-5.6-sol-free",
-    "min_max_tokens": 2048
+    "min_max_tokens": 2048,
+    "hidden": true
   },
   {
     "id": "gpt-5.6-terra",
@@ -859,7 +866,8 @@
     "price_unit": "",
     "upstream": "nightrouter",
     "upstream_id": "gpt-5.6-terra-free",
-    "min_max_tokens": 2048
+    "min_max_tokens": 2048,
+    "hidden": true
   },
   {
     "id": "claude-opus-5.5-free",
@@ -996,7 +1004,8 @@
     "note": "Free · vision",
     "upstream_id": "nemotron-3.5-super-vl",
     "upstream": "vyce",
-    "min_max_tokens": 2048
+    "min_max_tokens": 2048,
+    "hidden": true
   },
   {
     "id": "gpt-oss-120b",
@@ -1012,7 +1021,8 @@
     "tag": "Free",
     "note": "Free · fast",
     "upstream_id": "gpt-oss-120b",
-    "upstream": "vyce"
+    "upstream": "vyce",
+    "hidden": true
   },
   {
     "id": "nova-ai",
@@ -1029,5 +1039,9 @@
     "note": "Free · stealth pool",
     "upstream_id": "tokeness/free",
     "upstream": "tokeness"
+  },
+  {
+    "id": "grok-4.6",
+    "hidden": true
   }
 ]
