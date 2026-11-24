@@ -38,6 +38,9 @@
     { id: "nemotron-3.5-super-vl-free", name: "Nemotron 3.5 Super VL Free", provider: "NVIDIA", color: "#76b900", context: "1M", speed: 177.3, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: true, video: false, note: "Free · vision", quota_multiplier: 1 },
     { id: "gpt-oss-120b", name: "GPT-OSS 120B", provider: "OpenAI", color: "#10a37f", context: "128K", speed: 44.1, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: false, video: false, note: "Free · fast", quota_multiplier: 1 },
     { id: "nova-ai", name: "Nova AI", provider: "NovaCompute", color: "#a78bfa", context: "128K", speed: 55.6, input: 0.0, output: 0.0, tag: "New", category: "chat", image: false, video: false, note: "Free · stealth pool", quota_multiplier: 1 },
+    { id: "doubao-seed-2.0-code", name: "Doubao Seed 2.0 Code", provider: "ByteDance", color: "#3b82f6", context: "128K", speed: 46.9, input: 0.0, output: 0.0, tag: "New", category: "code", image: false, video: false, note: "Free · fast", quota_multiplier: 1 },
+    { id: "doubao-seed-2.0-pro", name: "Doubao Seed 2.0 Pro", provider: "ByteDance", color: "#3b82f6", context: "128K", speed: 51.2, input: 0.0, output: 0.0, tag: "New", category: "chat", image: false, video: false, note: "Free", quota_multiplier: 1 },
+    { id: "glm-5v-turbo", name: "GLM 5V Turbo", provider: "Z.ai", color: "#38bdf8", context: "128K", speed: 41.8, input: 0.0, output: 0.0, tag: "New", category: "chat", image: true, video: false, note: "Free · vision", quota_multiplier: 1 },
     { id: "deepseek-v4-flash-vision-free", name: "DeepSeek V4 Flash Vision", provider: "DeepSeek", color: "#4d6bfe", context: "1M", speed: 45.9, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: true, video: false, note: "Free · vision", quota_multiplier: 1 },
     { id: "deepseek-v4-pro-0813", name: "DeepSeek V4 Pro 0813", provider: "DeepSeek", color: "#4d6bfe", context: "1M", speed: 24.35, input: 0.03, output: 0.12, tag: "New", category: "chat", image: true, video: false, note: "Paid · vision", quota_multiplier: 1 },
     { id: "deepseek-v4-pro-free", name: "DeepSeek V4 Pro", provider: "DeepSeek", color: "#4d6bfe", context: "1M", speed: 39.49, input: 0.0, output: 0.0, tag: "Free", category: "chat", image: true, video: false, note: "Free · vision", quota_multiplier: 1 },
@@ -81,6 +84,9 @@
 
   /* Some upstream models are temporarily hidden; keep the offline snapshot in sync. */
   const TEMPORARILY_HIDDEN_MODEL_IDS = new Set([
+    "doubao-seed-2.0-code",
+    "doubao-seed-2.0-pro",
+    "glm-5v-turbo",
     "grok-4.6",
     "deepseek-v4-flash-free",
     "gpt-6-luna",

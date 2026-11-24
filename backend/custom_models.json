@@ -1043,5 +1043,57 @@
   {
     "id": "grok-4.6",
     "hidden": true
+  },
+  {
+    "id": "doubao-seed-2.0-code",
+    "name": "Doubao Seed 2.0 Code",
+    "provider": "ByteDance",
+    "context": "128K",
+    "speed": 46.9,
+    "input": 0.0,
+    "output": 0.0,
+    "image": false,
+    "video": false,
+    "category": "code",
+    "tag": "New",
+    "note": "Free · fast",
+    "upstream_id": "doubao-seed-2.0-code",
+    "upstream": "novai",
+    "hidden": true
+  },
+  {
+    "id": "doubao-seed-2.0-pro",
+    "name": "Doubao Seed 2.0 Pro",
+    "provider": "ByteDance",
+    "context": "128K",
+    "speed": 51.2,
+    "input": 0.0,
+    "output": 0.0,
+    "image": false,
+    "video": false,
+    "category": "chat",
+    "tag": "New",
+    "note": "Free",
+    "upstream_id": "doubao-seed-2.0-pro",
+    "upstream": "novai",
+    "hidden": true
+  },
+  {
+    "id": "glm-5v-turbo",
+    "name": "GLM 5V Turbo",
+    "provider": "Z.ai",
+    "context": "128K",
+    "speed": 41.8,
+    "input": 0.0,
+    "output": 0.0,
+    "image": true,
+    "video": false,
+    "category": "chat",
+    "tag": "New",
+    "note": "Free · vision",
+    "upstream_id": "glm-5v-turbo",
+    "upstream": "novai",
+    "min_max_tokens": 2048,
+    "hidden": true
   }
 ]

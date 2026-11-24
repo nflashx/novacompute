@@ -360,6 +360,10 @@ PROVIDERS = {
         "url": "https://freeapi.site/v1/chat/completions",
         "keys_file": os.path.join(BASE_DIR, "freeapi_keys.json"),
     },
+    "novai": {
+        "url": "https://aiapi-pro.com/v1/chat/completions",
+        "keys_file": os.path.join(BASE_DIR, "novai_keys.json"),
+    },
 }
 
 PROVIDER_NOTES = {
@@ -388,6 +392,7 @@ PROVIDER_NOTES = {
     "dgb": "Tool got — grok-4.7 54.8 tok/s, $100 gift, 7 model xAI",
     "tokeness": "Tool got — free pool xoay model (dots-3-note / stealth glyph-cluster)",
     "freeapi": "Tool got — welfare key v4.1-1017, 2B token hết 30/11, output lẫn scratchpad → chỉ admin",
+    "novai": "Tool got — 116 model, $2/14 ngày, 5 req/phút, doubao + glm-5v vision",
 }
 
 # ================= DANH SÁCH MODEL & GIÁ =================
