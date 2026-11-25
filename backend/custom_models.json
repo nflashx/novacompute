@@ -615,11 +615,11 @@
     "speed": 4.6,
     "input": 15.0,
     "output": 45.0,
-    "image": false,
+    "image": true,
     "video": false,
     "category": "chat",
     "tag": "New",
-    "note": "Paid · slow",
+    "note": "Paid · vision · slow",
     "upstream_id": "gpt-6-astra",
     "upstream": "omniai",
     "min_max_tokens": 2048
