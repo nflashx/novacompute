@@ -364,6 +364,10 @@ PROVIDERS = {
         "url": "https://aiapi-pro.com/v1/chat/completions",
         "keys_file": os.path.join(BASE_DIR, "novai_keys.json"),
     },
+    "omniai": {
+        "url": "https://sub.omniai.cc/v1/chat/completions",
+        "keys_file": os.path.join(BASE_DIR, "omniai_keys.json"),
+    },
 }
 
 PROVIDER_NOTES = {
@@ -393,6 +397,7 @@ PROVIDER_NOTES = {
     "tokeness": "Tool got — free pool xoay model (dots-3-note / stealth glyph-cluster)",
     "freeapi": "Tool got — welfare key v4.1-1017, 2B token hết 30/11, output lẫn scratchpad → chỉ admin",
     "novai": "Tool got — 116 model, $2/14 ngày, 5 req/phút, doubao + glm-5v vision",
+    "omniai": "Tool got — GPT-6 line, chậm 5 tok/s nhưng vision OK; kênh chập chờn",
 }
 
 # ================= DANH SÁCH MODEL & GIÁ =================
